@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { 
   Activity, 
   LogOut, 
@@ -28,6 +28,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
   const router = useRouter();
+  const pathname = usePathname();
 
   const handleLogout = async () => {
     try {
@@ -98,14 +99,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
               </div>
             )}
 
-            {/* Links Institucionais */}
-            <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-400 font-medium">
-              <Link href="/#como-funciona" className="hover:text-cyan-400 transition">Como Funciona</Link>
-              <Link href="/#precos" className="hover:text-cyan-400 transition">Preços &amp; Planos</Link>
-              <Link href="/#calculadora" className="hover:text-cyan-400 transition">Simulador</Link>
-              <Link href="/#corpo-clinico" className="hover:text-cyan-400 transition">Especialistas</Link>
-              <Link href="/#faq" className="hover:text-cyan-400 transition">FAQ</Link>
-            </nav>
+            {/* Links Institucionais (Exibidos apenas para visitantes não logados na Página Inicial) */}
+            {!user && pathname === '/' && (
+              <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-400 font-medium">
+                <Link href="/#como-funciona" className="hover:text-cyan-400 transition">Como Funciona</Link>
+                <Link href="/#precos" className="hover:text-cyan-400 transition">Preços &amp; Planos</Link>
+                <Link href="/#calculadora" className="hover:text-cyan-400 transition">Simulador</Link>
+                <Link href="/#corpo-clinico" className="hover:text-cyan-400 transition">Especialistas</Link>
+                <Link href="/#faq" className="hover:text-cyan-400 transition">FAQ</Link>
+              </nav>
+            )}
           </div>
 
           {/* Ações e Menus */}
