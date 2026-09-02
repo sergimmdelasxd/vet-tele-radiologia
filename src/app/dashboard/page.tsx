@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { 
   PlusCircle, 
   Search, 
@@ -20,7 +21,8 @@ import {
   Printer,
   Sparkles,
   SlidersHorizontal,
-  Wallet
+  Wallet,
+  Calendar
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { DicomXrayViewer } from '@/components/viewer/DicomXrayViewer';
@@ -186,6 +188,17 @@ export default function DashboardPage() {
                     Saldo: <strong className="font-mono text-emerald-300">R$ {(currentUser.balance ?? 0).toFixed(2).replace('.', ',')}</strong>
                   </span>
                 </button>
+              )}
+
+              {(currentUser.role === 'RADIOLOGIST' || currentUser.role === 'ADMIN') && (
+                <Link
+                  href="/agenda"
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 font-bold text-xs sm:text-sm rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                  title="Abrir Agenda de Rotina e Horários de Exames"
+                >
+                  <Calendar className="w-4 h-4 text-cyan-400" />
+                  <span>Agenda de Rotina</span>
+                </Link>
               )}
 
               <button

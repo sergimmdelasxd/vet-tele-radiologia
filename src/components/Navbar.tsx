@@ -12,7 +12,8 @@ import {
   Stethoscope, 
   Building2, 
   User as UserIcon,
-  Sparkles
+  Sparkles,
+  Calendar
 } from 'lucide-react';
 import { User } from '@/types';
 
@@ -126,6 +127,16 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                   <FileText className="w-4 h-4 text-cyan-400" />
                   Painel de Exames
                 </Link>
+
+                {(user.role === 'RADIOLOGIST' || user.role === 'ADMIN') && (
+                  <Link
+                    href="/agenda"
+                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-white hover:bg-slate-800 transition bg-cyan-500/10 border border-cyan-500/20"
+                  >
+                    <Calendar className="w-4 h-4 text-cyan-400" />
+                    Agenda de Rotina
+                  </Link>
+                )}
 
                 {/* Dropdown / Menu de Usuário & Troca de Perfil de Demonstração */}
                 <div className="flex items-center gap-2 pl-2 border-l border-slate-700/60">

@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod } from '@/types';
+import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod, Appointment, AppointmentStatus } from '@/types';
 
 const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
 
@@ -20,6 +20,7 @@ interface DatabaseSchema {
   users: User[];
   exams: Exam[];
   transactions?: FinancialTransaction[];
+  appointments?: Appointment[];
 }
 
 function ensureDataDirectory() {
@@ -86,6 +87,161 @@ function seedTransactions(): FinancialTransaction[] {
       paymentMethod: 'SALDO',
       status: 'COMPLETED',
       createdAt: '2026-08-30T16:00:00Z'
+    }
+  ];
+}
+
+function seedAppointments(): Appointment[] {
+  return [
+    {
+      id: 'AG-2026-01',
+      date: '2026-09-02',
+      time: '08:30',
+      durationMinutes: 30,
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      requestingVet: 'Dra. Mariana Souza',
+      specialistId: 'user-rad-camila',
+      specialistName: 'Dra. Camila Siqueira',
+      patientName: 'Rex',
+      species: 'Canino',
+      breed: 'Pastor Alemão',
+      age: '5 anos',
+      weight: '36.0 kg',
+      ownerName: 'Fernando Alencar',
+      ownerPhone: '(11) 98111-2233',
+      modality: 'RADIOGRAFIA',
+      region: 'Pelve e Coxofemoral (Ângulo de Norberg)',
+      preparationInstructions: 'Sedação leve autorizada pelo tutor. Não requer jejum hídrico.',
+      notes: 'Avaliação preventiva de displasia coxofemoral. Leve claudicação pós-esforço.',
+      status: 'COMPLETED',
+      createdAt: '2026-09-01T14:00:00Z',
+      updatedAt: '2026-09-02T09:15:00Z'
+    },
+    {
+      id: 'AG-2026-02',
+      date: '2026-09-02',
+      time: '10:00',
+      durationMinutes: 40,
+      clinicId: 'user-clinic-petcare',
+      clinicName: 'Hospital Veterinário PetCare',
+      requestingVet: 'Dr. Lucas Silveira',
+      specialistId: 'user-rad-camila',
+      specialistName: 'Dra. Camila Siqueira',
+      patientName: 'Nina',
+      species: 'Felino',
+      breed: 'Siamês',
+      age: '8 anos',
+      weight: '4.1 kg',
+      ownerName: 'Patrícia Guimarães',
+      ownerPhone: '(21) 97654-3210',
+      modality: 'ULTRASSOM',
+      region: 'Ultrassonografia Abdominal Total',
+      preparationInstructions: 'Jejum alimentar estrito de 8h, bexiga cheia e tricotomia prévia.',
+      notes: 'Vômitos frequentes e perda de peso nos últimos 4 dias.',
+      status: 'IN_PROGRESS',
+      createdAt: '2026-09-01T16:30:00Z',
+      updatedAt: '2026-09-02T10:05:00Z'
+    },
+    {
+      id: 'AG-2026-03',
+      date: '2026-09-02',
+      time: '11:30',
+      durationMinutes: 30,
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      requestingVet: 'Dra. Mariana Souza',
+      specialistId: 'user-admin-ricardo',
+      specialistName: 'Dr. Ricardo Valença',
+      patientName: 'Bob',
+      species: 'Canino',
+      breed: 'Shih Tzu',
+      age: '3 anos',
+      weight: '6.5 kg',
+      ownerName: 'Renata Vasconcelos',
+      ownerPhone: '(11) 99888-4455',
+      modality: 'ULTRASSOM',
+      region: 'Ultrassonografia do Trato Urinário (Rins e Bexiga)',
+      preparationInstructions: 'Reter micção por no mínimo 2 horas para avaliação vesical repleta.',
+      notes: 'Disúria, hematúria e histórico prévio de cálculos vesicais.',
+      status: 'CONFIRMED',
+      createdAt: '2026-09-01T18:00:00Z',
+      updatedAt: '2026-09-02T08:00:00Z'
+    },
+    {
+      id: 'AG-2026-04',
+      date: '2026-09-02',
+      time: '14:00',
+      durationMinutes: 30,
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      requestingVet: 'Dra. Mariana Souza',
+      specialistId: 'user-rad-camila',
+      specialistName: 'Dra. Camila Siqueira',
+      patientName: 'Luke',
+      species: 'Canino',
+      breed: 'Golden Retriever',
+      age: '2 anos',
+      weight: '31.0 kg',
+      ownerName: 'Marcos Vinícius',
+      ownerPhone: '(11) 98777-6655',
+      modality: 'RADIOGRAFIA',
+      region: 'Tórax (3 projeções: LL-D, LL-E e VD)',
+      preparationInstructions: 'Recomenda-se tutor acompanhar o posicionamento. Sem jejum alimentar.',
+      notes: 'Tosse seca e intolerância a esforço físico.',
+      status: 'SCHEDULED',
+      createdAt: '2026-09-02T08:30:00Z',
+      updatedAt: '2026-09-02T08:30:00Z'
+    },
+    {
+      id: 'AG-2026-05',
+      date: '2026-09-02',
+      time: '16:00',
+      durationMinutes: 40,
+      clinicId: 'user-clinic-petcare',
+      clinicName: 'Hospital Veterinário PetCare',
+      requestingVet: 'Dr. Lucas Silveira',
+      specialistId: 'user-rad-camila',
+      specialistName: 'Dra. Camila Siqueira',
+      patientName: 'Mel',
+      species: 'Felino',
+      breed: 'Persa',
+      age: '4 anos',
+      weight: '3.8 kg',
+      ownerName: 'Cláudia Ramos',
+      ownerPhone: '(21) 98123-4567',
+      modality: 'ULTRASSOM',
+      region: 'Ultrassonografia Gestacional (Viabilidade Fetal)',
+      preparationInstructions: 'Tricotomia abdominal sutil. Jejum curto de 4h.',
+      notes: 'Gestação aos 45 dias. Contagem de fetos e batimentos cardíacos fetais.',
+      status: 'SCHEDULED',
+      createdAt: '2026-09-02T09:00:00Z',
+      updatedAt: '2026-09-02T09:00:00Z'
+    },
+    {
+      id: 'AG-2026-06',
+      date: '2026-09-03',
+      time: '09:00',
+      durationMinutes: 30,
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      requestingVet: 'Dra. Mariana Souza',
+      specialistId: 'user-rad-camila',
+      specialistName: 'Dra. Camila Siqueira',
+      patientName: 'Toby',
+      species: 'Canino',
+      breed: 'Beagle',
+      age: '7 anos',
+      weight: '14.2 kg',
+      ownerName: 'Rodrigo Faro',
+      ownerPhone: '(11) 99123-8877',
+      modality: 'RADIOGRAFIA',
+      region: 'Coluna Toracolombar e Lombar',
+      preparationInstructions: 'Manipulação cautelosa durante o transporte e contenção.',
+      notes: 'Dor intensa à palpação vertebral e relutância em subir escadas.',
+      status: 'CONFIRMED',
+      createdAt: '2026-09-02T10:00:00Z',
+      updatedAt: '2026-09-02T10:00:00Z'
     }
   ];
 }
@@ -364,7 +520,7 @@ function seedDatabase(): DatabaseSchema {
     }
   ];
 
-  const db: DatabaseSchema = { users, exams, transactions: seedTransactions() };
+  const db: DatabaseSchema = { users, exams, transactions: seedTransactions(), appointments: seedAppointments() };
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
   return db;
 }
@@ -386,6 +542,11 @@ export function readDatabase(): DatabaseSchema {
     let shouldSave = false;
     if (!parsed.transactions || parsed.transactions.length === 0) {
       parsed.transactions = seedTransactions();
+      shouldSave = true;
+    }
+
+    if (!parsed.appointments || parsed.appointments.length === 0) {
+      parsed.appointments = seedAppointments();
       shouldSave = true;
     }
 
@@ -673,4 +834,128 @@ export function debitExamCost(
   writeDatabase(db);
 
   return { user, transaction, price: cost };
+}
+
+// Appointment Methods (Agenda & Rotina)
+export function getAllAppointments(filters?: {
+  date?: string;
+  specialistId?: string;
+  clinicId?: string;
+  status?: string;
+  modality?: string;
+}): Appointment[] {
+  const db = readDatabase();
+  let list = db.appointments || [];
+
+  if (filters?.date) {
+    list = list.filter(a => a.date === filters.date);
+  }
+  if (filters?.specialistId && filters.specialistId !== 'ALL') {
+    list = list.filter(a => a.specialistId === filters.specialistId);
+  }
+  if (filters?.clinicId && filters.clinicId !== 'ALL') {
+    list = list.filter(a => a.clinicId === filters.clinicId);
+  }
+  if (filters?.status && filters.status !== 'ALL') {
+    list = list.filter(a => a.status === filters.status);
+  }
+  if (filters?.modality && filters.modality !== 'ALL') {
+    list = list.filter(a => a.modality === filters.modality);
+  }
+
+  return list.sort((a, b) => {
+    const dateComp = a.date.localeCompare(b.date);
+    if (dateComp !== 0) return dateComp;
+    return a.time.localeCompare(b.time);
+  });
+}
+
+export function getAppointmentById(id: string): Appointment | undefined {
+  const db = readDatabase();
+  return (db.appointments || []).find(a => a.id === id);
+}
+
+export function createAppointment(data: Omit<Appointment, 'id' | 'createdAt' | 'updatedAt'>): Appointment {
+  const db = readDatabase();
+  if (!db.appointments) db.appointments = [];
+
+  const newAppointment: Appointment = {
+    ...data,
+    id: `AG-${new Date().getFullYear()}-${String(db.appointments.length + 1).padStart(2, '0')}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  db.appointments.push(newAppointment);
+  writeDatabase(db);
+  return newAppointment;
+}
+
+export function updateAppointment(id: string, updates: Partial<Appointment>): Appointment | null {
+  const db = readDatabase();
+  if (!db.appointments) return null;
+  const index = db.appointments.findIndex(a => a.id === id);
+  if (index === -1) return null;
+
+  db.appointments[index] = {
+    ...db.appointments[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  writeDatabase(db);
+  return db.appointments[index];
+}
+
+export function deleteAppointment(id: string): boolean {
+  const db = readDatabase();
+  if (!db.appointments) return false;
+  const initLen = db.appointments.length;
+  db.appointments = db.appointments.filter(a => a.id !== id);
+  if (db.appointments.length !== initLen) {
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+export function convertAppointmentToExam(appointmentId: string): { appointment: Appointment; exam: Exam } | null {
+  const db = readDatabase();
+  if (!db.appointments) return null;
+  const appIndex = db.appointments.findIndex(a => a.id === appointmentId);
+  if (appIndex === -1) return null;
+
+  const app = db.appointments[appIndex];
+  
+  // Criar o exame oficial na worklist
+  const newExam = createExam({
+    clinicId: app.clinicId,
+    clinicName: app.clinicName,
+    requestingVet: app.requestingVet,
+    clinicPhone: app.ownerPhone || '',
+    modality: app.modality,
+    patientName: app.patientName,
+    species: app.species,
+    breed: app.breed,
+    age: app.age || 'Não informada',
+    weight: app.weight || '',
+    gender: 'Macho',
+    isCastrated: false,
+    ownerName: app.ownerName,
+    region: app.region,
+    projections: app.modality === 'ULTRASSOM' ? ['Varredura Completa'] : ['Projeções de Rotina'],
+    clinicalHistory: `Exame originado do agendamento de rotina (${app.date} às ${app.time}). ${app.notes || ''}`,
+    suspectedDiagnosis: app.notes || 'Rotina preventiva/investigativa',
+    priority: 'NORMAL',
+    fastingHours: app.preparationInstructions,
+    images: []
+  });
+
+  // Atualizar o status do agendamento
+  db.appointments[appIndex].status = 'COMPLETED';
+  db.appointments[appIndex].examId = newExam.id;
+  db.appointments[appIndex].updatedAt = new Date().toISOString();
+  writeDatabase(db);
+
+  return { appointment: db.appointments[appIndex], exam: newExam };
 }

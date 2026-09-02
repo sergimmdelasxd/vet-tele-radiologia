@@ -149,3 +149,37 @@ export interface PricingPlan {
   features: string[];
   recommended?: boolean;
 }
+
+// Módulo de Agenda & Rotina Veterinária
+export type AppointmentStatus = 'SCHEDULED' | 'CONFIRMED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
+
+export interface Appointment {
+  id: string; // Ex: "AG-2026-01"
+  date: string; // YYYY-MM-DD
+  time: string; // HH:mm (Ex: "09:30")
+  durationMinutes?: number; // Padrão: 30 minutos
+  clinicId: string;
+  clinicName: string;
+  requestingVet: string;
+  specialistId?: string;
+  specialistName?: string;
+  
+  patientName: string;
+  species: Species;
+  breed: string;
+  age?: string;
+  weight?: string;
+  ownerName: string;
+  ownerPhone?: string;
+  
+  modality: ExamModality;
+  region: string;
+  preparationInstructions?: string; // Ex: "Jejum de 8h, reter urina por 2h"
+  notes?: string;
+  
+  status: AppointmentStatus;
+  examId?: string; // ID do exame associado se já tiver sido gerado para laudo
+  createdAt: string;
+  updatedAt: string;
+}
+
