@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod, Appointment, AppointmentStatus } from '@/types';
+import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod, Appointment, AppointmentStatus, ClinicPlan, ClinicFinancialSummary, PlatformFinancialAnalytics } from '@/types';
 
 const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
 
@@ -263,6 +263,7 @@ function seedDatabase(): DatabaseSchema {
       phone: '(11) 98765-4321',
       uf: 'SP',
       balance: 380.00,
+      plan: 'PRO',
       createdAt: '2026-08-01T10:00:00Z'
     },
     {
@@ -277,6 +278,7 @@ function seedDatabase(): DatabaseSchema {
       phone: '(21) 99888-7766',
       uf: 'RJ',
       balance: 200.00,
+      plan: 'HOSPITAL',
       createdAt: '2026-08-10T14:30:00Z'
     },
     {
@@ -551,9 +553,15 @@ export function readDatabase(): DatabaseSchema {
     }
 
     for (const u of parsed.users) {
-      if (u.role === 'CLINIC' && (u.balance === undefined || u.balance === null)) {
-        u.balance = u.id === 'user-clinic-vetlife' ? 380.00 : 200.00;
-        shouldSave = true;
+      if (u.role === 'CLINIC') {
+        if (u.balance === undefined || u.balance === null) {
+          u.balance = u.id === 'user-clinic-vetlife' ? 380.00 : 200.00;
+          shouldSave = true;
+        }
+        if (!u.plan) {
+          u.plan = u.id === 'user-clinic-petcare' ? 'HOSPITAL' : (u.id === 'user-clinic-vetlife' ? 'PRO' : 'AVULSO');
+          shouldSave = true;
+        }
       }
     }
 
@@ -958,4 +966,162 @@ export function convertAppointmentToExam(appointmentId: string): { appointment: 
   writeDatabase(db);
 
   return { appointment: db.appointments[appIndex], exam: newExam };
+}
+
+// Financial Analytics for Admin & Radiologists
+export function updateClinicPlan(clinicId: string, plan: ClinicPlan): User | null {
+  const db = readDatabase();
+  const userIndex = db.users.findIndex(u => u.id === clinicId);
+  if (userIndex === -1) return null;
+
+  db.users[userIndex].plan = plan;
+  writeDatabase(db);
+  const { password: _, ...userWithoutPass } = db.users[userIndex];
+  return userWithoutPass as User;
+}
+
+export function adjustClinicBalance(clinicId: string, amount: number, reason: string): { user: User; transaction: FinancialTransaction } {
+  const db = readDatabase();
+  const user = db.users.find(u => u.id === clinicId);
+  if (!user) throw new Error('Clínica não encontrada');
+
+  const currentBalance = typeof user.balance === 'number' ? user.balance : 0;
+  user.balance = Number((currentBalance + amount).toFixed(2));
+
+  const transaction: FinancialTransaction = {
+    id: `tx-adj-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    clinicId: user.id,
+    clinicName: user.clinicName || user.name,
+    type: amount >= 0 ? 'CREDIT_PURCHASE' : 'EXAM_DEBIT',
+    amount: Math.abs(amount),
+    description: `Ajuste Administrativo de Saldo: ${reason}`,
+    paymentMethod: 'SALDO',
+    status: 'COMPLETED',
+    createdAt: new Date().toISOString()
+  };
+
+  if (!db.transactions) db.transactions = [];
+  db.transactions.unshift(transaction);
+  writeDatabase(db);
+
+  return { user, transaction };
+}
+
+export function getPlatformFinancialAnalytics(): PlatformFinancialAnalytics {
+  const db = readDatabase();
+  const clinics = db.users.filter(u => u.role === 'CLINIC');
+  const exams = db.exams || [];
+  const transactions = db.transactions || [];
+
+  // Resumo por clínica
+  const clinicsSummary: ClinicFinancialSummary[] = clinics.map(c => {
+    const clinicExams = exams.filter(e => e.clinicId === c.id);
+    const radCount = clinicExams.filter(e => e.modality === 'RADIOGRAFIA').length;
+    const usgCount = clinicExams.filter(e => e.modality === 'ULTRASSOM').length;
+    const urgCount = clinicExams.filter(e => e.priority === 'URGENT').length;
+
+    // Débitos reais ou calculados
+    const debits = transactions.filter(t => t.clinicId === c.id && t.type === 'EXAM_DEBIT');
+    let clinicRevenue = debits.reduce((acc, t) => acc + t.amount, 0);
+
+    if (clinicRevenue === 0 && clinicExams.length > 0) {
+      clinicRevenue = (radCount * 45) + (usgCount * 60) + (urgCount * 20);
+    }
+
+    const sortedExams = [...clinicExams].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    const lastExam = sortedExams[0];
+
+    return {
+      clinicId: c.id,
+      clinicName: c.clinicName || c.name,
+      contactName: c.name,
+      email: c.email,
+      phone: c.phone,
+      uf: c.uf || 'SP',
+      plan: c.plan || 'AVULSO',
+      balance: c.balance ?? 0,
+      totalExams: clinicExams.length,
+      radiographyCount: radCount,
+      ultrasoundCount: usgCount,
+      urgentCount: urgCount,
+      totalRevenue: Number(clinicRevenue.toFixed(2)),
+      lastExamDate: lastExam?.createdAt
+    };
+  });
+
+  clinicsSummary.sort((a, b) => b.totalRevenue - a.totalRevenue);
+
+  const totalExamsBilled = exams.length;
+  const radExamsCount = exams.filter(e => e.modality === 'RADIOGRAFIA').length;
+  const usgExamsCount = exams.filter(e => e.modality === 'ULTRASSOM').length;
+  const urgExamsCount = exams.filter(e => e.priority === 'URGENT').length;
+
+  const baseRadRev = (radExamsCount * 45);
+  const baseUsgRev = (usgExamsCount * 60);
+  const urgencyRevenue = urgExamsCount * 20;
+  const radiographyRevenue = baseRadRev;
+  const ultrasoundRevenue = baseUsgRev;
+  const totalRevenue = radiographyRevenue + ultrasoundRevenue + urgencyRevenue;
+  const averageTicket = totalExamsBilled > 0 ? Number((totalRevenue / totalExamsBilled).toFixed(2)) : 52.50;
+  const totalActiveBalance = clinics.reduce((acc, c) => acc + (c.balance ?? 0), 0);
+
+  // Evolução Mensal Histórica da Plataforma
+  const monthlyRevenue = [
+    { month: 'Abr', radiography: 2800, ultrasound: 3400, total: 6200 },
+    { month: 'Mai', radiography: 3500, ultrasound: 4500, total: 8000 },
+    { month: 'Jun', radiography: 4200, ultrasound: 5600, total: 9800 },
+    { month: 'Jul', radiography: 4900, ultrasound: 6800, total: 11700 },
+    { month: 'Ago', radiography: 5800, ultrasound: 8100, total: 13900 },
+    { 
+      month: 'Set', 
+      radiography: Math.max(radiographyRevenue, 6400), 
+      ultrasound: Math.max(ultrasoundRevenue, 9200), 
+      total: Math.max(radiographyRevenue, 6400) + Math.max(ultrasoundRevenue, 9200) 
+    }
+  ];
+
+  const planCounts: Record<ClinicPlan, number> = { AVULSO: 0, PRO: 0, HOSPITAL: 0 };
+  clinics.forEach(c => {
+    const p = c.plan || 'AVULSO';
+    planCounts[p] = (planCounts[p] || 0) + 1;
+  });
+
+  const totalClinics = Math.max(1, clinics.length);
+  const planDistribution = [
+    {
+      plan: 'PRO' as ClinicPlan,
+      label: 'Clínica Parceira Pro',
+      count: planCounts.PRO,
+      percentage: Math.round((planCounts.PRO / totalClinics) * 100),
+      color: '#06b6d4'
+    },
+    {
+      plan: 'HOSPITAL' as ClinicPlan,
+      label: 'Hospital 24h & Redes',
+      count: planCounts.HOSPITAL,
+      percentage: Math.round((planCounts.HOSPITAL / totalClinics) * 100),
+      color: '#a855f7'
+    },
+    {
+      plan: 'AVULSO' as ClinicPlan,
+      label: 'Pré-Pago / Avulso',
+      count: planCounts.AVULSO,
+      percentage: Math.round((planCounts.AVULSO / totalClinics) * 100),
+      color: '#10b981'
+    }
+  ];
+
+  return {
+    totalRevenue: Number(totalRevenue.toFixed(2)),
+    totalExamsBilled,
+    radiographyRevenue: Number(radiographyRevenue.toFixed(2)),
+    ultrasoundRevenue: Number(ultrasoundRevenue.toFixed(2)),
+    urgencyRevenue: Number(urgencyRevenue.toFixed(2)),
+    averageTicket,
+    totalActiveBalance: Number(totalActiveBalance.toFixed(2)),
+    clinicsCount: clinics.length,
+    clinicsSummary,
+    monthlyRevenue,
+    planDistribution
+  };
 }

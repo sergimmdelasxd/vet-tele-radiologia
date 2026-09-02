@@ -22,7 +22,8 @@ import {
   Sparkles,
   SlidersHorizontal,
   Wallet,
-  Calendar
+  Calendar,
+  DollarSign
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { DicomXrayViewer } from '@/components/viewer/DicomXrayViewer';
@@ -191,14 +192,25 @@ export default function DashboardPage() {
               )}
 
               {(currentUser.role === 'RADIOLOGIST' || currentUser.role === 'ADMIN') && (
-                <Link
-                  href="/agenda"
-                  className="inline-flex items-center gap-2 px-4 py-3 bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 font-bold text-xs sm:text-sm rounded-xl shadow-md transition active:scale-95 cursor-pointer"
-                  title="Abrir Agenda de Rotina e Horários de Exames"
-                >
-                  <Calendar className="w-4 h-4 text-cyan-400" />
-                  <span>Agenda de Rotina</span>
-                </Link>
+                <>
+                  <Link
+                    href="/agenda"
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-cyan-950/70 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 font-bold text-xs sm:text-sm rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                    title="Abrir Agenda de Rotina e Horários de Exames"
+                  >
+                    <Calendar className="w-4 h-4 text-cyan-400" />
+                    <span>Agenda</span>
+                  </Link>
+
+                  <Link
+                    href="/financeiro"
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-emerald-950/70 hover:bg-emerald-900 border border-emerald-500/30 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                    title="Abrir Painel Financeiro e Volumetria de Clínicas"
+                  >
+                    <DollarSign className="w-4 h-4 text-emerald-400" />
+                    <span>Painel Financeiro</span>
+                  </Link>
+                </>
               )}
 
               <button

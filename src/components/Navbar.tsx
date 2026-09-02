@@ -13,7 +13,8 @@ import {
   Building2, 
   User as UserIcon,
   Sparkles,
-  Calendar
+  Calendar,
+  DollarSign
 } from 'lucide-react';
 import { User } from '@/types';
 
@@ -129,13 +130,23 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                 </Link>
 
                 {(user.role === 'RADIOLOGIST' || user.role === 'ADMIN') && (
-                  <Link
-                    href="/agenda"
-                    className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-white hover:bg-slate-800 transition bg-cyan-500/10 border border-cyan-500/20"
-                  >
-                    <Calendar className="w-4 h-4 text-cyan-400" />
-                    Agenda de Rotina
-                  </Link>
+                  <>
+                    <Link
+                      href="/agenda"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-cyan-300 hover:text-white hover:bg-slate-800 transition bg-cyan-500/10 border border-cyan-500/20"
+                    >
+                      <Calendar className="w-4 h-4 text-cyan-400" />
+                      Agenda de Rotina
+                    </Link>
+
+                    <Link
+                      href="/financeiro"
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-300 hover:text-white hover:bg-slate-800 transition bg-emerald-500/10 border border-emerald-500/20"
+                    >
+                      <DollarSign className="w-4 h-4 text-emerald-400" />
+                      Gestão Financeira
+                    </Link>
+                  </>
                 )}
 
                 {/* Dropdown / Menu de Usuário & Troca de Perfil de Demonstração */}

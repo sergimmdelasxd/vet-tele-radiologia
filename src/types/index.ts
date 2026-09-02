@@ -1,5 +1,7 @@
 export type UserRole = 'CLINIC' | 'RADIOLOGIST' | 'ADMIN';
 
+export type ClinicPlan = 'AVULSO' | 'PRO' | 'HOSPITAL';
+
 export interface User {
   id: string;
   name: string;
@@ -13,6 +15,7 @@ export interface User {
   cnpj?: string;
   avatar?: string;
   balance?: number; // Saldo em conta para laudos (em R$)
+  plan?: ClinicPlan; // Plano da clínica parceira
   createdAt: string;
 }
 
@@ -182,4 +185,48 @@ export interface Appointment {
   createdAt: string;
   updatedAt: string;
 }
+
+// Analytics Financeiro para Gestão
+export interface ClinicFinancialSummary {
+  clinicId: string;
+  clinicName: string;
+  contactName: string;
+  email: string;
+  phone?: string;
+  uf?: string;
+  plan: ClinicPlan;
+  balance: number;
+  totalExams: number;
+  radiographyCount: number;
+  ultrasoundCount: number;
+  urgentCount: number;
+  totalRevenue: number;
+  lastExamDate?: string;
+}
+
+export interface PlatformFinancialAnalytics {
+  totalRevenue: number;
+  totalExamsBilled: number;
+  radiographyRevenue: number;
+  ultrasoundRevenue: number;
+  urgencyRevenue: number;
+  averageTicket: number;
+  totalActiveBalance: number;
+  clinicsCount: number;
+  clinicsSummary: ClinicFinancialSummary[];
+  monthlyRevenue: Array<{
+    month: string;
+    radiography: number;
+    ultrasound: number;
+    total: number;
+  }>;
+  planDistribution: Array<{
+    plan: ClinicPlan;
+    label: string;
+    count: number;
+    percentage: number;
+    color: string;
+  }>;
+}
+
 
