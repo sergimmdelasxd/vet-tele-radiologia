@@ -12,7 +12,7 @@
       "phone": "(11) 98765-4321",
       "uf": "SP",
       "createdAt": "2026-08-01T10:00:00Z",
-      "balance": 530,
+      "balance": 485,
       "plan": "PRO"
     },
     {
@@ -84,6 +84,58 @@
     }
   ],
   "exams": [
+    {
+      "id": "VET-2026-109",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "(11) 98765-4321",
+      "modality": "RADIOGRAFIA",
+      "patientName": "SAFSAFDSA",
+      "species": "Canino",
+      "breed": "DSFAFDSAFDA",
+      "age": "DFSAFDAS",
+      "weight": "14 kg",
+      "gender": "Macho",
+      "isCastrated": false,
+      "ownerName": "FDSAFDSAFDAS",
+      "region": "PELVE",
+      "projections": [
+        "Laterolateral Direita (LL-D)",
+        "Ventrodorsal (VD)"
+      ],
+      "clinicalHistory": "FDASFDAS",
+      "suspectedDiagnosis": "",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788376868847-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-02T19:21:08.847Z"
+        }
+      ],
+      "createdAt": "2026-09-02T19:21:36.212Z",
+      "updatedAt": "2026-09-02T19:25:40.833Z",
+      "deadline": "2026-09-03T07:21:36.212Z",
+      "report": {
+        "examId": "VET-2026-109",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico padrão em projeções ortogonais.",
+        "findings": "Campos pulmonares com trama vascular preservada. Silhueta cardíaca com morfologia normal. Ausência de alterações ósseas focais.",
+        "conclusion": "1. Estudo radiográfico dentro dos padrões de normalidade.",
+        "recommendations": "Acompanhamento clínico de rotina.",
+        "keyImageIds": [],
+        "id": "rep-1788377140833",
+        "reportedAt": "2026-09-02T19:25:40.833Z",
+        "digitalSignatureHash": "VET-SIGN-1788377140833-ERB4PXT"
+      }
+    },
     {
       "id": "VET-2026-108",
       "clinicId": "user-1788372782919",
@@ -656,6 +708,18 @@
   ],
   "transactions": [
     {
+      "id": "tx-deb-1788376896252-257",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-109",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-109",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:21:36.252Z"
+    },
+    {
       "id": "tx-deb-1788372868559-307",
       "clinicId": "user-1788372782919",
       "clinicName": "Sérgio Haroldo Heim Junior",
@@ -950,6 +1014,19 @@
     }
   ],
   "templates": [
+    {
+      "modality": "RADIOGRAFIA",
+      "title": "RAIO X DE PELVE",
+      "category": "PELVE",
+      "technique": "RADIOGRAFIA DE PELVE PROJEÇOES LATERAIS E VENTRO DORSAL",
+      "findings": "Pelve\n●    Radiopacidade óssea preservada;\n●    Ausência de linha radiolucente (fratura);\n●    Tecidos moles preservados;\nArticulações coxofemorais\n●    Cabeças femorais apresentando menos de 50% da cobertura acetabular, com importante remodelamento e\nesclerose de suas margens articular, com espessamento dos colos femorais, gerando perda da conformação\nanatômica habitual;\n●    Fossas acetabulares apresentando importante arrasamento com esclerose remodelamento das suas\nmargens articulares;\n●    Tecidos moles adjacentes preservados;\nArticulações Sacroilíacas\n●    Articulações em congruência;\n●    Radiopacidade óssea preservada;\nRegião lombossacra\n●    Presença de espondilose ventrolateral  anquilosante e deformante entre o segmento das vértebras L2-S1\ncom esclerose de suas respectivas margens vertebrais. Corpo da vértebra S1 não fusionada com o corpo da\nvértebra S2, apresentando deslocamento ventral em relação ao corpo da vértebra S1",
+      "conclusion": "Imagens radiográficas da pelve evidenciam importante incongruência articular das articulações\ncoxofemorais, associado a sinais de doença articular degenerativa avançada.\n Evidenciado sinais de degeneração vertebral entre o segmento das vértebras L2-S1, tendo como\nprincipais diagnósticos diferenciais instabilidade/discopatia associada. Recomenda-se realização de\ntomografia computadorizada para maior acurácia diagnóstica",
+      "recommendations": "Correlação com evolução clínica e exames laboratoriais do paciente.",
+      "createdBy": "Dra. Camila Siqueira",
+      "id": "tpl-custom-1788376864030",
+      "createdAt": "2026-09-02T19:21:04.030Z",
+      "updatedAt": "2026-09-02T19:21:04.030Z"
+    },
     {
       "modality": "ULTRASSOM",
       "title": "USG Ocular - Descolamento de Retina e Catarata",
