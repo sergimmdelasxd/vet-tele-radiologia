@@ -19,6 +19,7 @@ import {
   Building2
 } from 'lucide-react';
 import { Exam, ExamImage, ExamModality, ExamPriority, Species, UserRole } from '@/types';
+import { RegionSelector } from '@/components/common/RegionSelector';
 
 interface NewExamModalProps {
   isOpen: boolean;
@@ -753,26 +754,38 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           {/* DADOS ESPECÍFICOS DO EXAME CONFORME MODALIDADE */}
           {modality === 'ULTRASSOM' ? (
             /* Campos de Ultrassonografia */
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-blue-800/40 space-y-3">
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-blue-800/40 space-y-4">
               <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Waves className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Detalhes da Ultrassonografia (USG)
+                <Waves className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Região e Protocolo de Ultrassonografia (USG)
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Menu Interativo de Regiões */}
+              <RegionSelector
+                selectedRegion={ultrasoundType}
+                currentModality="ULTRASSOM"
+                onSelectRegion={(regName, defaultProjs, defaultFast, targetMod) => {
+                  if (targetMod && targetMod !== 'ULTRASSOM') {
+                    handleModalityChange(targetMod);
+                    setRegion(regName);
+                    if (defaultProjs && defaultProjs.length > 0) setSelectedProjections(defaultProjs);
+                    return;
+                  }
+                  setUltrasoundType(regName);
+                  if (defaultFast) setFastingHours(defaultFast);
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1">Tipo de Ultrassom Solicitado *</label>
-                  <select
+                  <label className="block text-slate-400 mb-1">Região / Protocolo Selecionado *</label>
+                  <input
+                    type="text"
+                    required
                     value={ultrasoundType}
                     onChange={e => setUltrasoundType(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-blue-500 cursor-pointer"
-                  >
-                    <option value="Ultrassonografia Abdominal Total">Ultrassonografia Abdominal Total</option>
-                    <option value="Acompanhamento Obstétrico / Gestacional">Acompanhamento Obstétrico / Gestacional</option>
-                    <option value="Ultrassom do Trato Urinário (Rins e Bexiga)">Ultrassom do Trato Urinário (Rins e Bexiga)</option>
-                    <option value="Triagem A-FAST / T-FAST Emergencial (Trauma/Líquido Livre)">Triagem A-FAST / T-FAST Emergencial (Trauma/Líquido Livre)</option>
-                    <option value="Ultrassonografia Cervical e Tireoide">Ultrassonografia Cervical e Tireoide</option>
-                    <option value="Ultrassonografia Ocular">Ultrassonografia Ocular</option>
-                  </select>
+                    placeholder="Ex: Ultrassom Abdominal, TFAST, AFAST, VetBlue..."
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-blue-500 font-semibold text-xs"
+                  />
                 </div>
 
                 <div>
@@ -863,20 +876,39 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
             </div>
           ) : (
             /* Campos de Radiografia (Raio-X) */
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
-              <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. Região e Detalhes da Radiografia' : '2. Região e Detalhes da Radiografia'}
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-4">
+              <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Região Anatômica e Detalhes da Radiografia (Raio-X)
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              {/* Menu Interativo de Regiões */}
+              <RegionSelector
+                selectedRegion={region}
+                currentModality="RADIOGRAFIA"
+                onSelectRegion={(regName, defaultProjs, defaultFast, targetMod) => {
+                  if (targetMod && targetMod !== 'RADIOGRAFIA') {
+                    handleModalityChange(targetMod);
+                    setUltrasoundType(regName);
+                    if (defaultFast) setFastingHours(defaultFast);
+                    return;
+                  }
+                  setRegion(regName);
+                  if (defaultProjs && defaultProjs.length > 0) {
+                    setSelectedProjections(defaultProjs);
+                  }
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                 <div>
-                  <label className="block text-slate-400 mb-1">Região Anatômica *</label>
+                  <label className="block text-slate-400 mb-1">Região Anatômica Selecionada *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ex: Tórax (3 projeções), Abdômen Total, Membro Pélvico"
+                    placeholder="Ex: Pelve, Tórax, Abdômen, Coluna Lombar..."
                     value={region}
                     onChange={e => setRegion(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500 font-semibold text-xs"
                   />
                 </div>
 

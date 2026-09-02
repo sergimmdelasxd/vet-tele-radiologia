@@ -12,7 +12,7 @@
       "phone": "(11) 98765-4321",
       "uf": "SP",
       "createdAt": "2026-08-01T10:00:00Z",
-      "balance": 485,
+      "balance": 400,
       "plan": "PRO"
     },
     {
@@ -79,11 +79,92 @@
       "uf": "SP",
       "id": "user-1788372782919",
       "createdAt": "2026-09-02T18:13:02.919Z",
-      "balance": 4324534531676,
+      "balance": 4324534531631,
       "plan": "AVULSO"
     }
   ],
   "exams": [
+    {
+      "id": "VET-2026-111",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "",
+      "modality": "ULTRASSOM",
+      "patientName": "Bobbie",
+      "species": "Canino",
+      "breed": "Pastor Alemão",
+      "age": "5 anos",
+      "weight": "Não informado",
+      "gender": "Macho",
+      "isCastrated": true,
+      "ownerName": "Tutor não informado",
+      "region": "VetBlue",
+      "projections": [
+        "Geral"
+      ],
+      "clinicalHistory": "Dispneia aguda pós atropelamento",
+      "suspectedDiagnosis": "Contusão pulmonar / Pneumotórax",
+      "priority": "URGENT",
+      "status": "PENDING",
+      "trichotomyDone": false,
+      "images": [],
+      "createdAt": "2026-09-02T19:40:04.126Z",
+      "updatedAt": "2026-09-02T19:40:04.126Z",
+      "deadline": "2026-09-02T21:40:04.126Z"
+    },
+    {
+      "id": "VET-2026-110",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "requestingVet": "Sérgio Haroldo Heim Junior",
+      "clinicPhone": "45998225363",
+      "modality": "RADIOGRAFIA",
+      "patientName": "DFSAFDSADF",
+      "species": "Canino",
+      "breed": "SSSSSSSS",
+      "age": "22222",
+      "weight": "A232 kg",
+      "gender": "Macho",
+      "isCastrated": true,
+      "ownerName": "SERGIO",
+      "region": "PELVE",
+      "projections": [
+        "Laterolateral Direita (LL-D)",
+        "Ventrodorsal (VD)"
+      ],
+      "clinicalHistory": "DOR",
+      "suspectedDiagnosis": "SERGIO",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788377335277-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-02T19:28:55.277Z"
+        }
+      ],
+      "createdAt": "2026-09-02T19:29:36.034Z",
+      "updatedAt": "2026-09-02T19:30:02.530Z",
+      "deadline": "2026-09-03T07:29:36.034Z",
+      "report": {
+        "examId": "VET-2026-110",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "RADIOGRAFIA DE PELVE PROJEÇOES LATERAIS E VENTRO DORSAL",
+        "findings": "Pelve\n●    Radiopacidade óssea preservada;\n●    Ausência de linha radiolucente (fratura);\n●    Tecidos moles preservados;\nArticulações coxofemorais\n●    Cabeças femorais apresentando menos de 50% da cobertura acetabular, com importante remodelamento e\nesclerose de suas margens articular, com espessamento dos colos femorais, gerando perda da conformação\nanatômica habitual;\n●    Fossas acetabulares apresentando importante arrasamento com esclerose remodelamento das suas\nmargens articulares;\n●    Tecidos moles adjacentes preservados;\nArticulações Sacroilíacas\n●    Articulações em congruência;\n●    Radiopacidade óssea preservada;\nRegião lombossacra\n●    Presença de espondilose ventrolateral  anquilosante e deformante entre o segmento das vértebras L2-S1\ncom esclerose de suas respectivas margens vertebrais. Corpo da vértebra S1 não fusionada com o corpo da\nvértebra S2, apresentando deslocamento ventral em relação ao corpo da vértebra S1",
+        "conclusion": "Imagens radiográficas da pelve evidenciam importante incongruência articular das articulações\ncoxofemorais, associado a sinais de doença articular degenerativa avançada.\n Evidenciado sinais de degeneração vertebral entre o segmento das vértebras L2-S1, tendo como\nprincipais diagnósticos diferenciais instabilidade/discopatia associada. Recomenda-se realização de\ntomografia computadorizada para maior acurácia diagnóstica",
+        "recommendations": "Correlação com evolução clínica e exames laboratoriais do paciente.",
+        "keyImageIds": [],
+        "id": "rep-1788377402530",
+        "reportedAt": "2026-09-02T19:30:02.530Z",
+        "digitalSignatureHash": "VET-SIGN-1788377402530-IE2BBWS"
+      }
+    },
     {
       "id": "VET-2026-109",
       "clinicId": "user-clinic-vetlife",
@@ -707,6 +788,30 @@
     }
   ],
   "transactions": [
+    {
+      "id": "tx-deb-1788378004143-485",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-111",
+      "type": "EXAM_DEBIT",
+      "amount": 85,
+      "description": "Laudo Ultrassom (Plantão Urgência) — Exame VET-2026-111",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:40:04.143Z"
+    },
+    {
+      "id": "tx-deb-1788377376059-215",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "examId": "VET-2026-110",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-110",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:29:36.059Z"
+    },
     {
       "id": "tx-deb-1788376896252-257",
       "clinicId": "user-clinic-vetlife",

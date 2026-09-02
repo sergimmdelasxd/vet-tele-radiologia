@@ -16,6 +16,7 @@ import {
   Plus
 } from 'lucide-react';
 import { Appointment, ExamModality, Species, User as UserType } from '@/types';
+import { RegionSelector } from '@/components/common/RegionSelector';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
@@ -386,17 +387,33 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
             </div>
           </div>
 
-          {/* Região e Exame */}
-          <div>
-            <label className="block text-slate-400 mb-1 font-medium">Exame / Região Anatômica *</label>
-            <input
-              type="text"
-              required
-              value={region}
-              onChange={e => setRegion(e.target.value)}
-              placeholder={modality === 'ULTRASSOM' ? 'Ex: Ultrassonografia Abdominal Total' : 'Ex: Tórax (3 projeções)'}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-500"
+          {/* Menu Interativo de Região e Exame */}
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+            <RegionSelector
+              selectedRegion={region}
+              currentModality={modality}
+              onSelectRegion={(regName, defaultProjs, defaultFast, targetMod) => {
+                if (targetMod) {
+                  setModality(targetMod);
+                }
+                setRegion(regName);
+                if (defaultFast && !preparationNotes.includes(defaultFast)) {
+                  setPreparationNotes(prev => prev ? `${prev} • ${defaultFast}` : defaultFast);
+                }
+              }}
             />
+
+            <div>
+              <label className="block text-slate-400 mb-1 font-medium text-xs">Região Anatômica Selecionada *</label>
+              <input
+                type="text"
+                required
+                value={region}
+                onChange={e => setRegion(e.target.value)}
+                placeholder={modality === 'ULTRASSOM' ? 'Ex: Ultrassom Abdominal, TFAST, AFAST...' : 'Ex: Pelve, Tórax, Coluna Lombar...'}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-500 font-semibold text-xs"
+              />
+            </div>
           </div>
 
           {/* Preparo e Recomendações */}
