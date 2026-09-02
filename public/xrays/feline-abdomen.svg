@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" width="1000" height="700">
+  <defs>
+    <filter id="bone-glow-abd" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id="vignette-abd" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0c101a" stop-opacity="1" />
+      <stop offset="85%" stop-color="#04060b" stop-opacity="1" />
+      <stop offset="100%" stop-color="#010204" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1000" height="700" fill="url(#vignette-abd)" />
+  
+  <g transform="translate(50, 60)">
+    <rect width="45" height="55" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="22" y="38" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc" text-anchor="middle">R</text>
+  </g>
+
+  <text x="50" y="640" font-family="monospace" font-size="14" fill="#64748b">VET-DICOM-003 | ABDOMEN-TOTAL | LL-DIR | 68kVp | 5.0mAs</text>
+  <text x="50" y="665" font-family="monospace" font-size="14" fill="#64748b">PACIENTE: MIA (FELINO, PERSA 5A) | SUSPEITA: CONSTIPAÇÃO / ÊMESE</text>
+
+  <!-- Contorno Abdominal Felino -->
+  <path d="M 100 150 Q 500 120 900 150 Q 940 380 900 520 Q 500 580 120 540 Q 80 350 100 150" 
+        fill="#1e293b" fill-opacity="0.25" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- Coluna Lombar (L1 - L7) e Pelve -->
+  <g filter="url(#bone-glow-abd)">
+    <path d="M 120 180 C 350 170, 650 175, 860 190" stroke="#f1f5f9" stroke-width="15" fill="none" opacity="0.85"/>
+    <!-- Pelve / Ílio e Ísquio -->
+    <path d="M 830 190 L 920 220 L 910 320 L 840 280 Z" fill="#cbd5e1" opacity="0.7"/>
+    <!-- Vértebras lombares individuais delimitadas -->
+    <line x1="200" y1="170" x2="200" y2="190" stroke="#090d16" stroke-width="3"/>
+    <line x1="280" y1="170" x2="280" y2="190" stroke="#090d16" stroke-width="3"/>
+    <line x1="360" y1="170" x2="360" y2="190" stroke="#090d16" stroke-width="3"/>
+    <line x1="440" y1="170" x2="440" y2="190" stroke="#090d16" stroke-width="3"/>
+    <line x1="520" y1="170" x2="520" y2="190" stroke="#090d16" stroke-width="3"/>
+    <line x1="600" y1="172" x2="600" y2="192" stroke="#090d16" stroke-width="3"/>
+    <line x1="680" y1="175" x2="680" y2="195" stroke="#090d16" stroke-width="3"/>
+  </g>
+
+  <!-- Fígado (Cranial abdominal, contorno triangular atrás do diafragma) -->
+  <path d="M 130 220 C 220 230, 260 320, 240 450 C 180 480, 140 470, 120 400 Z" fill="#64748b" fill-opacity="0.35"/>
+
+  <!-- Estômago (com gás e alimento) -->
+  <ellipse cx="260" cy="300" rx="60" ry="75" fill="#475569" fill-opacity="0.4" stroke="#94a3b8" stroke-width="1.5"/>
+  <ellipse cx="250" cy="270" rx="35" ry="25" fill="#060910" fill-opacity="0.7"/> <!-- Bolha gástrica de ar -->
+
+  <!-- Rins (Felino: L2-L4 e L3-L5) -->
+  <ellipse cx="420" cy="250" rx="35" ry="24" fill="#94a3b8" fill-opacity="0.5" stroke="#cbd5e1" stroke-width="1.5"/>
+  <ellipse cx="500" cy="270" rx="36" ry="25" fill="#94a3b8" fill-opacity="0.45" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- Alças Intestinais -->
+  <g opacity="0.35" stroke="#94a3b8" stroke-width="8" fill="none">
+    <path d="M 330 400 Q 400 370 480 420 T 600 400 T 700 440"/>
+    <path d="M 350 450 Q 430 480 520 450 T 640 470"/>
+  </g>
+
+  <!-- Cólon descendente e Reto (com fezes) -->
+  <path d="M 520 225 L 850 225 L 910 240" stroke="#334155" stroke-width="32" stroke-linecap="round" fill="none" opacity="0.6"/>
+  <!-- Bolotas fecais / Fecaloma -->
+  <circle cx="580" cy="225" r="14" fill="#64748b" opacity="0.6"/>
+  <circle cx="630" cy="225" r="15" fill="#64748b" opacity="0.6"/>
+  <circle cx="690" cy="225" r="16" fill="#64748b" opacity="0.7"/>
+  <circle cx="750" cy="225" r="16" fill="#64748b" opacity="0.7"/>
+  <circle cx="810" cy="225" r="15" fill="#64748b" opacity="0.7"/>
+
+  <!-- Vesícula Urinária (Caudal) -->
+  <ellipse cx="760" cy="460" rx="65" ry="45" fill="#94a3b8" fill-opacity="0.4" stroke="#cbd5e1" stroke-width="1.5"/>
+</svg>

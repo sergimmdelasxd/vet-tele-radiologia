@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800">
+  <defs>
+    <!-- Filtros de radiografia e ruído sutil de chapa -->
+    <filter id="bone-glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0b101b" stop-opacity="1" />
+      <stop offset="80%" stop-color="#05070d" stop-opacity="1" />
+      <stop offset="100%" stop-color="#020306" stop-opacity="1" />
+    </radialGradient>
+    <linearGradient id="spine-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#cbd5e1" />
+      <stop offset="50%" stop-color="#f8fafc" />
+      <stop offset="100%" stop-color="#94a3b8" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo chapa de Raio-X -->
+  <rect width="1000" height="800" fill="url(#vignette)" />
+  
+  <!-- Marcador Radiográfico R (Direito) -->
+  <g transform="translate(60, 80)">
+    <rect width="45" height="55" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="22" y="38" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc" text-anchor="middle">R</text>
+  </g>
+  
+  <!-- Dados técnicos da exposição (kVp, mAs) -->
+  <text x="60" y="740" font-family="monospace" font-size="14" fill="#64748b">VET-DICOM-001 | LL-DIR | 75kVp | 6.4mAs</text>
+  <text x="60" y="760" font-family="monospace" font-size="14" fill="#64748b">PACIENTE: THOR (CANINO, GOLDEN RETRIEVER 4A)</text>
+  
+  <!-- Contorno anatômico corporal tênue (pele / tecidos moles) -->
+  <path d="M 120 180 Q 500 130 920 190 Q 940 450 880 620 Q 500 680 180 620 Q 110 400 120 180" 
+        fill="#1e293b" fill-opacity="0.25" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- Coluna Vertebral Torácica (Vértebras T1 a T13) -->
+  <g filter="url(#bone-glow)">
+    <!-- Corpo vertebral contínuo -->
+    <path d="M 180 220 C 350 200, 650 210, 880 240 C 880 265, 650 235, 180 245 Z" fill="url(#spine-grad)" opacity="0.85"/>
+    <!-- Processos espinhosos -->
+    <path d="M 210 220 L 200 150 L 218 220 M 260 215 L 250 145 L 268 215 M 310 210 L 302 142 L 318 210 
+             M 360 208 L 354 145 L 368 208 M 410 206 L 406 150 L 418 206 M 460 205 L 458 155 L 468 205 
+             M 510 205 L 510 162 L 518 205 M 560 206 L 562 170 L 568 206 M 610 208 L 614 178 L 618 208
+             M 660 212 L 666 185 L 668 212 M 710 218 L 718 192 L 718 218 M 760 225 L 770 200 L 768 225
+             M 810 232 L 822 208 L 818 232" stroke="#e2e8f0" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <!-- Discos intervertebrais radiolucentes -->
+    <line x1="240" y1="216" x2="240" y2="243" stroke="#090d16" stroke-width="3"/>
+    <line x1="290" y1="212" x2="290" y2="239" stroke="#090d16" stroke-width="3"/>
+    <line x1="340" y1="209" x2="340" y2="236" stroke="#090d16" stroke-width="3"/>
+    <line x1="390" y1="207" x2="390" y2="234" stroke="#090d16" stroke-width="3"/>
+    <line x1="440" y1="206" x2="440" y2="233" stroke="#090d16" stroke-width="3"/>
+    <line x1="490" y1="206" x2="490" y2="233" stroke="#090d16" stroke-width="3"/>
+    <line x1="540" y1="207" x2="540" y2="234" stroke="#090d16" stroke-width="3"/>
+    <line x1="590" y1="209" x2="590" y2="236" stroke="#090d16" stroke-width="3"/>
+    <line x1="640" y1="212" x2="640" y2="239" stroke="#090d16" stroke-width="3"/>
+    <line x1="690" y1="216" x2="690" y2="243" stroke="#090d16" stroke-width="3"/>
+    <line x1="740" y1="222" x2="740" y2="248" stroke="#090d16" stroke-width="3"/>
+    <line x1="790" y1="228" x2="790" y2="254" stroke="#090d16" stroke-width="3"/>
+  </g>
+
+  <!-- Esterno (Ventral) -->
+  <g filter="url(#bone-glow)" opacity="0.8">
+    <path d="M 230 570 C 350 580, 520 590, 680 575" stroke="#f1f5f9" stroke-width="12" stroke-linecap="round" fill="none"/>
+    <circle cx="230" cy="570" r="10" fill="#f8fafc"/>
+    <circle cx="310" cy="573" r="8" fill="#e2e8f0"/>
+    <circle cx="400" cy="578" r="8" fill="#e2e8f0"/>
+    <circle cx="490" cy="582" r="8" fill="#e2e8f0"/>
+    <circle cx="580" cy="580" r="8" fill="#e2e8f0"/>
+    <circle cx="680" cy="575" r="9" fill="#f8fafc"/>
+  </g>
+
+  <!-- Traqueia (Radiolucente com ar) -->
+  <path d="M 140 290 C 260 300, 360 330, 460 370" stroke="#04060a" stroke-width="18" fill="none" opacity="0.9" stroke-linecap="round"/>
+  <path d="M 140 290 C 260 300, 360 330, 460 370" stroke="#475569" stroke-width="1.5" fill="none" opacity="0.5"/>
+
+  <!-- Costelas (Arcos costais) -->
+  <g filter="url(#bone-glow)" opacity="0.6" stroke="#e2e8f0" fill="none">
+    <path d="M 240 230 C 210 320, 210 460, 235 565" stroke-width="5"/>
+    <path d="M 290 225 C 270 330, 280 480, 310 570" stroke-width="5.5"/>
+    <path d="M 340 222 C 330 340, 350 490, 400 575" stroke-width="6"/>
+    <path d="M 390 220 C 390 350, 430 500, 490 580" stroke-width="6"/>
+    <path d="M 440 220 C 450 360, 510 510, 580 578" stroke-width="6.5"/>
+    <path d="M 490 220 C 520 370, 590 510, 680 570" stroke-width="6.5"/>
+    <path d="M 540 221 C 580 380, 660 515, 740 560" stroke-width="6"/>
+    <path d="M 590 223 C 640 385, 730 510, 790 550" stroke-width="5.5"/>
+    <path d="M 640 226 C 700 385, 780 495, 830 535" stroke-width="5"/>
+    <path d="M 690 230 C 750 385, 820 480, 860 520" stroke-width="4.5"/>
+    <path d="M 740 235 C 790 370, 850 460, 880 500" stroke-width="4"/>
+  </g>
+
+  <!-- Silhueta Cardíaca (Coração) -->
+  <g>
+    <!-- Sombra cardíaca com densidade de tecidos moles -->
+    <path d="M 400 370 C 490 350, 560 410, 550 510 C 540 575, 460 585, 380 560 C 320 530, 310 440, 400 370 Z" 
+          fill="#94a3b8" fill-opacity="0.45" stroke="#cbd5e1" stroke-width="1.5"/>
+    <!-- Vaso da aorta e arco aórtico -->
+    <path d="M 470 340 C 490 310, 530 300, 600 305 C 670 310, 750 315, 840 320" 
+          stroke="#64748b" stroke-width="12" fill="none" opacity="0.3"/>
+    <!-- Veia cava caudal -->
+    <path d="M 540 470 C 620 470, 700 468, 770 472" stroke="#64748b" stroke-width="14" fill="none" opacity="0.3"/>
+  </g>
+
+  <!-- Cúpula Diafragmática -->
+  <path d="M 740 250 C 760 380, 770 480, 720 575" stroke="#94a3b8" stroke-width="5" fill="none" opacity="0.7"/>
+  <path d="M 740 250 C 760 380, 770 480, 720 575 L 940 575 L 940 250 Z" fill="#475569" fill-opacity="0.3"/>
+
+  <!-- Membro Torácico (Escápula e Úmero sobrepostos cranial) -->
+  <g filter="url(#bone-glow)" opacity="0.4">
+    <!-- Escápula -->
+    <path d="M 220 200 L 270 320 L 200 310 Z" fill="#e2e8f0"/>
+    <!-- Úmero -->
+    <path d="M 240 320 L 200 480" stroke="#f1f5f9" stroke-width="16" stroke-linecap="round"/>
+  </g>
+
+  <!-- Régua anatômica calibrada no canto (10cm) -->
+  <g transform="translate(860, 660)">
+    <line x1="0" y1="0" x2="80" y2="0" stroke="#f8fafc" stroke-width="2"/>
+    <line x1="0" y1="-8" x2="0" y2="8" stroke="#f8fafc" stroke-width="2"/>
+    <line x1="40" y1="-5" x2="40" y2="5" stroke="#f8fafc" stroke-width="1.5"/>
+    <line x1="80" y1="-8" x2="80" y2="8" stroke="#f8fafc" stroke-width="2"/>
+    <text x="40" y="22" font-family="monospace" font-size="11" fill="#f8fafc" text-anchor="middle">10 cm</text>
+  </g>
+</svg>

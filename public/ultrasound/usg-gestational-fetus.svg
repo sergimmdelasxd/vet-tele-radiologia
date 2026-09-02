@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800">
+  <defs>
+    <radialGradient id="sector-fade-gest" cx="500" cy="80" r="650" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.9" />
+      <stop offset="70%" stop-color="#0f172a" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1000" height="800" fill="#020408" />
+
+  <!-- Cabeçalho do Equipamento -->
+  <g fill="#94a3b8" font-family="monospace" font-size="13">
+    <text x="40" y="40" font-weight="bold" fill="#ec4899">VET-ULTRASOUND PRO-9000 | ACOMPANHAMENTO OBSTÉTRICO</text>
+    <text x="40" y="60">FREQ: 8.0 MHz | GANHO: 68dB | IDADE GESTACIONAL: ~32 DIAS</text>
+    <text x="40" y="80">PACIENTE: LUNA (CANINA SHIH-TZU 3A) | FETO 1 (BCF: 232 bpm)</text>
+    <text x="820" y="40" text-anchor="end" fill="#f8fafc">HOSPITAL PETCARE</text>
+    <text x="820" y="60" text-anchor="end">MODO: B + D-COLOR</text>
+  </g>
+
+  <!-- Régua Lateral -->
+  <g transform="translate(920, 120)" stroke="#64748b" stroke-width="1.5" fill="#64748b" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="0" y2="550" />
+    <line x1="0" y1="0" x2="10" y2="0" /><text x="18" y="4">0</text>
+    <line x1="0" y1="110" x2="10" y2="110" /><text x="18" y="114">2</text>
+    <line x1="0" y1="220" x2="10" y2="220" /><text x="18" y="224">4</text>
+    <line x1="0" y1="330" x2="10" y2="330" /><text x="18" y="334">6</text>
+    <line x1="0" y1="440" x2="10" y2="440" /><text x="18" y="444">8</text>
+    <line x1="0" y1="550" x2="10" y2="550" /><text x="18" y="554">10 cm</text>
+  </g>
+
+  <!-- Feixe Acústico -->
+  <path d="M 440 90 L 160 700 A 650 650 0 0 0 840 700 L 560 90 Z" fill="url(#sector-fade-gest)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Vesícula Gestacional 1 (Líquido Amniótico Anecogênico Preto Puro) -->
+  <g transform="translate(380, 240)">
+    <!-- Parede Uterina Hiperecogênica -->
+    <ellipse cx="120" cy="120" rx="160" ry="120" fill="#030712" stroke="#cbd5e1" stroke-width="2.5" />
+    
+    <!-- Placenta Zonal Canina (Margens espessadas) -->
+    <path d="M 0 100 C 50 30, 190 30, 240 100" stroke="#94a3b8" stroke-width="12" fill="none" opacity="0.6"/>
+
+    <!-- Silhueta Fetal Hiperecogênica -->
+    <g transform="translate(60, 70)">
+      <!-- Polo Cefálico Fetal -->
+      <ellipse cx="50" cy="40" rx="28" ry="24" fill="#f8fafc" opacity="0.85"/>
+      <ellipse cx="48" cy="38" rx="18" ry="15" fill="#0f172a" /> <!-- Crânio com ventrículos -->
+
+      <!-- Corpo / Tronco Fetal -->
+      <path d="M 68 52 C 100 65, 110 95, 90 120 C 70 135, 45 125, 40 100 Z" fill="#f1f5f9" opacity="0.8"/>
+      
+      <!-- Foco Cardíaco Fetal com Doppler Cor (Pulsátil) -->
+      <circle cx="65" cy="80" r="10" fill="#ef4444" opacity="0.9" />
+      <circle cx="68" cy="82" r="6" fill="#3b82f6" opacity="0.8" />
+    </g>
+
+    <!-- Caliper Diâmetro Biparietal (DBP) ou Tronco -->
+    <line x1="82" y1="85" x2="138" y2="120" stroke="#facc15" stroke-width="1.5" stroke-dasharray="3 3"/>
+    <circle cx="82" cy="85" r="3" fill="#facc15" />
+    <circle cx="138" cy="120" r="3" fill="#facc15" />
+    <text x="140" y="115" fill="#facc15" font-family="monospace" font-size="11" font-weight="bold">DBP: 18.4 mm</text>
+  </g>
+
+  <!-- Box Informativo de Frequência Cardíaca Fetal -->
+  <g transform="translate(200, 560)">
+    <rect width="320" height="75" rx="8" fill="#0f172a" stroke="#ec4899" stroke-width="1.5" />
+    <text x="15" y="24" fill="#ec4899" font-family="sans-serif" font-weight="bold" font-size="12">
+      ♥ ATIVIDADE CARDÍACA FETAL: PRESENTE
+    </text>
+    <text x="15" y="44" fill="#f8fafc" font-family="monospace" font-size="12">
+      BCF: 232 bpm (Normal: &gt; 220 bpm)
+    </text>
+    <text x="15" y="62" fill="#94a3b8" font-family="sans-serif" font-size="11">
+      Movimentação Fetal Ativa • Ausência de sofrimento
+    </text>
+  </g>
+
+  <!-- Rodapé -->
+  <text x="40" y="760" fill="#64748b" font-family="monospace" font-size="12">
+    OB-CANINE TABLE | ESTIMATIVA PARTO: 26 DIAS | TOTAL VESÍCULAS: 4 OBSERVADAS
+  </text>
+</svg>

@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800">
+  <defs>
+    <filter id="bone-glow-vd" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id="vignette-vd" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0b101b" stop-opacity="1" />
+      <stop offset="85%" stop-color="#04060b" stop-opacity="1" />
+      <stop offset="100%" stop-color="#010204" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1000" height="800" fill="url(#vignette-vd)" />
+  
+  <!-- Marcador Radiográfico R (Lado direito anatômico do cão) -->
+  <g transform="translate(60, 80)">
+    <rect width="45" height="55" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="22" y="38" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc" text-anchor="middle">R</text>
+  </g>
+  <g transform="translate(895, 80)">
+    <rect width="45" height="55" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="22" y="38" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc" text-anchor="middle">L</text>
+  </g>
+
+  <text x="60" y="740" font-family="monospace" font-size="14" fill="#64748b">VET-DICOM-001 | VD-TORAX | 78kVp | 7.1mAs</text>
+  <text x="60" y="760" font-family="monospace" font-size="14" fill="#64748b">PACIENTE: THOR (CANINO, GOLDEN RETRIEVER 4A)</text>
+
+  <!-- Contorno Torácico Bilateral -->
+  <path d="M 500 70 C 320 80, 220 220, 220 480 C 220 620, 300 710, 500 720 C 700 710, 780 620, 780 480 C 780 220, 680 80, 500 70 Z" 
+        fill="#1e293b" fill-opacity="0.2" stroke="#334155" stroke-width="1.5" stroke-dasharray="4 4"/>
+
+  <!-- Coluna Vertebral no Centro (T1 - T13) -->
+  <g filter="url(#bone-glow-vd)">
+    <line x1="500" y1="90" x2="500" y2="700" stroke="#f1f5f9" stroke-width="18" opacity="0.85"/>
+    <!-- Processos espinhosos ovais centrais -->
+    <ellipse cx="500" cy="130" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="180" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="230" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="280" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="330" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="380" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="430" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="480" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="530" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="580" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+    <ellipse cx="500" cy="630" rx="8" ry="12" fill="#090d16" stroke="#94a3b8" stroke-width="2"/>
+  </g>
+
+  <!-- Arcos Costais Bilaterais -->
+  <g filter="url(#bone-glow-vd)" opacity="0.65" stroke="#cbd5e1" stroke-width="5" fill="none">
+    <!-- Costelas Lado Direito -->
+    <path d="M 490 140 C 370 140, 270 200, 250 290"/>
+    <path d="M 490 190 C 350 190, 240 260, 230 350"/>
+    <path d="M 490 240 C 330 250, 230 320, 225 410"/>
+    <path d="M 490 290 C 320 300, 225 380, 220 470"/>
+    <path d="M 490 340 C 310 360, 225 440, 225 530"/>
+    <path d="M 490 390 C 310 420, 235 500, 240 580"/>
+    <path d="M 490 440 C 320 480, 260 560, 270 630"/>
+    <path d="M 490 490 C 340 530, 290 600, 310 660"/>
+
+    <!-- Costelas Lado Esquerdo -->
+    <path d="M 510 140 C 630 140, 730 200, 750 290"/>
+    <path d="M 510 190 C 650 190, 760 260, 770 350"/>
+    <path d="M 510 240 C 670 250, 770 320, 775 410"/>
+    <path d="M 510 290 C 680 300, 775 380, 780 470"/>
+    <path d="M 510 340 C 690 360, 775 440, 775 530"/>
+    <path d="M 510 390 C 690 420, 765 500, 760 580"/>
+    <path d="M 510 440 C 680 480, 740 560, 730 630"/>
+    <path d="M 510 490 C 660 530, 710 600, 690 660"/>
+  </g>
+
+  <!-- Silhueta Cardíaca (Visão VD: levemente deslocada à esquerda anatômica) -->
+  <ellipse cx="485" cy="380" rx="140" ry="170" fill="#94a3b8" fill-opacity="0.45" stroke="#cbd5e1" stroke-width="2" transform="rotate(-6 485 380)"/>
+
+  <!-- Cúpula Diafragmática VD -->
+  <path d="M 230 600 C 340 530, 430 520, 500 530 C 570 520, 660 530, 770 600" stroke="#94a3b8" stroke-width="4" fill="none" opacity="0.6"/>
+  <path d="M 230 600 C 340 530, 430 520, 500 530 C 570 520, 660 530, 770 600 L 770 730 L 230 730 Z" fill="#475569" fill-opacity="0.3"/>
+</svg>

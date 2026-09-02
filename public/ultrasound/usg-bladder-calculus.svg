@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 800" width="1000" height="800">
+  <defs>
+    <radialGradient id="sector-fade-blad" cx="500" cy="80" r="650" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.9" />
+      <stop offset="70%" stop-color="#0f172a" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+
+  <rect width="1000" height="800" fill="#020408" />
+
+  <!-- Cabeçalho -->
+  <g fill="#94a3b8" font-family="monospace" font-size="13">
+    <text x="40" y="40" font-weight="bold" fill="#f59e0b">VET-ULTRASOUND PRO-9000 | AVALIAÇÃO URINÁRIA</text>
+    <text x="40" y="60">FREQ: 7.5 MHz | CORTE TRANSVERSAL | BEXIGA URINÁRIA REPLETA</text>
+    <text x="40" y="80">PACIENTE: SPIKE (CANINO PUG 6A) | ACHADO: UROLITÍASE VESICAL</text>
+    <text x="820" y="40" text-anchor="end" fill="#f8fafc">CLÍNICA VETLIFE</text>
+    <text x="820" y="60" text-anchor="end">GANHO: 62dB</text>
+  </g>
+
+  <!-- Régua Lateral -->
+  <g transform="translate(920, 120)" stroke="#64748b" stroke-width="1.5" fill="#64748b" font-family="monospace" font-size="11">
+    <line x1="0" y1="0" x2="0" y2="550" />
+    <line x1="0" y1="0" x2="10" y2="0" /><text x="18" y="4">0</text>
+    <line x1="0" y1="110" x2="10" y2="110" /><text x="18" y="114">2</text>
+    <line x1="0" y1="220" x2="10" y2="220" /><text x="18" y="224">4</text>
+    <line x1="0" y1="330" x2="10" y2="330" /><text x="18" y="334">6</text>
+    <line x1="0" y1="440" x2="10" y2="440" /><text x="18" y="444">8</text>
+    <line x1="0" y1="550" x2="10" y2="550" /><text x="18" y="554">10 cm</text>
+  </g>
+
+  <!-- Feixe Acústico -->
+  <path d="M 440 90 L 160 700 A 650 650 0 0 0 840 700 L 560 90 Z" fill="url(#sector-fade-blad)" stroke="#1e293b" stroke-width="2"/>
+
+  <!-- Bexiga Urinária (Lúmen Anecogênico Preto com Urina e Paredes Regulares) -->
+  <g transform="translate(480, 360)">
+    <!-- Conteúdo urinário anecogênico -->
+    <ellipse cx="0" cy="0" rx="260" ry="170" fill="#010307" stroke="#94a3b8" stroke-width="3" />
+    
+    <!-- Sedimento Celular Tênue Móvel (Cistite) -->
+    <ellipse cx="0" cy="90" rx="140" ry="25" fill="#334155" opacity="0.35" />
+
+    <!-- CÁLCULO VESICAL (Estrutura Hiperecogênica Arciforme Branca) -->
+    <path d="M -30 65 Q 0 45 30 65 Q 0 80 -30 65 Z" fill="#ffffff" filter="drop-shadow(0 0 6px #ffffff)" />
+
+    <!-- SOMBRA ACÚSTICA POSTERIOR CLÁSSICA (Anecogênica atrás do cálculo) -->
+    <polygon points="-32,70 32,70 50,300 -50,300" fill="#000000" opacity="0.95" />
+    
+    <!-- Linhas de contorno da sombra -->
+    <line x1="-32" y1="70" x2="-50" y2="300" stroke="#1e293b" stroke-dasharray="3 3" />
+    <line x1="32" y1="70" x2="50" y2="300" stroke="#1e293b" stroke-dasharray="3 3" />
+
+    <!-- Caliper de Medição do Cálculo -->
+    <line x1="-30" y1="50" x2="30" y2="50" stroke="#facc15" stroke-width="1.5" />
+    <circle cx="-30" cy="50" r="3" fill="#facc15" />
+    <circle cx="30" cy="50" r="3" fill="#facc15" />
+    <text x="0" y="38" fill="#facc15" font-family="monospace" font-size="11" font-weight="bold" text-anchor="middle">
+      1.42 cm (Cálculo)
+    </text>
+
+    <!-- Rótulo Descritivo -->
+    <text x="-4" y="240" fill="#cbd5e1" font-family="sans-serif" font-size="11" text-anchor="middle">
+      SOMBRA ACÚSTICA POSTERIOR LIMPA
+    </text>
+  </g>
+
+  <!-- Box de Informação Diagnóstica -->
+  <g transform="translate(180, 560)">
+    <rect width="320" height="70" rx="8" fill="#0f172a" stroke="#f59e0b" stroke-width="1.5" />
+    <text x="15" y="24" fill="#f59e0b" font-family="sans-serif" font-weight="bold" font-size="12">
+      ⚠ UROLITÍASE VESICAL DETECTADA
+    </text>
+    <text x="15" y="44" fill="#f8fafc" font-family="monospace" font-size="11">
+      Tamanho: 14.2 mm • Interface hiperecogênica
+    </text>
+    <text x="15" y="60" fill="#94a3b8" font-family="sans-serif" font-size="11">
+      Espessamento parietal discreto (cistite associada)
+    </text>
+  </g>
+
+  <!-- Rodapé -->
+  <text x="40" y="760" fill="#64748b" font-family="monospace" font-size="12">
+    PAREDE VESICAL: 2.8mm (NORMAL &lt; 3.0mm) | URETRA PROXIMAL LIVRE
+  </text>
+</svg>

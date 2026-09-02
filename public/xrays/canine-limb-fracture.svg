@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" width="800" height="1000">
+  <defs>
+    <filter id="bone-glow-limb" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="1.5" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <radialGradient id="vignette-limb" cx="50%" cy="50%" r="70%">
+      <stop offset="0%" stop-color="#0c111c" stop-opacity="1" />
+      <stop offset="85%" stop-color="#05070d" stop-opacity="1" />
+      <stop offset="100%" stop-color="#020306" stop-opacity="1" />
+    </radialGradient>
+  </defs>
+
+  <rect width="800" height="1000" fill="url(#vignette-limb)" />
+  
+  <!-- Marcador Radiográfico R -->
+  <g transform="translate(60, 60)">
+    <rect width="45" height="55" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="2"/>
+    <text x="22" y="38" font-family="Arial, sans-serif" font-size="32" font-weight="bold" fill="#f8fafc" text-anchor="middle">R</text>
+  </g>
+
+  <text x="60" y="930" font-family="monospace" font-size="14" fill="#64748b">VET-DICOM-002 | MEMBRO-TORACICO-D | ML | 55kVp | 3.2mAs</text>
+  <text x="60" y="955" font-family="monospace" font-size="14" fill="#64748b">PACIENTE: BOB (CANINO, BULLDOG FRANCÊS 2A) | SUSPEITA: QUEDA/TRAUMA</text>
+
+  <!-- Contorno de Tecidos Moles do Membro com Edema -->
+  <path d="M 280 60 Q 250 300 240 450 Q 220 530 260 620 Q 300 780 320 900 L 480 900 Q 480 780 470 620 Q 520 510 490 430 Q 480 300 460 60 Z" 
+        fill="#1e293b" fill-opacity="0.3" stroke="#334155" stroke-width="1.5"/>
+
+  <!-- Edema de Tecidos Moles na Região da Fratura -->
+  <ellipse cx="370" cy="510" rx="140" ry="80" fill="#334155" fill-opacity="0.3" filter="url(#bone-glow-limb)"/>
+
+  <!-- Rádio Proximal -->
+  <g filter="url(#bone-glow-limb)">
+    <!-- Epífise e Diáfise Proximal do Rádio -->
+    <path d="M 330 80 L 410 80 L 400 480 L 330 475 Z" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2"/>
+    <path d="M 345 90 L 390 90 L 385 470 L 345 468 Z" fill="#94a3b8" fill-opacity="0.3"/> <!-- Canal Medular -->
+
+    <!-- Ulna Proximal (Olécrano) -->
+    <path d="M 415 60 L 445 100 L 435 490 L 415 488 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+
+    <!-- LINHA DA FRATURA DO RÁDIO (Desvio e Cavalgamento) -->
+    <!-- Rádio Distal (Desviado para a esquerda e cavalgado) -->
+    <path d="M 315 495 L 385 490 L 400 880 L 330 880 Z" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+    <path d="M 330 505 L 375 500 L 385 870 L 345 870 Z" fill="#94a3b8" fill-opacity="0.3"/>
+
+    <!-- LINHA DA FRATURA DA ULNA -->
+    <path d="M 405 505 L 428 505 L 435 880 L 415 880 Z" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+  </g>
+
+  <!-- Fragmentos Ósseos menores no foco da fratura (Cominuição leve) -->
+  <polygon points="395,482 405,488 398,496" fill="#f8fafc" filter="url(#bone-glow-limb)"/>
+  <polygon points="325,480 332,490 322,488" fill="#f8fafc" filter="url(#bone-glow-limb)"/>
+
+  <!-- Flechas indicativas da lesão -->
+  <g transform="translate(220, 480)">
+    <line x1="0" y1="0" x2="60" y2="10" stroke="#ef4444" stroke-width="2.5"/>
+    <polygon points="65,11 50,5 53,16" fill="#ef4444"/>
+    <text x="-4" y="-8" font-family="Arial, sans-serif" font-size="13" font-weight="bold" fill="#ef4444">Foco de Fratura</text>
+  </g>
+</svg>
