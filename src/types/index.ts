@@ -107,6 +107,9 @@ export interface ReportTemplate {
   findings: string;
   conclusion: string;
   recommendations: string;
+  createdAt?: string;
+  updatedAt?: string;
+  createdBy?: string;
 }
 
 export interface DashboardStats {

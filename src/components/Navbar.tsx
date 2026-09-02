@@ -16,7 +16,8 @@ import {
   Calendar,
   DollarSign,
   ChevronDown,
-  Home
+  Home,
+  ClipboardList
 } from 'lucide-react';
 import { User } from '@/types';
 
@@ -237,6 +238,29 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                             </div>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                               Métricas
+                            </span>
+                          </Link>
+
+                          {/* Modelos de Laudo */}
+                          <Link
+                            href="/templates"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-purple-500/30 transition group/item"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 border border-purple-500/20 flex items-center justify-center shrink-0 group-hover/item:scale-105 transition-transform">
+                                <ClipboardList className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-slate-200 group-hover/item:text-purple-300 transition-colors">
+                                  Modelos de Laudo
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  Templates de Raio-X e USG
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                              Templates
                             </span>
                           </Link>
                         </div>

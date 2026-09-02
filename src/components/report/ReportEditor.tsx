@@ -57,12 +57,25 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  const [allTemplates, setAllTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
+
+  useEffect(() => {
+    fetch('/api/templates')
+      .then(r => r.json())
+      .then(d => {
+        if (d.templates && d.templates.length > 0) {
+          setAllTemplates(d.templates);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // Filtrar templates por modalidade correspondente ou exibir agrupados
-  const usgTemplates = REPORT_TEMPLATES.filter(t => t.modality === 'ULTRASSOM');
-  const xrayTemplates = REPORT_TEMPLATES.filter(t => t.modality === 'RADIOGRAFIA');
+  const usgTemplates = allTemplates.filter(t => t.modality === 'ULTRASSOM');
+  const xrayTemplates = allTemplates.filter(t => t.modality === 'RADIOGRAFIA');
 
   const handleSelectTemplate = (templateId: string) => {
-    const tpl = REPORT_TEMPLATES.find(t => t.id === templateId);
+    const tpl = allTemplates.find(t => t.id === templateId);
     if (!tpl) return;
 
     if (findings && !confirm('Deseja substituir o texto atual pelos dados do modelo selecionado?')) {

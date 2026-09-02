@@ -1,7 +1,23 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod, Appointment, AppointmentStatus, ClinicPlan, ClinicFinancialSummary, PlatformFinancialAnalytics } from '@/types';
+import { 
+  User, 
+  Exam, 
+  DashboardStats, 
+  Report, 
+  ExamModality, 
+  ExamPriority, 
+  FinancialTransaction, 
+  PaymentMethod, 
+  Appointment, 
+  AppointmentStatus, 
+  ClinicPlan, 
+  ClinicFinancialSummary, 
+  PlatformFinancialAnalytics,
+  ReportTemplate 
+} from '@/types';
+import { REPORT_TEMPLATES } from '@/data/templates';
 
 const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
 
@@ -21,6 +37,7 @@ interface DatabaseSchema {
   exams: Exam[];
   transactions?: FinancialTransaction[];
   appointments?: Appointment[];
+  templates?: ReportTemplate[];
 }
 
 function ensureDataDirectory() {
@@ -522,7 +539,13 @@ function seedDatabase(): DatabaseSchema {
     }
   ];
 
-  const db: DatabaseSchema = { users, exams, transactions: seedTransactions(), appointments: seedAppointments() };
+  const db: DatabaseSchema = { 
+    users, 
+    exams, 
+    transactions: seedTransactions(), 
+    appointments: seedAppointments(),
+    templates: [...REPORT_TEMPLATES]
+  };
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
   return db;
 }
@@ -549,6 +572,11 @@ export function readDatabase(): DatabaseSchema {
 
     if (!parsed.appointments || parsed.appointments.length === 0) {
       parsed.appointments = seedAppointments();
+      shouldSave = true;
+    }
+
+    if (!parsed.templates || parsed.templates.length === 0) {
+      parsed.templates = [...REPORT_TEMPLATES];
       shouldSave = true;
     }
 
@@ -1125,3 +1153,88 @@ export function getPlatformFinancialAnalytics(): PlatformFinancialAnalytics {
     planDistribution
   };
 }
+
+// Report Templates Methods
+export function getAllTemplates(filters?: {
+  modality?: string;
+  category?: string;
+  search?: string;
+}): ReportTemplate[] {
+  const db = readDatabase();
+  let list = db.templates || [...REPORT_TEMPLATES];
+
+  if (filters?.modality && filters.modality !== 'ALL') {
+    list = list.filter(t => t.modality === filters.modality);
+  }
+
+  if (filters?.category && filters.category !== 'ALL') {
+    list = list.filter(t => t.category.toLowerCase() === filters.category!.toLowerCase());
+  }
+
+  if (filters?.search && filters.search.trim()) {
+    const q = filters.search.toLowerCase();
+    list = list.filter(
+      t =>
+        t.title.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        t.findings.toLowerCase().includes(q) ||
+        t.conclusion.toLowerCase().includes(q)
+    );
+  }
+
+  return list;
+}
+
+export function getTemplateById(id: string): ReportTemplate | undefined {
+  const db = readDatabase();
+  const list = db.templates || [...REPORT_TEMPLATES];
+  return list.find(t => t.id === id);
+}
+
+export function createTemplate(data: Omit<ReportTemplate, 'id' | 'createdAt' | 'updatedAt'>): ReportTemplate {
+  const db = readDatabase();
+  if (!db.templates) db.templates = [...REPORT_TEMPLATES];
+
+  const newTemplate: ReportTemplate = {
+    ...data,
+    id: `tpl-custom-${Date.now()}`,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+
+  db.templates.unshift(newTemplate);
+  writeDatabase(db);
+  return newTemplate;
+}
+
+export function updateTemplate(id: string, updates: Partial<ReportTemplate>): ReportTemplate | null {
+  const db = readDatabase();
+  if (!db.templates) db.templates = [...REPORT_TEMPLATES];
+
+  const index = db.templates.findIndex(t => t.id === id);
+  if (index === -1) return null;
+
+  db.templates[index] = {
+    ...db.templates[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  writeDatabase(db);
+  return db.templates[index];
+}
+
+export function deleteTemplate(id: string): boolean {
+  const db = readDatabase();
+  if (!db.templates) return false;
+
+  const initLen = db.templates.length;
+  db.templates = db.templates.filter(t => t.id !== id);
+
+  if (db.templates.length !== initLen) {
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
