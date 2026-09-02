@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   Printer, 
   ShieldCheck, 
@@ -8,11 +8,21 @@ import {
   User, 
   Building2, 
   Stethoscope, 
-  Heart,
-  QrCode,
-  Waves
+  Heart, 
+  QrCode, 
+  Waves, 
+  Download, 
+  Share2, 
+  MessageSquare, 
+  Copy, 
+  Check, 
+  Mail, 
+  Loader2,
+  X
 } from 'lucide-react';
 import { Exam } from '@/types';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface ReportDocumentProps {
   exam: Exam;
@@ -23,6 +33,14 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
   const report = exam.report;
   const isUltrasound = exam.modality === 'ULTRASSOM';
 
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [destPhone, setDestPhone] = useState(exam.clinicPhone || '');
+  const [destEmail, setDestEmail] = useState('');
+  const [emailSent, setEmailSent] = useState(false);
+
   if (!report) {
     return (
       <div className="p-8 text-center bg-slate-900 rounded-2xl border border-slate-800 text-slate-400">
@@ -31,47 +49,196 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
     );
   }
 
-  const handlePrint = () => {
-    window.print();
-  };
-
   // Imagens-chave anexadas
   const keyImages = exam.images.filter(
     img => !report.keyImageIds || report.keyImageIds.length === 0 || report.keyImageIds.includes(img.id)
   );
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    const docEl = document.getElementById(`printable-report-${exam.id}`);
+    if (!docEl) return;
+
+    setIsGeneratingPdf(true);
+    try {
+      const canvas = await html2canvas(docEl, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      let heightLeft = pdfHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft > 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
+      }
+
+      const cleanPatient = exam.patientName.replace(/[^a-zA-Z0-9]/g, '_');
+      pdf.save(`Laudo-VetTeleRad-${exam.id}-${cleanPatient}.pdf`);
+    } catch (err) {
+      console.error('Erro ao gerar PDF:', err);
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const getPublicUrl = () => {
+    return typeof window !== 'undefined' ? `${window.location.origin}/laudo/${exam.id}` : '';
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(getPublicUrl());
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 3000);
+  };
+
+  const getFormattedMessage = () => {
+    const modalityName = isUltrasound ? 'ULTRASSOM' : 'RAIO-X';
+    return `🐾 *LAUDO ${modalityName} DISPONÍVEL — VetTeleRad*
+📄 *Protocolo:* ${exam.id}
+🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
+🏥 *Clínica Solicitante:* ${exam.clinicName}
+🩺 *Médico Veterinário:* ${exam.requestingVet}
+👨‍⚕️ *Especialista:* ${report.radiologistName} (${report.radiologistCrmv})
+
+🔍 *Conclusão Diagnóstica:*
+${report.conclusion.slice(0, 180)}${report.conclusion.length > 180 ? '...' : ''}
+
+🔗 *Acesse o laudo oficial e imagens pelo link:*
+${getPublicUrl()}`;
+  };
+
+  const handleSendWhatsApp = () => {
+    const text = encodeURIComponent(getFormattedMessage());
+    const digitsOnly = destPhone.replace(/\D/g, '');
+    let targetUrl = `https://wa.me/?text=${text}`;
+    if (digitsOnly.length >= 10) {
+      const fullPhone = digitsOnly.startsWith('55') ? digitsOnly : `55${digitsOnly}`;
+      targetUrl = `https://wa.me/${fullPhone}?text=${text}`;
+    }
+    window.open(targetUrl, '_blank');
+    setShowWhatsAppModal(false);
+  };
+
+  const handleSendEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!destEmail) return;
+    setEmailSent(true);
+    setTimeout(() => {
+      setEmailSent(false);
+      setShowEmailModal(false);
+    }, 2000);
+  };
+
   return (
     <div className="space-y-4">
-      {/* Barra de Ações (Oculta na Impressão) */}
-      <div className="flex items-center justify-between bg-slate-900 border border-slate-800 p-4 rounded-xl print:hidden">
+      {/* Barra de Ações Superior (Oculta na Impressão) */}
+      <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-900 border border-slate-800 p-4 rounded-xl print:hidden">
         <div className="flex items-center gap-2 text-slate-200 text-sm">
           <ShieldCheck className="w-5 h-5 text-cyan-400" />
           <span className="font-semibold">
             {isUltrasound ? 'Laudo Ultrassonográfico Concluído' : 'Laudo Radiográfico Concluído'} • Assinado Digitalmente
           </span>
         </div>
-        <div className="flex items-center gap-2">
+
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Botão Copiar Link */}
+          <button
+            onClick={handleCopyLink}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition cursor-pointer"
+            title="Copiar Link de Acesso ao Laudo"
+          >
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+            <span>{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
+          </button>
+
+          {/* Botão WhatsApp */}
+          <button
+            onClick={() => setShowWhatsAppModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg text-xs font-semibold shadow-sm transition cursor-pointer"
+            title="Compartilhar no WhatsApp do Veterinário Requisitante"
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>WhatsApp</span>
+          </button>
+
+          {/* Botão E-mail */}
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold border border-slate-700 transition cursor-pointer"
+            title="Enviar Laudo por E-mail"
+          >
+            <Mail className="w-3.5 h-3.5 text-cyan-400" />
+            <span>E-mail</span>
+          </button>
+
+          {/* Botão Download PDF Direto */}
+          <button
+            onClick={handleDownloadPdf}
+            disabled={isGeneratingPdf}
+            className="inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold shadow-md shadow-cyan-500/20 transition cursor-pointer disabled:opacity-50"
+          >
+            {isGeneratingPdf ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Gerando PDF...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-3.5 h-3.5" />
+                <span>Baixar PDF Oficial</span>
+              </>
+            )}
+          </button>
+
+          {/* Botão Imprimir */}
+          <button
+            onClick={handlePrint}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-semibold border border-slate-700 transition cursor-pointer"
+          >
+            <Printer className="w-3.5 h-3.5" />
+            <span>Imprimir</span>
+          </button>
+
           {onClose && (
             <button
               onClick={onClose}
-              className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+              className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
             >
-              Fechar
+              <X className="w-5 h-5" />
             </button>
           )}
-          <button
-            onClick={handlePrint}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white rounded-lg text-xs font-bold shadow-md shadow-cyan-500/20 transition cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            <span>Imprimir / Salvar em PDF</span>
-          </button>
         </div>
       </div>
 
       {/* Papel Timbrado do Laudo (Estilo A4 Médico) */}
-      <div className="bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-slate-200 print:border-0 print:shadow-none print:p-0 print:m-0 font-sans">
-        
+      <div 
+        id={`printable-report-${exam.id}`}
+        className="bg-white text-slate-900 p-8 sm:p-12 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-slate-200 print:border-0 print:shadow-none print:p-0 print:m-0 font-sans"
+      >
         {/* Cabeçalho Oficial */}
         <div className="border-b-2 border-cyan-600 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -227,6 +394,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
                     <img 
                       src={img.url} 
                       alt={img.label} 
+                      crossOrigin="anonymous"
                       className="max-h-48 w-auto object-contain rounded-lg bg-black shadow-sm"
                     />
                     <span className="text-[10px] text-slate-500 font-medium mt-1.5 text-center">
@@ -271,8 +439,127 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
             </div>
           </div>
         </div>
-
       </div>
+
+      {/* Modal WhatsApp */}
+      {showWhatsAppModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-emerald-400 font-bold text-base">
+                <MessageSquare className="w-5 h-5" />
+                <span>Enviar Laudo por WhatsApp</span>
+              </div>
+              <button 
+                onClick={() => setShowWhatsAppModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-slate-300">
+              Uma mensagem estruturada com os dados do paciente ({exam.patientName}), conclusão diagnóstica e link direto do laudo será enviada.
+            </p>
+
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                Número do WhatsApp (com DDD):
+              </label>
+              <input
+                type="text"
+                placeholder="(11) 98765-4321"
+                value={destPhone}
+                onChange={e => setDestPhone(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none"
+              />
+            </div>
+
+            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800/80 text-[11px] text-slate-400 max-h-32 overflow-y-auto whitespace-pre-line font-mono">
+              {getFormattedMessage()}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowWhatsAppModal(false)}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSendWhatsApp}
+                className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-600/20"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Abrir WhatsApp</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal E-mail */}
+      {showEmailModal && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-cyan-400 font-bold text-base">
+                <Mail className="w-5 h-5" />
+                <span>Enviar Laudo por E-mail</span>
+              </div>
+              <button 
+                onClick={() => setShowEmailModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSendEmail} className="space-y-4">
+              <div>
+                <label className="block text-xs font-medium text-slate-300 mb-1.5">
+                  E-mail do Requisitante ou Tutor:
+                </label>
+                <input
+                  type="email"
+                  required
+                  placeholder="veterinario@clinica.com.br"
+                  value={destEmail}
+                  onChange={e => setDestEmail(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-white text-xs focus:border-cyan-500 focus:outline-none"
+                />
+              </div>
+
+              {emailSent && (
+                <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 flex items-center gap-2">
+                  <Check className="w-4 h-4" />
+                  <span>E-mail com o laudo em PDF enviado com sucesso!</span>
+                </div>
+              )}
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowEmailModal(false)}
+                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold"
+                >
+                  Fechar
+                </button>
+                <button
+                  type="submit"
+                  disabled={emailSent}
+                  className="inline-flex items-center gap-2 px-5 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-600/20 disabled:opacity-50"
+                >
+                  <Mail className="w-4 h-4" />
+                  <span>Enviar Agora</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

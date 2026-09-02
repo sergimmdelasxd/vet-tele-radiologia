@@ -12,6 +12,7 @@ export interface User {
   uf?: string;
   cnpj?: string;
   avatar?: string;
+  balance?: number; // Saldo em conta para laudos (em R$)
   createdAt: string;
 }
 
@@ -29,6 +30,9 @@ export interface ExamImage {
   label: string; // Ex: "Tórax - Projeção Laterolateral Direita" ou "USG - Parênquima Hepático"
   projection?: string;
   thumbnailUrl?: string;
+  isDicom?: boolean;
+  fileSize?: number;
+  originalName?: string;
   uploadedAt: string;
 }
 
@@ -113,4 +117,35 @@ export interface DashboardStats {
   averageTurnaroundMinutes: number;
   clinicsCount: number;
   radiologistsCount: number;
+}
+
+// Módulo Financeiro
+export type TransactionType = 'CREDIT_PURCHASE' | 'EXAM_DEBIT' | 'REFUND';
+export type PaymentMethod = 'PIX' | 'CREDIT_CARD' | 'BOLETO' | 'SALDO';
+
+export interface FinancialTransaction {
+  id: string;
+  clinicId: string;
+  clinicName: string;
+  examId?: string;
+  type: TransactionType;
+  amount: number; // Ex: 45.00
+  description: string;
+  paymentMethod: PaymentMethod;
+  status: 'COMPLETED' | 'PENDING';
+  createdAt: string;
+}
+
+export interface PricingPlan {
+  id: string;
+  name: string;
+  badge?: string;
+  description: string;
+  radiographyPrice: number;
+  ultrasoundPrice: number;
+  urgentFee: number;
+  slaRoutine: string;
+  slaUrgent: string;
+  features: string[];
+  recommended?: boolean;
 }

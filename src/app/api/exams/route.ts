@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
-import { getAllExams, createExam, findUserById, findUserByEmail, createUser } from '@/lib/db';
+import { getAllExams, createExam, findUserById, findUserByEmail, createUser, debitExamCost } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function GET(request: Request) {
@@ -149,6 +149,13 @@ export async function POST(request: Request) {
       ultrasoundType: ultrasoundType || undefined,
       images: Array.isArray(images) ? images : []
     });
+
+    // Registra débito automático do custo do laudo na conta da clínica
+    try {
+      debitExamCost(finalClinicId, newExam.id, newExam.modality, newExam.priority);
+    } catch (debitErr) {
+      console.warn('Erro não bloqueante ao registrar débito:', debitErr);
+    }
 
     return NextResponse.json({ success: true, exam: newExam }, { status: 201 });
   } catch (error) {

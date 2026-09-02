@@ -11,7 +11,8 @@
       "cnpj": "12.345.678/0001-90",
       "phone": "(11) 98765-4321",
       "uf": "SP",
-      "createdAt": "2026-08-01T10:00:00Z"
+      "createdAt": "2026-08-01T10:00:00Z",
+      "balance": 530
     },
     {
       "id": "user-clinic-petcare",
@@ -24,7 +25,8 @@
       "cnpj": "98.765.432/0001-11",
       "phone": "(21) 99888-7766",
       "uf": "RJ",
-      "createdAt": "2026-08-10T14:30:00Z"
+      "createdAt": "2026-08-10T14:30:00Z",
+      "balance": 200
     },
     {
       "id": "user-rad-camila",
@@ -59,7 +61,8 @@
       "crmv": "",
       "cnpj": "",
       "id": "user-1788319113363",
-      "createdAt": "2026-09-02T03:18:33.363Z"
+      "createdAt": "2026-09-02T03:18:33.363Z",
+      "balance": 200
     }
   ],
   "exams": [
@@ -541,6 +544,75 @@
         "reportedAt": "2026-09-02T03:06:40.406Z",
         "digitalSignatureHash": "VET-SIGN-1788318400406-06PUN69"
       }
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx-1788371332618-339",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "CREDIT_PURCHASE",
+      "amount": 150,
+      "description": "Recarga de Créditos via PIX Instantâneo",
+      "paymentMethod": "PIX",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T17:48:52.618Z"
+    },
+    {
+      "id": "tx-seed-1",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "CREDIT_PURCHASE",
+      "amount": 500,
+      "description": "Recarga de Créditos via PIX Instantâneo",
+      "paymentMethod": "PIX",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-25T11:00:00Z"
+    },
+    {
+      "id": "tx-seed-2",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-101",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Radiográfico Tórax — Thor (VET-2026-101)",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-01T20:15:00Z"
+    },
+    {
+      "id": "tx-seed-3",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "EXAM_DEBIT",
+      "amount": 75,
+      "description": "Laudo Ultrassonográfico de Urgência — Luna",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-01T22:30:00Z"
+    },
+    {
+      "id": "tx-seed-4",
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "type": "CREDIT_PURCHASE",
+      "amount": 300,
+      "description": "Recarga Inicial via Cartão de Crédito",
+      "paymentMethod": "CREDIT_CARD",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-28T09:30:00Z"
+    },
+    {
+      "id": "tx-seed-5",
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "type": "EXAM_DEBIT",
+      "amount": 100,
+      "description": "Débito 2 Laudos Radiográficos Ortopédicos",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-30T16:00:00Z"
     }
   ]
 }

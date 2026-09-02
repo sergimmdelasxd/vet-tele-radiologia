@@ -93,6 +93,15 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                 )}
               </div>
             )}
+
+            {/* Links Institucionais */}
+            <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-400 font-medium">
+              <Link href="/#como-funciona" className="hover:text-cyan-400 transition">Como Funciona</Link>
+              <Link href="/#precos" className="hover:text-cyan-400 transition">Preços &amp; Planos</Link>
+              <Link href="/#calculadora" className="hover:text-cyan-400 transition">Simulador</Link>
+              <Link href="/#corpo-clinico" className="hover:text-cyan-400 transition">Especialistas</Link>
+              <Link href="/#faq" className="hover:text-cyan-400 transition">FAQ</Link>
+            </nav>
           </div>
 
           {/* Ações e Menus */}

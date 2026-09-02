@@ -19,13 +19,15 @@ import {
   RefreshCw,
   Printer,
   Sparkles,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Wallet
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { DicomXrayViewer } from '@/components/viewer/DicomXrayViewer';
 import { ReportEditor } from '@/components/report/ReportEditor';
 import { ReportDocument } from '@/components/report/ReportDocument';
 import { NewExamModal } from '@/components/dashboard/NewExamModal';
+import { FinancialModal } from '@/components/dashboard/FinancialModal';
 import { Exam, User, ExamStatus, ExamPriority, ExamModality } from '@/types';
 
 export default function DashboardPage() {
@@ -45,6 +47,7 @@ export default function DashboardPage() {
   const [activeViewingExam, setActiveViewingExam] = useState<Exam | null>(null);
   const [activeReportingExam, setActiveReportingExam] = useState<Exam | null>(null);
   const [activeDocumentExam, setActiveDocumentExam] = useState<Exam | null>(null);
+  const [isFinancialModalOpen, setIsFinancialModalOpen] = useState(false);
   // Proporção de tela entre Visualizador e Editor de Laudo ('35' | '50' | '60' | '75')
   const [editorSplitRatio, setEditorSplitRatio] = useState<'35' | '50' | '60' | '75'>('60');
 
@@ -170,7 +173,21 @@ export default function DashboardPage() {
             </div>
 
             {/* Ações Primárias */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              {(currentUser.role === 'CLINIC' || currentUser.role === 'ADMIN') && (
+                <button
+                  type="button"
+                  onClick={() => setIsFinancialModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-3 bg-slate-800/90 hover:bg-slate-800 text-emerald-400 hover:text-emerald-300 border border-emerald-500/30 font-bold text-xs sm:text-sm rounded-xl shadow-md transition active:scale-95 cursor-pointer"
+                  title="Abrir Carteira, Extrato e Recarga de Saldo"
+                >
+                  <Wallet className="w-4 h-4 text-emerald-400" />
+                  <span>
+                    Saldo: <strong className="font-mono text-emerald-300">R$ {(currentUser.balance ?? 0).toFixed(2).replace('.', ',')}</strong>
+                  </span>
+                </button>
+              )}
+
               <button
                 onClick={() => setIsNewExamModalOpen(true)}
                 className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition active:scale-95 cursor-pointer"
@@ -185,7 +202,7 @@ export default function DashboardPage() {
 
               <button
                 onClick={loadData}
-                className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition"
+                className="p-3 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl border border-slate-700 transition cursor-pointer"
                 title="Atualizar dados"
               >
                 <RefreshCw className="w-4 h-4" />
@@ -723,6 +740,18 @@ export default function DashboardPage() {
             />
           </div>
         </div>
+      )}
+
+      {/* MODAL 4: Carteira & Faturamento */}
+      {currentUser && (
+        <FinancialModal
+          isOpen={isFinancialModalOpen}
+          onClose={() => setIsFinancialModalOpen(false)}
+          currentUser={currentUser}
+          onBalanceUpdated={(newBalance) => {
+            setCurrentUser(prev => prev ? { ...prev, balance: newBalance } : null);
+          }}
+        />
       )}
     </div>
   );

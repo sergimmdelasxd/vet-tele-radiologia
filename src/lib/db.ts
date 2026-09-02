@@ -1,13 +1,25 @@
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcryptjs';
-import { User, Exam, DashboardStats, Report, ExamModality } from '@/types';
+import { User, Exam, DashboardStats, Report, ExamModality, ExamPriority, FinancialTransaction, PaymentMethod } from '@/types';
 
 const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
+
+export const PRICING_TABLE = {
+  RADIOGRAFIA: {
+    NORMAL: 45.00,
+    URGENT: 65.00
+  },
+  ULTRASSOM: {
+    NORMAL: 60.00,
+    URGENT: 85.00
+  }
+};
 
 interface DatabaseSchema {
   users: User[];
   exams: Exam[];
+  transactions?: FinancialTransaction[];
 }
 
 function ensureDataDirectory() {
@@ -15,6 +27,67 @@ function ensureDataDirectory() {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
+}
+
+function seedTransactions(): FinancialTransaction[] {
+  return [
+    {
+      id: 'tx-seed-1',
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      type: 'CREDIT_PURCHASE',
+      amount: 500.00,
+      description: 'Recarga de Créditos via PIX Instantâneo',
+      paymentMethod: 'PIX',
+      status: 'COMPLETED',
+      createdAt: '2026-08-25T11:00:00Z'
+    },
+    {
+      id: 'tx-seed-2',
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      examId: 'VET-2026-101',
+      type: 'EXAM_DEBIT',
+      amount: 45.00,
+      description: 'Laudo Radiográfico Tórax — Thor (VET-2026-101)',
+      paymentMethod: 'SALDO',
+      status: 'COMPLETED',
+      createdAt: '2026-09-01T20:15:00Z'
+    },
+    {
+      id: 'tx-seed-3',
+      clinicId: 'user-clinic-vetlife',
+      clinicName: 'Clínica Veterinária VetLife 24h',
+      type: 'EXAM_DEBIT',
+      amount: 75.00,
+      description: 'Laudo Ultrassonográfico de Urgência — Luna',
+      paymentMethod: 'SALDO',
+      status: 'COMPLETED',
+      createdAt: '2026-09-01T22:30:00Z'
+    },
+    {
+      id: 'tx-seed-4',
+      clinicId: 'user-clinic-petcare',
+      clinicName: 'Hospital Veterinário PetCare',
+      type: 'CREDIT_PURCHASE',
+      amount: 300.00,
+      description: 'Recarga Inicial via Cartão de Crédito',
+      paymentMethod: 'CREDIT_CARD',
+      status: 'COMPLETED',
+      createdAt: '2026-08-28T09:30:00Z'
+    },
+    {
+      id: 'tx-seed-5',
+      clinicId: 'user-clinic-petcare',
+      clinicName: 'Hospital Veterinário PetCare',
+      type: 'EXAM_DEBIT',
+      amount: 100.00,
+      description: 'Débito 2 Laudos Radiográficos Ortopédicos',
+      paymentMethod: 'SALDO',
+      status: 'COMPLETED',
+      createdAt: '2026-08-30T16:00:00Z'
+    }
+  ];
 }
 
 function seedDatabase(): DatabaseSchema {
@@ -33,6 +106,7 @@ function seedDatabase(): DatabaseSchema {
       cnpj: '12.345.678/0001-90',
       phone: '(11) 98765-4321',
       uf: 'SP',
+      balance: 380.00,
       createdAt: '2026-08-01T10:00:00Z'
     },
     {
@@ -46,6 +120,7 @@ function seedDatabase(): DatabaseSchema {
       cnpj: '98.765.432/0001-11',
       phone: '(21) 99888-7766',
       uf: 'RJ',
+      balance: 200.00,
       createdAt: '2026-08-10T14:30:00Z'
     },
     {
@@ -289,7 +364,7 @@ function seedDatabase(): DatabaseSchema {
     }
   ];
 
-  const db: DatabaseSchema = { users, exams };
+  const db: DatabaseSchema = { users, exams, transactions: seedTransactions() };
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
   return db;
 }
@@ -302,11 +377,29 @@ export function readDatabase(): DatabaseSchema {
 
   try {
     const raw = fs.readFileSync(DB_PATH, 'utf-8');
-    const parsed = JSON.parse(raw);
+    const parsed: DatabaseSchema = JSON.parse(raw);
     // Se não tiver a propriedade modality nos exames, atualiza
     if (!parsed.exams || parsed.exams.length === 0 || !parsed.exams[0].modality) {
       return seedDatabase();
     }
+
+    let shouldSave = false;
+    if (!parsed.transactions || parsed.transactions.length === 0) {
+      parsed.transactions = seedTransactions();
+      shouldSave = true;
+    }
+
+    for (const u of parsed.users) {
+      if (u.role === 'CLINIC' && (u.balance === undefined || u.balance === null)) {
+        u.balance = u.id === 'user-clinic-vetlife' ? 380.00 : 200.00;
+        shouldSave = true;
+      }
+    }
+
+    if (shouldSave) {
+      writeDatabase(parsed);
+    }
+
     return parsed;
   } catch {
     return seedDatabase();
@@ -493,4 +586,91 @@ export function getStats(): DashboardStats {
     clinicsCount: clinics.size,
     radiologistsCount: radiologists.size
   };
+}
+
+// Financial Methods
+export function getExamPrice(modality: ExamModality, priority: ExamPriority): number {
+  const base = modality === 'ULTRASSOM' ? PRICING_TABLE.ULTRASSOM : PRICING_TABLE.RADIOGRAFIA;
+  return priority === 'URGENT' ? base.URGENT : base.NORMAL;
+}
+
+export function getFinancialTransactions(clinicId?: string): FinancialTransaction[] {
+  const db = readDatabase();
+  const txs = db.transactions || [];
+  if (clinicId) {
+    return txs
+      .filter(t => t.clinicId === clinicId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+  return txs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function rechargeBalance(
+  clinicId: string,
+  amount: number,
+  paymentMethod: PaymentMethod
+): { user: User; transaction: FinancialTransaction } {
+  const db = readDatabase();
+  const user = db.users.find(u => u.id === clinicId);
+  if (!user) {
+    throw new Error('Clínica não encontrada no sistema');
+  }
+
+  const currentBalance = typeof user.balance === 'number' ? user.balance : 0;
+  user.balance = Number((currentBalance + amount).toFixed(2));
+
+  const transaction: FinancialTransaction = {
+    id: `tx-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    clinicId: user.id,
+    clinicName: user.clinicName || user.name,
+    type: 'CREDIT_PURCHASE',
+    amount: Number(amount.toFixed(2)),
+    description: `Recarga de Créditos via ${paymentMethod === 'PIX' ? 'PIX Instantâneo' : 'Cartão de Crédito'}`,
+    paymentMethod,
+    status: 'COMPLETED',
+    createdAt: new Date().toISOString()
+  };
+
+  if (!db.transactions) db.transactions = [];
+  db.transactions.unshift(transaction);
+  writeDatabase(db);
+
+  return { user, transaction };
+}
+
+export function debitExamCost(
+  clinicId: string,
+  examId: string,
+  modality: ExamModality,
+  priority: ExamPriority
+): { user?: User; transaction?: FinancialTransaction; price: number } {
+  const db = readDatabase();
+  const user = db.users.find(u => u.id === clinicId);
+  const cost = getExamPrice(modality, priority);
+
+  if (!user) {
+    return { price: cost };
+  }
+
+  const currentBalance = typeof user.balance === 'number' ? user.balance : 0;
+  user.balance = Number((currentBalance - cost).toFixed(2));
+
+  const transaction: FinancialTransaction = {
+    id: `tx-deb-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+    clinicId: user.id,
+    clinicName: user.clinicName || user.name,
+    examId,
+    type: 'EXAM_DEBIT',
+    amount: cost,
+    description: `Laudo ${modality === 'ULTRASSOM' ? 'Ultrassom' : 'Raio-X'} (${priority === 'URGENT' ? 'Plantão Urgência' : 'Rotina'}) — Exame ${examId}`,
+    paymentMethod: 'SALDO',
+    status: 'COMPLETED',
+    createdAt: new Date().toISOString()
+  };
+
+  if (!db.transactions) db.transactions = [];
+  db.transactions.unshift(transaction);
+  writeDatabase(db);
+
+  return { user, transaction, price: cost };
 }
