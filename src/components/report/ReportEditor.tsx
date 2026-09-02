@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, 
   Sparkles, 
@@ -73,6 +73,17 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   // Filtrar templates por modalidade correspondente ou exibir agrupados
   const usgTemplates = allTemplates.filter(t => t.modality === 'ULTRASSOM');
   const xrayTemplates = allTemplates.filter(t => t.modality === 'RADIOGRAFIA');
+
+  // Sugestão inteligente para a região anatômica do exame
+  const matchedTemplate = useMemo(() => {
+    if (!exam.region) return null;
+    const regLower = exam.region.toLowerCase();
+    return allTemplates.find(t => 
+      t.title.toLowerCase().includes(regLower) ||
+      regLower.includes(t.title.toLowerCase()) ||
+      t.id.toLowerCase().includes(regLower)
+    );
+  }, [allTemplates, exam.region]);
 
   const handleSelectTemplate = (templateId: string) => {
     const tpl = allTemplates.find(t => t.id === templateId);
@@ -209,6 +220,18 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
               </>
             )}
           </select>
+
+          {matchedTemplate && !findings && (
+            <button
+              type="button"
+              onClick={() => handleSelectTemplate(matchedTemplate.id)}
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-gradient-to-r from-amber-500/20 to-amber-600/20 hover:from-amber-500/30 hover:to-amber-600/30 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-lg transition active:scale-95 cursor-pointer shadow-sm"
+              title="Inserir modelo pré-configurado desta região anatômica"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span>Inserir Modelo de {exam.region}</span>
+            </button>
+          )}
         </div>
       </div>
 
