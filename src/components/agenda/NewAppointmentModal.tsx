@@ -397,8 +397,8 @@ export const NewAppointmentModal: React.FC<NewAppointmentModalProps> = ({
                   setModality(targetMod);
                 }
                 setRegion(regName);
-                if (defaultFast && !preparationNotes.includes(defaultFast)) {
-                  setPreparationNotes(prev => prev ? `${prev} • ${defaultFast}` : defaultFast);
+                if (defaultFast && !preparationInstructions.includes(defaultFast)) {
+                  setPreparationInstructions(prev => prev ? `${prev} • ${defaultFast}` : defaultFast);
                 }
               }}
             />
