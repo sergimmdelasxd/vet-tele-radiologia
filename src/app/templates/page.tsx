@@ -203,7 +203,7 @@ export default function TemplatesPage() {
       return;
     }
     if (!formData.conclusion.trim()) {
-      setFormError('Informe a conclusão diagnóstica / impressão radiológica.');
+      setFormError('Informe a impressão diagnóstica / achados principais.');
       return;
     }
 
@@ -251,43 +251,47 @@ export default function TemplatesPage() {
 
   if (isLoading || !currentUser) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <div className="w-8 h-8 border-2 border-cyan-500 border-t-transparent rounded-full animate-spin" />
-        <span className="text-xs">Carregando biblioteca de modelos de laudo...</span>
+      <div className="min-h-screen bg-[#fafbfc] flex flex-col items-center justify-center text-slate-500 gap-3">
+        <div className="w-8 h-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+        <span className="text-xs font-medium">Carregando biblioteca de modelos de laudo...</span>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-white">
+    <div className="min-h-screen bg-[#fafbfc] text-slate-800 flex flex-col font-sans selection:bg-teal-500 selection:text-white relative">
+      {/* Brilhos Ambientais Pastéis */}
+      <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[850px] h-[350px] bg-gradient-to-tr from-teal-100/50 via-sky-100/40 to-purple-100/30 blur-[130px] pointer-events-none" />
+
       <Navbar user={currentUser} />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 relative z-10">
         
         {/* Header Principal */}
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+        <div className="bg-white/90 backdrop-blur-md border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
           <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-300 border border-cyan-500/30 text-xs font-semibold flex items-center gap-1">
-                <BookOpen className="w-3.5 h-3.5" /> Padronização de Laudos Médicos
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200/80 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <BookOpen className="w-3.5 h-3.5 text-teal-600" />
+                <span>Padronização de Laudos Médicos</span>
               </span>
-              <span className="text-xs text-slate-400">
+              <span className="text-xs text-slate-500 font-medium">
                 Acesso Especialista • {currentUser.name}
               </span>
             </div>
 
-            <h1 className="text-2xl sm:text-3xl font-black text-white">
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Modelos Pré-Configurados de Laudo
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
-              Cadastre, personalize e estruture frases prontas, técnicas e conclusões para agilizar o fluxo de emissão de laudos de Raio-X e Ultrassom.
+            <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl leading-relaxed">
+              Cadastre, personalize e estruture frases prontas, técnicas e impressões diagnósticas para agilizar a rotina de emissão de laudos de Raio-X e Ultrassom.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => handleOpenCreate()}
-              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold text-xs sm:text-sm rounded-xl shadow-lg shadow-cyan-500/25 transition active:scale-95 cursor-pointer"
+              className="inline-flex items-center gap-2 px-5 py-3 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold text-xs sm:text-sm rounded-2xl shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Criar Novo Modelo</span>
@@ -296,19 +300,19 @@ export default function TemplatesPage() {
         </div>
 
         {/* Abas e Filtros de Modalidade */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-4 rounded-3xl shadow-lg">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white/90 backdrop-blur-md border border-slate-200/90 p-4 rounded-3xl shadow-sm">
           
           {/* Seletores de Modalidade */}
-          <div className="flex items-center gap-2 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs">
+          <div className="flex items-center gap-1.5 bg-slate-50 p-1 rounded-2xl border border-slate-200/80 text-xs">
             <button
               onClick={() => setModalityFilter('ALL')}
               className={`px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 modalityFilter === 'ALL'
-                  ? 'bg-slate-800 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200/80'
+                  : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Layers className="w-3.5 h-3.5 text-slate-500" />
               <span>Todos ({counts.total})</span>
             </button>
 
@@ -316,11 +320,11 @@ export default function TemplatesPage() {
               onClick={() => setModalityFilter('RADIOGRAFIA')}
               className={`px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 modalityFilter === 'RADIOGRAFIA'
-                  ? 'bg-cyan-600 text-white shadow-md shadow-cyan-500/20'
-                  : 'text-slate-400 hover:text-cyan-300'
+                  ? 'bg-sky-100 text-sky-900 shadow-xs border border-sky-300'
+                  : 'text-slate-600 hover:text-sky-800'
               }`}
             >
-              <Activity className="w-3.5 h-3.5" />
+              <Activity className="w-3.5 h-3.5 text-sky-600" />
               <span>Raio-X ({counts.xray})</span>
             </button>
 
@@ -328,32 +332,32 @@ export default function TemplatesPage() {
               onClick={() => setModalityFilter('ULTRASSOM')}
               className={`px-3.5 py-2 rounded-xl font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 modalityFilter === 'ULTRASSOM'
-                  ? 'bg-teal-600 text-white shadow-md shadow-teal-500/20'
-                  : 'text-slate-400 hover:text-teal-300'
+                  ? 'bg-teal-100 text-teal-900 shadow-xs border border-teal-300'
+                  : 'text-slate-600 hover:text-teal-800'
               }`}
             >
-              <Waves className="w-3.5 h-3.5" />
+              <Waves className="w-3.5 h-3.5 text-teal-600" />
               <span>Ultrassom ({counts.usg})</span>
             </button>
           </div>
 
           {/* Busca e Categoria */}
-          <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="flex flex-wrap items-center gap-2.5 text-xs">
             <div className="relative min-w-[220px]">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-3" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3.5 top-3" />
               <input
                 type="text"
-                placeholder="Buscar modelo, achado, órgão..."
+                placeholder="Buscar modelo, achado, região..."
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white outline-none focus:border-cyan-500"
+                className="w-full bg-slate-50 border border-slate-200/90 rounded-xl pl-9 pr-3.5 py-2 text-xs text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition shadow-2xs"
               />
             </div>
 
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none focus:border-cyan-500"
+              className="bg-slate-50 border border-slate-200/90 rounded-xl px-3.5 py-2 text-xs text-slate-700 outline-none focus:bg-white focus:border-teal-500 transition shadow-2xs font-medium cursor-pointer"
             >
               <option value="ALL">Todas Categorias</option>
               {categories.map(cat => (
@@ -365,29 +369,29 @@ export default function TemplatesPage() {
 
         {/* Grid de Modelos */}
         {filteredTemplates.length === 0 ? (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-400 space-y-3">
-            <BookOpen className="w-12 h-12 text-slate-600 mx-auto stroke-1" />
-            <div className="text-base font-bold text-slate-200">Nenhum modelo encontrado</div>
+          <div className="bg-white/90 border border-slate-200/90 rounded-3xl p-12 text-center text-slate-500 space-y-3 shadow-sm">
+            <BookOpen className="w-12 h-12 text-slate-400 mx-auto stroke-1" />
+            <div className="text-base font-bold text-slate-900">Nenhum modelo encontrado</div>
             <p className="text-xs text-slate-500 max-w-md mx-auto">
               Não encontramos nenhum template com os filtros aplicados. Crie seu primeiro modelo personalizado ou ajuste os filtros.
             </p>
             <button
               onClick={() => handleOpenCreate()}
-              className="mt-2 inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition"
+              className="mt-2 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-teal-500/20 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Cadastrar Novo Modelo</span>
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {filteredTemplates.map(tpl => (
               <div
                 key={tpl.id}
-                className={`bg-slate-900 border rounded-3xl p-5 shadow-lg flex flex-col justify-between transition-all hover:border-slate-700 ${
+                className={`bg-white border rounded-3xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between ${
                   tpl.modality === 'ULTRASSOM'
-                    ? 'border-teal-500/20 hover:border-teal-500/50'
-                    : 'border-cyan-500/20 hover:border-cyan-500/50'
+                    ? 'border-emerald-200/80 hover:border-emerald-400/90'
+                    : 'border-sky-200/80 hover:border-sky-400/90'
                 }`}
               >
                 <div>
@@ -395,56 +399,57 @@ export default function TemplatesPage() {
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
                       <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold ${
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold ${
                           tpl.modality === 'ULTRASSOM'
-                            ? 'bg-teal-500/10 text-teal-300 border border-teal-500/30'
-                            : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30'
+                            ? 'bg-teal-50 text-teal-800 border border-teal-200/80'
+                            : 'bg-sky-50 text-sky-800 border border-sky-200/80'
                         }`}
                       >
-                        {tpl.modality === 'ULTRASSOM' ? <Waves className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
+                        {tpl.modality === 'ULTRASSOM' ? <Waves className="w-3.5 h-3.5 text-teal-600" /> : <Activity className="w-3.5 h-3.5 text-sky-600" />}
                         {tpl.modality === 'ULTRASSOM' ? 'Ultrassonografia' : 'Radiografia (RX)'}
                       </span>
 
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700">
+                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
                         {tpl.category}
                       </span>
                     </div>
 
-                    <span className="text-[10px] font-mono text-slate-500">{tpl.id}</span>
+                    <span className="text-[10px] font-mono font-semibold text-slate-400">{tpl.id}</span>
                   </div>
 
                   {/* Título do Modelo */}
-                  <h3 className="text-base font-bold text-white mb-2 line-clamp-1">
+                  <h3 className="text-base font-bold text-slate-900 mb-1.5 line-clamp-1">
                     {tpl.title}
                   </h3>
 
                   {/* Prévia da Técnica */}
-                  <div className="text-[11px] text-slate-400 line-clamp-2 italic mb-3">
+                  <div className="text-xs text-slate-500 line-clamp-2 italic mb-3">
                     &quot;{tpl.technique}&quot;
                   </div>
 
-                  {/* Conclusão em Destaque */}
-                  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800/80 mb-4">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block mb-1">
-                      Conclusão Diagnóstica Padrão:
+                  {/* Impressão Diagnóstica em Destaque Menta / Pastel */}
+                  <div className="p-3.5 bg-gradient-to-r from-teal-50/70 via-emerald-50/40 to-sky-50/60 rounded-2xl border border-teal-200/70 mb-4">
+                    <span className="text-[10px] uppercase font-bold text-teal-900 flex items-center gap-1.5 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+                      <span>Impressão Diagnóstica Padrão:</span>
                     </span>
-                    <p className="text-xs text-slate-200 line-clamp-3 whitespace-pre-line leading-relaxed">
+                    <p className="text-xs text-slate-800 line-clamp-3 whitespace-pre-line leading-relaxed font-medium">
                       {tpl.conclusion}
                     </p>
                   </div>
                 </div>
 
                 {/* Ações do Card */}
-                <div className="flex items-center justify-between gap-2 pt-3 border-t border-slate-800/80 text-xs">
-                  <div className="flex items-center gap-1">
+                <div className="flex items-center justify-between gap-2 pt-3.5 border-t border-slate-100 text-xs">
+                  <div className="flex items-center gap-1.5">
                     {/* Visualizar */}
                     <button
                       type="button"
                       onClick={() => setPreviewTemplate(tpl)}
-                      className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl transition font-medium cursor-pointer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl transition font-semibold border border-slate-200/80 cursor-pointer shadow-2xs"
                       title="Visualizar modelo completo"
                     >
-                      <Eye className="w-3.5 h-3.5 text-cyan-400" />
+                      <Eye className="w-3.5 h-3.5 text-teal-600" />
                       <span>Ver</span>
                     </button>
 
@@ -452,24 +457,24 @@ export default function TemplatesPage() {
                     <button
                       type="button"
                       onClick={() => handleCopyContent(tpl)}
-                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition cursor-pointer"
+                      className="p-2 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl transition cursor-pointer border border-slate-200/80 shadow-2xs"
                       title="Copiar texto estruturado"
                     >
                       {copiedId === tpl.id ? (
-                        <Check className="w-3.5 h-3.5 text-emerald-400" />
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
                       ) : (
-                        <Copy className="w-3.5 h-3.5" />
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
                       )}
                     </button>
 
-                    {/* Duplicar / Criar Variante */}
+                    {/* Duplicar */}
                     <button
                       type="button"
                       onClick={() => handleDuplicate(tpl)}
-                      className="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition cursor-pointer"
+                      className="p-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl transition cursor-pointer border border-amber-200/80 shadow-2xs"
                       title="Duplicar modelo para nova variante"
                     >
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                     </button>
                   </div>
 
@@ -478,9 +483,9 @@ export default function TemplatesPage() {
                     <button
                       type="button"
                       onClick={() => handleOpenEdit(tpl)}
-                      className="inline-flex items-center gap-1 px-3 py-1.5 bg-cyan-950/60 hover:bg-cyan-900 border border-cyan-500/30 text-cyan-300 rounded-xl transition font-bold cursor-pointer"
+                      className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-teal-50 hover:bg-teal-100 border border-teal-200/80 text-teal-800 rounded-xl transition font-bold cursor-pointer shadow-2xs"
                     >
-                      <Edit3 className="w-3.5 h-3.5" />
+                      <Edit3 className="w-3.5 h-3.5 text-teal-600" />
                       <span>Editar</span>
                     </button>
 
@@ -488,7 +493,7 @@ export default function TemplatesPage() {
                     <button
                       type="button"
                       onClick={() => handleDelete(tpl.id)}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-xl transition cursor-pointer"
+                      className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition cursor-pointer"
                       title="Excluir modelo"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -505,37 +510,37 @@ export default function TemplatesPage() {
 
       {/* Modal 1: Editor de Template (Criar / Editar) */}
       {isEditorModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl my-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+          <div className="bg-white border border-slate-200/90 rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl my-auto text-slate-800">
             
             {/* Header do Modal */}
-            <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+            <div className="px-6 py-5 border-b border-slate-200/90 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20">
                   <FileCode className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-black text-white flex items-center gap-2">
+                  <h2 className="text-base font-black text-slate-900 flex items-center gap-2">
                     <span>{editingTemplate ? 'Editar Modelo de Laudo' : 'Novo Modelo Pré-Configurado'}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-800 border border-teal-200">
                       {formData.modality === 'ULTRASSOM' ? 'USG' : 'Raio-X'}
                     </span>
                   </h2>
-                  <p className="text-xs text-slate-400">Padronize a redação e os critérios diagnósticos para toda a equipe</p>
+                  <p className="text-xs text-slate-500">Padronize a redação e os critérios diagnósticos para toda a equipe</p>
                 </div>
               </div>
 
               <button
                 onClick={() => setIsEditorModalOpen(false)}
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="mx-6 mt-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-300 text-xs flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
+              <div className="mx-6 mt-4 p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
                 <span>{formError}</span>
               </div>
             )}
@@ -544,7 +549,7 @@ export default function TemplatesPage() {
               
               {/* Modalidade */}
               <div>
-                <label className="block text-slate-400 font-semibold mb-1.5 uppercase tracking-wider text-[11px]">
+                <label className="block text-slate-700 font-semibold mb-1.5 uppercase tracking-wider text-[11px]">
                   Modalidade Médica
                 </label>
                 <div className="grid grid-cols-2 gap-3">
@@ -555,13 +560,13 @@ export default function TemplatesPage() {
                       modality: 'RADIOGRAFIA',
                       category: prev.category === 'USG Abdominal' ? 'Tórax' : prev.category
                     }))}
-                    className={`p-3 rounded-2xl border flex items-center justify-center gap-2.5 font-bold transition cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2.5 font-bold transition cursor-pointer ${
                       formData.modality === 'RADIOGRAFIA'
-                        ? 'bg-cyan-950/50 border-cyan-500 text-cyan-300 shadow-md shadow-cyan-500/10'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-sky-50 border-sky-400 text-sky-900 shadow-2xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
                     }`}
                   >
-                    <Activity className="w-4 h-4 text-cyan-400" />
+                    <Activity className="w-4 h-4 text-sky-600" />
                     <span>Radiografia (Raio-X)</span>
                   </button>
 
@@ -572,13 +577,13 @@ export default function TemplatesPage() {
                       modality: 'ULTRASSOM',
                       category: prev.category === 'Tórax' ? 'USG Abdominal' : prev.category
                     }))}
-                    className={`p-3 rounded-2xl border flex items-center justify-center gap-2.5 font-bold transition cursor-pointer ${
+                    className={`p-3.5 rounded-2xl border flex items-center justify-center gap-2.5 font-bold transition cursor-pointer ${
                       formData.modality === 'ULTRASSOM'
-                        ? 'bg-teal-950/50 border-teal-500 text-teal-300 shadow-md shadow-teal-500/10'
-                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-teal-50 border-teal-400 text-teal-900 shadow-2xs'
+                        : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-white'
                     }`}
                   >
-                    <Waves className="w-4 h-4 text-teal-400" />
+                    <Waves className="w-4 h-4 text-teal-600" />
                     <span>Ultrassonografia (USG)</span>
                   </button>
                 </div>
@@ -587,94 +592,97 @@ export default function TemplatesPage() {
               {/* Título e Categoria */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1 font-semibold">Título do Modelo *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Título do Modelo *</label>
                   <input
                     type="text"
                     required
                     value={formData.title}
                     onChange={e => setFormData(prev => ({ ...prev, title: e.target.value }))}
                     placeholder="Ex: Tórax Felino - Asma / Broncopatia Crônica"
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition shadow-2xs text-xs"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-slate-400 mb-1 font-semibold">Categoria / Região *</label>
+                  <label className="block text-slate-700 mb-1 font-semibold">Categoria / Região *</label>
                   <input
                     type="text"
                     required
                     value={formData.category}
                     onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     placeholder="Ex: Tórax, Abdômen, USG Ocular..."
-                    className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 transition shadow-2xs text-xs"
                   />
                 </div>
               </div>
 
               {/* Técnica do Exame */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Técnica do Exame *</label>
+                <label className="block text-slate-700 mb-1 font-semibold">Técnica do Exame *</label>
                 <textarea
                   rows={2}
                   required
                   value={formData.technique}
                   onChange={e => setFormData(prev => ({ ...prev, technique: e.target.value }))}
                   placeholder="Descreva a técnica radiográfica ou ecográfica utilizada..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-cyan-500 leading-relaxed font-mono text-xs"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 leading-relaxed font-sans text-xs transition shadow-2xs"
                 />
               </div>
 
               {/* Achados / Descrição de Imagem */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Achados Radiográficos / Ecográficos (Laudo Base) *</label>
+                <label className="block text-slate-700 mb-1 font-semibold">Achados Radiográficos / Ecográficos (Laudo Base) *</label>
                 <textarea
                   rows={5}
                   required
                   value={formData.findings}
                   onChange={e => setFormData(prev => ({ ...prev, findings: e.target.value }))}
                   placeholder="Descreva detalhadamente os achados de imagem (ex: órgãos, parênquimas, eixos, dimensões)..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-cyan-500 leading-relaxed font-mono text-xs"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 leading-relaxed font-sans text-xs transition shadow-2xs"
                 />
               </div>
 
-              {/* Conclusão Diagnóstica */}
+              {/* Impressão Diagnóstica */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Conclusão Diagnóstica / Impressão Radiológica *</label>
+                <label className="block text-teal-900 mb-1 font-bold flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+                  <span>Impressão Diagnóstica / Achados Principais *</span>
+                </label>
                 <textarea
                   rows={3}
                   required
                   value={formData.conclusion}
                   onChange={e => setFormData(prev => ({ ...prev, conclusion: e.target.value }))}
                   placeholder="Ex: 1. Padrão brônquico difuso compatível com broncopatia inflamatória felina..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-cyan-500 leading-relaxed font-mono text-xs"
+                  className="w-full bg-gradient-to-r from-teal-50/50 via-emerald-50/30 to-sky-50/40 border border-teal-300/80 rounded-xl p-3.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 leading-relaxed font-sans text-xs transition shadow-2xs font-medium"
                 />
               </div>
 
               {/* Recomendações Clínicas */}
               <div>
-                <label className="block text-slate-400 mb-1 font-semibold">Recomendações e Condutas Complementares</label>
+                <label className="block text-slate-700 mb-1 font-semibold">Recomendações e Condutas Complementares</label>
                 <textarea
                   rows={2}
                   value={formData.recommendations}
                   onChange={e => setFormData(prev => ({ ...prev, recommendations: e.target.value }))}
                   placeholder="Ex: Correlação clínica, lavagem broncoalveolar, reavaliação radiográfica após corticoterapia..."
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-white outline-none focus:border-cyan-500 leading-relaxed font-mono text-xs"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-slate-900 outline-none focus:bg-white focus:border-teal-500 leading-relaxed font-sans text-xs transition shadow-2xs"
                 />
               </div>
 
               {/* Footer */}
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200 bg-slate-50/50 px-6 py-4 -mx-6 -mb-6">
                 <button
                   type="button"
                   onClick={() => setIsEditorModalOpen(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white rounded-xl hover:bg-slate-800 transition"
+                  className="px-4 py-2 text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-200 transition font-semibold"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/25 transition active:scale-95 disabled:opacity-50 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold rounded-xl shadow-md shadow-teal-500/20 transition active:scale-95 disabled:opacity-50 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
@@ -697,28 +705,28 @@ export default function TemplatesPage() {
 
       {/* Modal 2: Visualizador Completo do Modelo */}
       {previewTemplate && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl">
-            <div className="px-6 py-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200/90 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl text-slate-800">
+            <div className="px-6 py-5 border-b border-slate-200/90 flex items-center justify-between bg-slate-50/50">
               <div>
                 <div className="flex items-center gap-2 mb-1">
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                       previewTemplate.modality === 'ULTRASSOM'
-                        ? 'bg-teal-500/10 text-teal-300 border border-teal-500/30'
-                        : 'bg-cyan-500/10 text-cyan-300 border border-cyan-500/30'
+                        ? 'bg-teal-50 text-teal-800 border border-teal-200/80'
+                        : 'bg-sky-50 text-sky-800 border border-sky-200/80'
                     }`}
                   >
-                    {previewTemplate.modality}
+                    {previewTemplate.modality === 'ULTRASSOM' ? 'Ultrassonografia' : 'Radiografia (RX)'}
                   </span>
-                  <span className="text-[10px] text-slate-400">{previewTemplate.category}</span>
+                  <span className="text-[11px] font-semibold text-slate-500">{previewTemplate.category}</span>
                 </div>
-                <h3 className="text-base font-bold text-white">{previewTemplate.title}</h3>
+                <h3 className="text-base font-bold text-slate-900">{previewTemplate.title}</h3>
               </div>
 
               <button
                 onClick={() => setPreviewTemplate(null)}
-                className="text-slate-400 hover:text-white p-1"
+                className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-100 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -726,48 +734,51 @@ export default function TemplatesPage() {
 
             <div className="p-6 space-y-4 text-xs overflow-y-auto max-h-[70vh]">
               <div>
-                <strong className="text-slate-400 block uppercase text-[10px] mb-1 tracking-wider">Técnica:</strong>
-                <p className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 leading-relaxed font-mono">
+                <strong className="text-slate-700 block uppercase text-[10px] mb-1.5 tracking-wider font-bold">Técnica:</strong>
+                <p className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-slate-700 leading-relaxed font-sans">
                   {previewTemplate.technique}
                 </p>
               </div>
 
               <div>
-                <strong className="text-slate-400 block uppercase text-[10px] mb-1 tracking-wider">Achados de Imagem:</strong>
-                <p className="p-3 bg-slate-950 rounded-xl border border-slate-800 text-slate-300 whitespace-pre-line leading-relaxed font-mono">
+                <strong className="text-slate-700 block uppercase text-[10px] mb-1.5 tracking-wider font-bold">Achados de Imagem:</strong>
+                <p className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 text-slate-800 whitespace-pre-line leading-relaxed font-sans">
                   {previewTemplate.findings}
                 </p>
               </div>
 
               <div>
-                <strong className="text-cyan-400 block uppercase text-[10px] mb-1 tracking-wider">Conclusão Diagnóstica:</strong>
-                <p className="p-3 bg-cyan-950/20 border border-cyan-500/30 rounded-xl text-cyan-200 whitespace-pre-line leading-relaxed font-mono font-semibold">
+                <strong className="text-teal-900 block uppercase text-[10px] mb-1.5 tracking-wider font-black flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-teal-600" />
+                  <span>Impressão Diagnóstica:</span>
+                </strong>
+                <p className="p-4 bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-sky-50/80 border-2 border-teal-300 rounded-2xl text-slate-900 whitespace-pre-line leading-relaxed font-sans font-bold">
                   {previewTemplate.conclusion}
                 </p>
               </div>
 
               {previewTemplate.recommendations && (
                 <div>
-                  <strong className="text-amber-400 block uppercase text-[10px] mb-1 tracking-wider">Recomendações:</strong>
-                  <p className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-200 leading-relaxed font-mono">
+                  <strong className="text-amber-900 block uppercase text-[10px] mb-1.5 tracking-wider font-bold">Recomendações:</strong>
+                  <p className="p-3.5 bg-amber-50/70 border border-amber-200/80 rounded-2xl text-amber-950 leading-relaxed font-sans">
                     {previewTemplate.recommendations}
                   </p>
                 </div>
               )}
             </div>
 
-            <div className="px-6 py-4 border-t border-slate-800 flex items-center justify-between bg-slate-950/50">
+            <div className="px-6 py-4 border-t border-slate-200/90 flex items-center justify-between bg-slate-50/50">
               <button
                 onClick={() => handleCopyContent(previewTemplate)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/80 transition cursor-pointer"
               >
-                <Copy className="w-3.5 h-3.5 text-cyan-400" />
+                <Copy className="w-3.5 h-3.5 text-slate-500" />
                 <span>Copiar Todo o Texto</span>
               </button>
 
               <button
                 onClick={() => setPreviewTemplate(null)}
-                className="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold transition cursor-pointer"
+                className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition cursor-pointer shadow-md shadow-teal-600/20"
               >
                 Fechar
               </button>
