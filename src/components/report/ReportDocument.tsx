@@ -550,24 +550,11 @@ ${getPublicUrl()}`;
             </div>
           )}
 
-          {/* Impressão Diagnóstica Separada (Exibida caso o laudo anterior possua campo de conclusão distinto) */}
-          {report.conclusion && report.conclusion !== report.findings && (
-            <div className="p-5 bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-sky-50/80 border-2 border-teal-500/70 rounded-2xl shadow-xs text-slate-900 print:border-teal-600">
-              <h2 className="text-xs font-black text-teal-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-teal-600" />
-                <span>3. Impressão Diagnóstica</span>
-              </h2>
-              <div className="whitespace-pre-line font-bold text-slate-900 text-xs sm:text-sm leading-relaxed">
-                {report.conclusion}
-              </div>
-            </div>
-          )}
-
           {/* Recomendações (Exibidas se preenchidas e não repetidas no texto principal) */}
           {report.recommendations && !report.findings.includes(report.recommendations) && (
             <div className="bg-slate-50/60 border border-slate-200/80 p-4 rounded-xl">
               <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
-                4. Recomendações e Considerações Finais
+                3. Recomendações e Considerações Finais
               </h2>
               <p className="text-slate-700">{report.recommendations}</p>
             </div>

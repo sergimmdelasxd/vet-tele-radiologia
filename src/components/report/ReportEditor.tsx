@@ -48,7 +48,7 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       return existingReport.findings;
     }
     if (existingReport.findings && existingReport.conclusion && existingReport.findings !== existingReport.conclusion) {
-      return `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${existingReport.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="color: #0f766e; background-color: #f0fdf4; padding: 3px 8px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${existingReport.conclusion.replace(/\n/g, '<br>')}</strong></p>`;
+      return `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${existingReport.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${existingReport.conclusion.replace(/\n/g, '<br>')}</strong></p>`;
     }
     return existingReport.findings || existingReport.conclusion || '';
   };
@@ -108,7 +108,7 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     setTechnique(tpl.technique);
     setRecommendations(tpl.recommendations || '');
 
-    const unifiedHtml = `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${tpl.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="color: #0f766e; background-color: #f0fdf4; padding: 3px 8px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${tpl.conclusion.replace(/\n/g, '<br>')}</strong></p>${tpl.recommendations ? `<p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">RECOMENDAÇÕES:</strong></p><p>${tpl.recommendations.replace(/\n/g, '<br>')}</p>` : ''}`;
+    const unifiedHtml = `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${tpl.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${tpl.conclusion.replace(/\n/g, '<br>')}</strong></p>${tpl.recommendations ? `<p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">RECOMENDAÇÕES:</strong></p><p>${tpl.recommendations.replace(/\n/g, '<br>')}</p>` : ''}`;
 
     setReportContent(unifiedHtml);
   };
