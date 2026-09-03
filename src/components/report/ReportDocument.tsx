@@ -117,6 +117,8 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
 
   const getFormattedMessage = () => {
     const modalityName = isUltrasound ? 'ULTRASSOM' : 'RAIO-X';
+    // Remove tags HTML para o texto do WhatsApp ficar limpo
+    const rawText = (report.conclusion || report.findings || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
     return `🐾 *LAUDO ${modalityName} DISPONÍVEL — VetTeleRad*
 📄 *Protocolo:* ${exam.id}
 🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
@@ -125,7 +127,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
 👨‍⚕️ *Especialista:* ${report.radiologistName} (${report.radiologistCrmv})
 
 🔍 *Impressão Diagnóstica:*
-${report.conclusion.slice(0, 180)}${report.conclusion.length > 180 ? '...' : ''}
+${rawText.slice(0, 180)}${rawText.length > 180 ? '...' : ''}
 
 🔗 *Acesse o laudo oficial e imagens pelo link:*
 ${getPublicUrl()}`;
@@ -348,14 +350,21 @@ ${getPublicUrl()}`;
             <p className="text-slate-700">{report.technique}</p>
           </div>
 
-          {/* Descrição dos Achados */}
+          {/* Descrição dos Achados e Impressão Diagnóstica */}
           <div>
             <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
-              {isUltrasound ? '2. Descrição dos Achados Ecográficos dos Órgãos' : '2. Descrição dos Achados Radiográficos'}
+              {isUltrasound ? '2. Achados Ecográficos & Impressão Diagnóstica' : '2. Achados Radiográficos & Impressão Diagnóstica'}
             </h2>
-            <div className="whitespace-pre-line text-slate-800 font-normal space-y-2">
-              {report.findings}
-            </div>
+            {report.findings.includes('<') ? (
+              <div 
+                className="text-slate-900 text-xs sm:text-sm leading-relaxed max-w-none [&_p]:my-1.5 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5"
+                dangerouslySetInnerHTML={{ __html: report.findings }}
+              />
+            ) : (
+              <div className="whitespace-pre-line text-slate-800 font-normal space-y-2">
+                {report.findings}
+              </div>
+            )}
           </div>
 
           {/* Mensurações Especiais de Radiografia (VHS / Norberg) */}
@@ -386,19 +395,21 @@ ${getPublicUrl()}`;
             </div>
           )}
 
-          {/* Impressão Diagnóstica - Destaque em Pastel */}
-          <div className="p-5 bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-sky-50/80 border-2 border-teal-500/70 rounded-2xl shadow-xs text-slate-900 print:border-teal-600">
-            <h2 className="text-xs font-black text-teal-900 uppercase tracking-wider mb-2 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-teal-600" />
-              <span>3. Impressão Diagnóstica</span>
-            </h2>
-            <div className="whitespace-pre-line font-bold text-slate-900 text-xs sm:text-sm leading-relaxed">
-              {report.conclusion}
+          {/* Impressão Diagnóstica Separada (Exibida caso o laudo anterior possua campo de conclusão distinto) */}
+          {report.conclusion && report.conclusion !== report.findings && (
+            <div className="p-5 bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-sky-50/80 border-2 border-teal-500/70 rounded-2xl shadow-xs text-slate-900 print:border-teal-600">
+              <h2 className="text-xs font-black text-teal-900 uppercase tracking-wider mb-2 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-teal-600" />
+                <span>3. Impressão Diagnóstica</span>
+              </h2>
+              <div className="whitespace-pre-line font-bold text-slate-900 text-xs sm:text-sm leading-relaxed">
+                {report.conclusion}
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Recomendações */}
-          {report.recommendations && (
+          {/* Recomendações (Exibidas se preenchidas e não repetidas no texto principal) */}
+          {report.recommendations && !report.findings.includes(report.recommendations) && (
             <div className="bg-slate-50/60 border border-slate-200/80 p-4 rounded-xl">
               <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
                 4. Recomendações e Considerações Finais

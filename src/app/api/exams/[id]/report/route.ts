@@ -36,9 +36,10 @@ export async function POST(
       keyImageIds
     } = body;
 
-    if (!findings || !conclusion) {
+    const reportContent = findings || conclusion;
+    if (!reportContent || !reportContent.trim()) {
       return NextResponse.json(
-        { error: 'Os campos de Descrição dos Achados e Conclusão Diagnóstica são obrigatórios' },
+        { error: 'O conteúdo do laudo com achados e impressão diagnóstica é obrigatório' },
         { status: 400 }
       );
     }
@@ -49,8 +50,8 @@ export async function POST(
       radiologistName: user.name,
       radiologistCrmv: user.crmv || 'CRMV Veterinário',
       technique: technique || 'Estudo radiográfico padrão em projeções ortogonais.',
-      findings,
-      conclusion,
+      findings: findings || reportContent,
+      conclusion: conclusion || findings || reportContent,
       recommendations: recommendations || 'Correlação com a evolução clínica e novos exames complementares a critério médico veterinário.',
       vhsScore: vhsScore || undefined,
       norbergAngle: norbergAngle || undefined,
