@@ -41,6 +41,55 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
   const [destEmail, setDestEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
 
+  // Logotipo da clínica no laudo
+  const [currentClinicLogo, setCurrentClinicLogo] = useState(exam.clinicLogo || '');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const [logoSuccessToast, setLogoSuccessToast] = useState(false);
+  const logoInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleUploadClinicLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('files', files[0]);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.files && data.files[0]) {
+        const newLogoUrl = data.files[0].url;
+        setCurrentClinicLogo(newLogoUrl);
+
+        // Salva no exame
+        await fetch(`/api/exams/${exam.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clinicLogo: newLogoUrl })
+        });
+
+        // Tenta atualizar no perfil da clínica caso logada
+        fetch('/api/auth/me', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ clinicLogo: newLogoUrl })
+        }).catch(() => {});
+
+        setLogoSuccessToast(true);
+        setTimeout(() => setLogoSuccessToast(false), 3500);
+      }
+    } catch (err) {
+      console.error('Erro ao anexar logo:', err);
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
   if (!report) {
     return (
       <div className="p-8 text-center bg-slate-900 rounded-2xl border border-slate-800 text-slate-400">
@@ -185,6 +234,29 @@ ${getPublicUrl()}`;
             <span>{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
           </button>
 
+          {/* Botão Anexar / Alterar Logo da Clínica */}
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
+            className="hidden"
+            onChange={handleUploadClinicLogo}
+          />
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            disabled={isUploadingLogo}
+            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition cursor-pointer disabled:opacity-50"
+            title="Anexar ou alterar o logotipo oficial da clínica neste laudo"
+          >
+            {isUploadingLogo ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
+            ) : (
+              <Building2 className="w-3.5 h-3.5 text-teal-600" />
+            )}
+            <span>{currentClinicLogo ? 'Alterar Logo da Clínica' : '+ Logo da Clínica'}</span>
+          </button>
+
           {/* Botão WhatsApp */}
           <button
             onClick={() => setShowWhatsAppModal(true)}
@@ -244,6 +316,23 @@ ${getPublicUrl()}`;
         </div>
       </div>
 
+      {/* Alerta de Sucesso ao Anexar Logo */}
+      {logoSuccessToast && (
+        <div className="max-w-4xl mx-auto mb-4 p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-xs animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600" />
+            <span>Logotipo da clínica anexado com sucesso! Já atualizado no laudo e PDF.</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setLogoSuccessToast(false)}
+            className="text-emerald-700 hover:text-emerald-900"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Papel Timbrado do Laudo (Estilo A4 Médico) */}
       <div 
         id={`printable-report-${exam.id}`}
@@ -253,7 +342,8 @@ ${getPublicUrl()}`;
         <div className="h-2 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 -mx-8 sm:-mx-12 -mt-8 sm:-mt-12 mb-8 print:h-1.5 print:mb-6" />
 
         {/* Cabeçalho Oficial Timbrado */}
-        <div className="border-b border-slate-200/90 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="border-b border-slate-200/90 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+          {/* Lado Esquerdo: Marca VetTeleRad */}
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20">
               {isUltrasound ? <Waves className="w-7 h-7" /> : <Activity className="w-7 h-7" />}
@@ -270,17 +360,55 @@ ${getPublicUrl()}`;
             </div>
           </div>
 
-          <div className="text-left sm:text-right text-xs text-slate-500 sm:border-l sm:border-slate-200 sm:pl-5">
-            <div className="font-bold text-slate-800">Central Nacional de Diagnóstico</div>
-            <div>contato@vettelerad.com.br • (11) 3003-9820</div>
-            <div className="flex sm:justify-end items-center gap-2 mt-1 font-mono text-[11px]">
-              <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-semibold border border-slate-200">
-                Protocolo: {exam.id}
-              </span>
-              <span className="px-2 py-0.5 bg-teal-50 text-teal-800 rounded-md font-semibold border border-teal-200">
-                {isUltrasound ? 'ULTRASSOM' : 'RAIO-X'}
-              </span>
-            </div>
+          {/* Lado Direito: Logotipo da Clínica Parceira Solicitante */}
+          <div className="flex items-center gap-4 sm:border-l sm:border-slate-200 sm:pl-5">
+            {currentClinicLogo ? (
+              <div className="flex items-center gap-3">
+                <div className="h-14 max-w-[170px] flex items-center justify-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={currentClinicLogo}
+                    alt={`Logo ${exam.clinicName}`}
+                    className="max-h-full max-w-full object-contain"
+                  />
+                </div>
+                <div className="text-left text-xs">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Clínica Solicitante</span>
+                  <strong className="text-slate-900 text-sm block leading-tight truncate max-w-[180px]">{exam.clinicName}</strong>
+                  {exam.clinicPhone && <span className="text-[11px] text-slate-500 block">{exam.clinicPhone}</span>}
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold mt-0.5"
+                  >
+                    Alterar logotipo
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-left sm:text-right text-xs text-slate-500">
+                <div className="font-bold text-slate-800">Central Nacional de Diagnóstico</div>
+                <div>contato@vettelerad.com.br • (11) 3003-9820</div>
+                <div className="flex sm:justify-end items-center gap-2 mt-1 font-mono text-[11px]">
+                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-semibold border border-slate-200">
+                    Protocolo: {exam.id}
+                  </span>
+                  <span className="px-2 py-0.5 bg-teal-50 text-teal-800 rounded-md font-semibold border border-teal-200">
+                    {isUltrasound ? 'ULTRASSOM' : 'RAIO-X'}
+                  </span>
+                </div>
+                <div className="mt-2 print:hidden">
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-lg transition cursor-pointer shadow-2xs"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                    <span>+ Anexar Logo da Clínica</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

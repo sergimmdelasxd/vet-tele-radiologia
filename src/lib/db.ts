@@ -590,6 +590,27 @@ export function readDatabase(): DatabaseSchema {
           u.plan = u.id === 'user-clinic-petcare' ? 'HOSPITAL' : (u.id === 'user-clinic-vetlife' ? 'PRO' : 'AVULSO');
           shouldSave = true;
         }
+        if (!u.clinicLogo) {
+          if (u.id === 'user-clinic-vetlife') {
+            u.clinicLogo = '/logos/vetlife-logo.svg';
+            shouldSave = true;
+          } else if (u.id === 'user-clinic-petcare') {
+            u.clinicLogo = '/logos/petcare-logo.svg';
+            shouldSave = true;
+          }
+        }
+      }
+    }
+
+    if (parsed.exams) {
+      for (const e of parsed.exams) {
+        if (!e.clinicLogo) {
+          const ownerClinic = parsed.users.find(u => u.id === e.clinicId || (u.clinicName && u.clinicName === e.clinicName));
+          if (ownerClinic?.clinicLogo) {
+            e.clinicLogo = ownerClinic.clinicLogo;
+            shouldSave = true;
+          }
+        }
       }
     }
 
@@ -634,6 +655,20 @@ export function createUser(userData: Omit<User, 'id' | 'createdAt'>): User {
   db.users.push(newUser);
   writeDatabase(db);
   const { password: _, ...userWithoutPassword } = newUser;
+  return userWithoutPassword as User;
+}
+
+export function updateUser(id: string, updates: Partial<User>): User | null {
+  const db = readDatabase();
+  const index = db.users.findIndex(u => u.id === id);
+  if (index === -1) return null;
+
+  db.users[index] = {
+    ...db.users[index],
+    ...updates
+  };
+  writeDatabase(db);
+  const { password: _, ...userWithoutPassword } = db.users[index];
   return userWithoutPassword as User;
 }
 
@@ -685,12 +720,17 @@ export function createExam(examData: Partial<Exam>): Exam {
   const isUrgent = examData.priority === 'URGENT';
   const deadlineDate = new Date(now.getTime() + (isUrgent ? 2 * 3600 * 1000 : 12 * 3600 * 1000));
 
+  // Se a clínica já possui logotipo no perfil, herda automaticamente caso não seja enviado no exame
+  const clinicUser = db.users.find(u => u.id === examData.clinicId || (u.clinicName && u.clinicName === examData.clinicName));
+  const finalClinicLogo = examData.clinicLogo || clinicUser?.clinicLogo || '';
+
   const newExam: Exam = {
     id: examId,
     clinicId: examData.clinicId || 'unknown',
     clinicName: examData.clinicName || 'Clínica Conveniada',
     requestingVet: examData.requestingVet || 'Médico Veterinário',
     clinicPhone: examData.clinicPhone || '',
+    clinicLogo: finalClinicLogo,
     modality: examData.modality || 'RADIOGRAFIA',
     patientName: examData.patientName || 'Paciente',
     species: examData.species || 'Canino',

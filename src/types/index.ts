@@ -14,6 +14,7 @@ export interface User {
   uf?: string;
   cnpj?: string;
   avatar?: string;
+  clinicLogo?: string; // URL da logo da clínica para exibição no laudo
   balance?: number; // Saldo em conta para laudos (em R$)
   plan?: ClinicPlan; // Plano da clínica parceira
   createdAt: string;
@@ -63,6 +64,7 @@ export interface Exam {
   clinicName: string;
   requestingVet: string; // Médico solicitante
   clinicPhone?: string;
+  clinicLogo?: string; // Logotipo oficial anexado para o laudo timbrado
   
   // Modalidade: Radiografia ou Ultrassom
   modality: ExamModality;

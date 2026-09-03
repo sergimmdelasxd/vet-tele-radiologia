@@ -7,16 +7,20 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getCurrentUserFromCookie();
-    if (!user) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
-    }
-
     const { id } = await params;
     const exam = getExamById(id);
 
     if (!exam) {
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
+    }
+
+    const user = await getCurrentUserFromCookie();
+    // Se não estiver logado, permite acesso apenas para exames concluídos (visualização pública de laudos via link/QR Code)
+    if (!user) {
+      if (exam.status === 'REPORTED') {
+        return NextResponse.json({ exam });
+      }
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
     // Se for clínica, só pode ver seu próprio exame
@@ -49,7 +53,12 @@ export async function PATCH(
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
     }
 
-    // Permite alteração de status por radiologista ou admin
+    // Se for clínica, só pode atualizar seu próprio exame
+    if (user.role === 'CLINIC' && existingExam.clinicId !== user.userId) {
+      return NextResponse.json({ error: 'Acesso negado a este exame' }, { status: 403 });
+    }
+
+    // Permite alteração de status operacional apenas por radiologista ou admin
     if (user.role === 'CLINIC' && body.status && body.status !== 'CANCELLED') {
       return NextResponse.json({ error: 'Clínica não pode alterar status operacional do exame' }, { status: 403 });
     }

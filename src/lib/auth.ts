@@ -11,6 +11,7 @@ export interface TokenPayload {
   name: string;
   role: 'CLINIC' | 'RADIOLOGIST' | 'ADMIN';
   clinicName?: string;
+  clinicLogo?: string;
   crmv?: string;
 }
 
@@ -21,6 +22,7 @@ export function signToken(user: User): string {
     name: user.name,
     role: user.role,
     clinicName: user.clinicName,
+    clinicLogo: user.clinicLogo,
     crmv: user.crmv,
   };
 

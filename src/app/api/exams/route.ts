@@ -60,6 +60,7 @@ export async function POST(request: Request) {
       priority,
       requestingVet,
       clinicPhone,
+      clinicLogo,
       fastingHours,
       trichotomyDone,
       ultrasoundType,
@@ -79,6 +80,8 @@ export async function POST(request: Request) {
     let finalClinicId = user.userId;
     let finalClinicName = user.clinicName || user.name;
     let finalClinicPhone = clinicPhone || '';
+    const userFromDb = findUserById(user.userId);
+    let finalClinicLogo = clinicLogo || user.clinicLogo || userFromDb?.clinicLogo || '';
     let finalRequestingVet = requestingVet || user.name;
 
     // Se for radiologista ou admin criando exame em nome de uma clínica
@@ -96,6 +99,7 @@ export async function POST(request: Request) {
             password: bcrypt.hashSync('123456', 10),
             role: 'CLINIC',
             phone: newClinicData.phone || '',
+            clinicLogo: newClinicData.clinicLogo || clinicLogo || '',
             uf: newClinicData.uf || 'SP',
             crmv: newClinicData.crmv || '',
             cnpj: newClinicData.cnpj || ''
@@ -104,6 +108,9 @@ export async function POST(request: Request) {
         finalClinicId = existingClinic.id;
         finalClinicName = existingClinic.clinicName || newClinicData.clinicName;
         finalClinicPhone = existingClinic.phone || newClinicData.phone || '';
+        if (!finalClinicLogo && existingClinic.clinicLogo) {
+          finalClinicLogo = existingClinic.clinicLogo;
+        }
         finalRequestingVet = newClinicData.responsibleVet || requestingVet || 'Médico Veterinário';
       } else if (clinicId && clinicId !== 'new') {
         const existingClinic = findUserById(clinicId);
@@ -111,6 +118,9 @@ export async function POST(request: Request) {
           finalClinicId = existingClinic.id;
           finalClinicName = existingClinic.clinicName || existingClinic.name;
           finalClinicPhone = existingClinic.phone || clinicPhone || '';
+          if (!finalClinicLogo && existingClinic.clinicLogo) {
+            finalClinicLogo = existingClinic.clinicLogo;
+          }
           finalRequestingVet = requestingVet || existingClinic.name;
         } else if (clinicName) {
           finalClinicId = clinicId;
@@ -130,6 +140,7 @@ export async function POST(request: Request) {
       clinicName: finalClinicName,
       requestingVet: finalRequestingVet,
       clinicPhone: finalClinicPhone,
+      clinicLogo: finalClinicLogo,
       modality: modality === 'ULTRASSOM' ? 'ULTRASSOM' : 'RADIOGRAFIA',
       patientName,
       species,

@@ -27,6 +27,7 @@ interface NewExamModalProps {
   onExamCreated: (exam: Exam) => void;
   defaultClinicName?: string;
   defaultVetName?: string;
+  defaultClinicLogo?: string;
   userRole?: UserRole;
 }
 
@@ -36,10 +37,22 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   onExamCreated,
   defaultClinicName = '',
   defaultVetName = '',
+  defaultClinicLogo = '',
   userRole = 'CLINIC'
 }) => {
   // Modalidade: Radiografia ou Ultrassonografia
   const [modality, setModality] = useState<ExamModality>('RADIOGRAFIA');
+
+  // Logotipo da clínica para o laudo
+  const [clinicLogo, setClinicLogo] = useState(defaultClinicLogo || '');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoFileRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (defaultClinicLogo) {
+      setClinicLogo(defaultClinicLogo);
+    }
+  }, [defaultClinicLogo]);
 
   const [patientName, setPatientName] = useState('');
   const [species, setSpecies] = useState<Species>('Canino');
@@ -223,6 +236,28 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('files', files[0]);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.files && data.files[0]) {
+        setClinicLogo(data.files[0].url);
+      }
+    } catch (err) {
+      console.error('Erro no upload do logotipo:', err);
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
+
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
@@ -329,6 +364,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           fastingHours: modality === 'ULTRASSOM' ? fastingHours : undefined,
           trichotomyDone: modality === 'ULTRASSOM' ? trichotomyDone : undefined,
           ultrasoundType: modality === 'ULTRASSOM' ? ultrasoundType : undefined,
+          clinicLogo: clinicLogo || undefined,
           images: uploadedImages,
           ...(isRadiologistOrAdmin ? {
             clinicId: clinicMode === 'SELECT' ? selectedClinicId : 'new',
@@ -1098,6 +1134,66 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
                 ))}
               </div>
             )}
+
+            {/* SEÇÃO: LOGOTIPO DA CLÍNICA PARA O LAUDO TIMBRADO */}
+            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3 mt-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Logotipo da Clínica no Laudo (Opcional)</span>
+                </label>
+                {clinicLogo && (
+                  <button
+                    type="button"
+                    onClick={() => setClinicLogo('')}
+                    className="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                  >
+                    Remover deste pedido
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={logoFileRef}
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+
+              {clinicLogo ? (
+                <div className="flex flex-col sm:flex-row items-center gap-3.5 p-3 bg-slate-900 border border-slate-700/80 rounded-xl">
+                  <div className="h-12 w-28 p-1.5 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={clinicLogo} alt="Logo da Clínica" className="max-h-full max-w-full object-contain" />
+                  </div>
+                  <div className="flex-1 text-xs text-center sm:text-left">
+                    <span className="font-bold text-slate-100 block">Logotipo oficial anexado</span>
+                    <span className="text-[11px] text-slate-400">
+                      Será impresso no cabeçalho timbrado oficial deste laudo e no PDF para o tutor.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => logoFileRef.current?.click()}
+                    disabled={isUploadingLogo}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-teal-300 rounded-lg border border-slate-700 transition cursor-pointer shrink-0"
+                  >
+                    {isUploadingLogo ? 'Carregando...' : 'Alterar Logo'}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => logoFileRef.current?.click()}
+                  className="border border-dashed border-slate-700 hover:border-teal-500/80 rounded-xl p-4 flex items-center justify-center gap-2.5 cursor-pointer bg-slate-900/40 hover:bg-teal-950/20 transition group"
+                >
+                  <UploadCloud className="w-4 h-4 text-teal-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-slate-300 font-medium">
+                    {isUploadingLogo ? 'Enviando logotipo...' : '+ Anexar Logotipo da Clínica para o Laudo (PNG, SVG, JPG)'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Footer com Preço e Botões */}

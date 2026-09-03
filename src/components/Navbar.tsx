@@ -20,6 +20,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 import { User } from '@/types';
+import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
 
 interface NavbarProps {
   user: User | null;
@@ -27,9 +28,15 @@ interface NavbarProps {
   onRefresh?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
+export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const [showClinicModal, setShowClinicModal] = React.useState(false);
+  const [currentUser, setCurrentUser] = React.useState<User | null>(user);
+
+  React.useEffect(() => {
+    setCurrentUser(user);
+  }, [user]);
 
   const handleLogout = async () => {
     try {
@@ -269,6 +276,32 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                         </div>
                       )}
 
+                      {/* PERSONALIZAÇÃO: LOGOTIPO & DADOS DA CLÍNICA */}
+                      <div className="pt-1 border-t border-slate-800/80">
+                        <button
+                          type="button"
+                          onClick={() => setShowClinicModal(true)}
+                          className="w-full flex items-center justify-between p-2 rounded-xl bg-teal-500/10 hover:bg-teal-500/20 text-teal-300 border border-teal-500/25 transition text-left cursor-pointer group/logo"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-teal-500/20 text-teal-300 flex items-center justify-center shrink-0">
+                              <Building2 className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-xs text-white group-hover/logo:text-teal-200">
+                                Minha Clínica &amp; Logo
+                              </div>
+                              <div className="text-[10px] text-teal-300/80">
+                                Logotipo do laudo timbrado
+                              </div>
+                            </div>
+                          </div>
+                          <span className="text-[10px] bg-teal-500/20 text-teal-300 px-2 py-0.5 rounded-md font-bold">
+                            {currentUser?.clinicLogo ? 'Configurado' : '+ Anexar'}
+                          </span>
+                        </button>
+                      </div>
+
                       {/* SEÇÃO 2: NAVEGAÇÃO RÁPIDA */}
                       <div className="space-y-1 pt-1 border-t border-slate-800/80">
                         <Link
@@ -370,6 +403,19 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
           </div>
         </div>
       </div>
+
+      {/* Modal de Personalização da Clínica & Logotipo */}
+      {currentUser && (
+        <ClinicSettingsModal
+          isOpen={showClinicModal}
+          onClose={() => setShowClinicModal(false)}
+          user={currentUser}
+          onUserUpdated={(updated) => {
+            setCurrentUser(updated);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
     </header>
   );
 };

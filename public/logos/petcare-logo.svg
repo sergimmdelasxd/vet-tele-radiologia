@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 70" width="280" height="70">
+  <defs>
+    <linearGradient id="petcare-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="5" width="60" height="60" rx="16" fill="url(#petcare-grad)" />
+  <path d="M34 18 L38 28 L49 28 L40 35 L43 46 L34 39 L25 46 L28 35 L19 28 L30 28 Z" fill="#ffffff" />
+  <text x="76" y="38" font-family="Inter, -apple-system, sans-serif" font-size="24" font-weight="900" fill="#0f172a" letter-spacing="-0.5">
+    Pet<tspan fill="#0284c7">Care</tspan>
+  </text>
+  <text x="77" y="54" font-family="Inter, -apple-system, sans-serif" font-size="10" font-weight="700" fill="#64748b" letter-spacing="1.5">
+    HOSPITAL VETERINÁRIO
+  </text>
+</svg>

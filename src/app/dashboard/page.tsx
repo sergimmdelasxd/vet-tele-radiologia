@@ -41,6 +41,7 @@ import { ReportEditor } from '@/components/report/ReportEditor';
 import { ReportDocument } from '@/components/report/ReportDocument';
 import { NewExamModal } from '@/components/dashboard/NewExamModal';
 import { FinancialModal } from '@/components/dashboard/FinancialModal';
+import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
 import { Exam, User, ExamStatus, ExamPriority, ExamModality } from '@/types';
 
 export default function DashboardPage() {
@@ -68,6 +69,7 @@ export default function DashboardPage() {
 
   // Modais e Estados de Trabalho
   const [isNewExamModalOpen, setIsNewExamModalOpen] = useState(false);
+  const [isClinicSettingsModalOpen, setIsClinicSettingsModalOpen] = useState(false);
   const [activeViewingExam, setActiveViewingExam] = useState<Exam | null>(null);
   const [activeReportingExam, setActiveReportingExam] = useState<Exam | null>(null);
   const [activeDocumentExam, setActiveDocumentExam] = useState<Exam | null>(null);
@@ -359,6 +361,19 @@ export default function DashboardPage() {
                 </>
               )}
 
+              {currentUser.role === 'CLINIC' && (
+                <button
+                  onClick={() => setIsClinicSettingsModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 hover:text-slate-900 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer"
+                  title="Configurar Logotipo Oficial da Clínica para os Laudos"
+                >
+                  <Building2 className="w-4 h-4 text-teal-600" />
+                  <span>
+                    {currentUser.clinicLogo ? 'Logotipo do Laudo' : '+ Anexar Logo'}
+                  </span>
+                </button>
+              )}
+
               <button
                 onClick={() => setIsNewExamModalOpen(true)}
                 className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white font-bold text-xs sm:text-sm rounded-xl shadow-md shadow-teal-500/20 transition-all active:scale-95 cursor-pointer"
@@ -518,6 +533,33 @@ export default function DashboardPage() {
               </div>
             </button>
           </div>
+
+          {/* Banner Informativo de Anexar Logotipo da Clínica */}
+          {currentUser.role === 'CLINIC' && !currentUser.clinicLogo && (
+            <div className="mt-5 bg-gradient-to-r from-teal-50/90 via-sky-50/50 to-teal-50/90 border border-teal-200/90 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-teal-100/90 text-teal-700 border border-teal-200 flex items-center justify-center shrink-0 shadow-2xs">
+                  <Building2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                    <span>Anexe o Logotipo da sua Clínica aos Laudos</span>
+                    <span className="text-[10px] bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full font-bold">Novo</span>
+                  </h4>
+                  <p className="text-[11px] text-slate-600">
+                    Seus laudos timbrados de Raio-X e Ultrassom serão emitidos com o logotipo oficial da sua clínica no cabeçalho e PDF.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsClinicSettingsModalOpen(true)}
+                className="px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer shrink-0"
+              >
+                Anexar Logotipo Agora
+              </button>
+            </div>
+          )}
         </div>
 
         {/* ========================================================================= */}
@@ -1336,6 +1378,7 @@ export default function DashboardPage() {
         onExamCreated={handleExamCreated}
         defaultClinicName={currentUser.clinicName}
         defaultVetName={currentUser.name}
+        defaultClinicLogo={currentUser.clinicLogo}
         userRole={currentUser.role}
       />
 
@@ -1518,6 +1561,19 @@ export default function DashboardPage() {
           currentUser={currentUser}
           onBalanceUpdated={(newBalance) => {
             setCurrentUser(prev => prev ? { ...prev, balance: newBalance } : null);
+          }}
+        />
+      )}
+
+      {/* MODAL 5: Personalização da Clínica & Logotipo do Laudo */}
+      {currentUser && (
+        <ClinicSettingsModal
+          isOpen={isClinicSettingsModalOpen}
+          onClose={() => setIsClinicSettingsModalOpen(false)}
+          user={currentUser}
+          onUserUpdated={(updatedUser) => {
+            setCurrentUser(updatedUser);
+            loadData();
           }}
         />
       )}
