@@ -124,7 +124,7 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
 🩺 *Médico Veterinário:* ${exam.requestingVet}
 👨‍⚕️ *Especialista:* ${report.radiologistName} (${report.radiologistCrmv})
 
-🔍 *Conclusão Diagnóstica:*
+🔍 *Impressão Diagnóstica:*
 ${report.conclusion.slice(0, 180)}${report.conclusion.length > 180 ? '...' : ''}
 
 🔗 *Acesse o laudo oficial e imagens pelo link:*
@@ -386,11 +386,11 @@ ${getPublicUrl()}`;
             </div>
           )}
 
-          {/* Conclusão Diagnóstica - Destaque em Pastel */}
+          {/* Impressão Diagnóstica - Destaque em Pastel */}
           <div className="p-5 bg-gradient-to-r from-teal-50/90 via-emerald-50/60 to-sky-50/80 border-2 border-teal-500/70 rounded-2xl shadow-xs text-slate-900 print:border-teal-600">
             <h2 className="text-xs font-black text-teal-900 uppercase tracking-wider mb-2 flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-teal-600" />
-              <span>3. Conclusão Diagnóstica</span>
+              <span>3. Impressão Diagnóstica</span>
             </h2>
             <div className="whitespace-pre-line font-bold text-slate-900 text-xs sm:text-sm leading-relaxed">
               {report.conclusion}
@@ -490,7 +490,7 @@ ${getPublicUrl()}`;
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Uma mensagem estruturada com os dados do paciente ({exam.patientName}), conclusão diagnóstica e link direto do laudo será enviada para o WhatsApp informado:
+              Uma mensagem estruturada com os dados do paciente ({exam.patientName}), impressão diagnóstica e link direto do laudo será enviada para o WhatsApp informado:
             </p>
 
             <div>

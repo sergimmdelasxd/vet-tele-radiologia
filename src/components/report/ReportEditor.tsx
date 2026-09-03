@@ -110,7 +110,7 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     setSuccessMsg(null);
 
     if (!findings.trim() || !conclusion.trim()) {
-      setErrorMsg('Os campos de Descrição dos Achados e Conclusão Diagnóstica são obrigatórios.');
+      setErrorMsg('Os campos de Descrição dos Achados e Impressão Diagnóstica são obrigatórios.');
       return;
     }
 
@@ -318,10 +318,10 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
           />
         </div>
 
-        {/* Conclusão Diagnóstica */}
+        {/* Impressão Diagnóstica */}
         <div>
           <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px] text-cyan-400">
-            Conclusão Diagnóstica *
+            Impressão Diagnóstica *
           </label>
           <textarea
             rows={3}
