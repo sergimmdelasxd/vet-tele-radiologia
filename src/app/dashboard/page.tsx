@@ -275,13 +275,15 @@ export default function DashboardPage() {
   if (!currentUser) return null;
 
   return (
-    <div className="min-h-screen bg-[#fafbfc] text-slate-800 flex flex-col font-sans selection:bg-teal-500 selection:text-white">
-      <Navbar
-        user={currentUser}
-        onNewExamClick={() => setIsNewExamModalOpen(true)}
-      />
+    <div className="min-h-screen bg-[#fafbfc] text-slate-800 flex flex-col font-sans selection:bg-teal-500 selection:text-white print:bg-white print:p-0 print:min-h-0">
+      <div className="print:hidden">
+        <Navbar
+          user={currentUser}
+          onNewExamClick={() => setIsNewExamModalOpen(true)}
+        />
+      </div>
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-7 print:hidden">
         {/* Banner de Boas-vindas & CTA */}
         <div className="bg-white/95 border border-slate-200/90 rounded-3xl p-6 sm:p-8 relative overflow-hidden shadow-xs backdrop-blur-md">
           {/* Brilhos difusos pastéis de fundo */}
@@ -1543,8 +1545,8 @@ export default function DashboardPage() {
 
       {/* MODAL 3: Visualização do Laudo Oficial Timbrado & Impressão PDF */}
       {activeDocumentExam && (
-        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-y-auto">
-          <div className="w-full max-w-4xl my-auto">
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-6 overflow-y-auto print:static print:inset-auto print:bg-white print:p-0 print:m-0 print:overflow-visible print:block print:z-auto">
+          <div className="w-full max-w-4xl my-auto print:max-w-none print:w-full print:m-0 print:p-0">
             <ReportDocument
               exam={activeDocumentExam}
               onClose={() => setActiveDocumentExam(null)}

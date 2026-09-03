@@ -24,3 +24,74 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* ========================================================================= */
+/* CONFIGURAÇÃO DE IMPRESSÃO PROFISSIONAL A4 (PDF & IMPRESSÃO DIRETA)       */
+/* ========================================================================= */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 10mm 10mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ocultar barra de navegação, cabeçalhos do sistema e rodapés da tela */
+  nav, header, footer, aside, .print\:hidden {
+    display: none !important;
+  }
+
+  /* Ocultar botões, caixas de diálogo e inputs */
+  button, input, textarea, select {
+    display: none !important;
+  }
+
+  /* Desativar sobreposição fixa de modal e fundos escuros */
+  .fixed, .backdrop-blur-md, .backdrop-blur-xs {
+    position: static !important;
+    inset: auto !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+  }
+
+  /* Documento do Laudo Médico Oficial */
+  [id^="printable-report-"] {
+    display: block !important;
+    visibility: visible !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  [id^="printable-report-"] * {
+    visibility: visible !important;
+  }
+
+  /* Evitar quebras desordenadas de páginas */
+  .page-break-avoid, .border-b, h1, h2, h3 {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}

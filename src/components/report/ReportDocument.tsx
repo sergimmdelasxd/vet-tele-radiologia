@@ -117,31 +117,63 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose })
         scale: 2,
         useCORS: true,
         logging: false,
-        backgroundColor: '#ffffff'
+        backgroundColor: '#ffffff',
+        scrollY: 0,
+        scrollX: 0,
+        x: 0,
+        y: 0,
+        windowWidth: 1024
       });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.95);
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      const pageHeight = pdf.internal.pageSize.getHeight();
+      const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const margin = 8; // 8mm margem padrão médica
+      const usableWidth = pageWidth - (margin * 2); // 194mm
+      const usableHeight = pageHeight - (margin * 2); // 281mm
 
-      let heightLeft = pdfHeight;
-      let position = 0;
+      const contentAspectRatio = canvas.width / canvas.height;
+      let renderWidth = usableWidth;
+      let renderHeight = renderWidth / contentAspectRatio;
 
-      pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
+      // Se o laudo couber ou estiver ligeiramente acima (até 30%), ajusta a escala para caber exatamente em 1 PÁGINA A4 ÚNICA
+      if (renderHeight <= usableHeight * 1.30) {
+        if (renderHeight > usableHeight) {
+          renderHeight = usableHeight;
+          renderWidth = renderHeight * contentAspectRatio;
+        }
+        const xOffset = margin + (usableWidth - renderWidth) / 2;
+        const yOffset = margin;
+        const imgData = canvas.toDataURL('image/jpeg', 0.95);
+        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'FAST');
+      } else {
+        // Se for um laudo longo com muitas fotos/cortes anexados, fatia em páginas limpas sem duplicar o laudo
+        const pageCanvasHeight = Math.floor(canvas.width * (usableHeight / usableWidth));
+        let sourceY = 0;
 
-      while (heightLeft > 0) {
-        position = heightLeft - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'JPEG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
+        while (sourceY < canvas.height) {
+          if (sourceY > 0) pdf.addPage();
+
+          const sliceHeight = Math.min(pageCanvasHeight, canvas.height - sourceY);
+          const pageCanvas = document.createElement('canvas');
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+          const ctx = pageCanvas.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+            const sliceData = pageCanvas.toDataURL('image/jpeg', 0.95);
+            const sliceRenderHeight = (sliceHeight * usableWidth) / canvas.width;
+            pdf.addImage(sliceData, 'JPEG', margin, margin, usableWidth, sliceRenderHeight, undefined, 'FAST');
+          }
+          sourceY += pageCanvasHeight;
+        }
       }
 
       const cleanPatient = exam.patientName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -336,10 +368,12 @@ ${getPublicUrl()}`;
       {/* Papel Timbrado do Laudo (Estilo A4 Médico) */}
       <div 
         id={`printable-report-${exam.id}`}
-        className="bg-white text-slate-900 p-8 sm:p-12 rounded-3xl shadow-xl shadow-slate-200/70 max-w-4xl mx-auto border border-slate-200/90 relative overflow-hidden font-sans print:border-0 print:shadow-none print:p-0 print:m-0 print:rounded-none"
+        className="bg-white text-slate-900 rounded-3xl shadow-xl shadow-slate-200/70 max-w-4xl mx-auto border border-slate-200/90 relative font-sans print:border-0 print:shadow-none print:m-0 print:rounded-none print:max-w-none overflow-visible print:overflow-visible"
       >
-        {/* Faixa decorativa superior em gradiente pastel */}
-        <div className="h-2 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 -mx-8 sm:-mx-12 -mt-8 sm:-mt-12 mb-8 print:h-1.5 print:mb-6" />
+        {/* Faixa decorativa superior em gradiente pastel - Sem margens negativas para não cortar o topo */}
+        <div className="h-2.5 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 w-full rounded-t-3xl print:rounded-none print:h-1.5" />
+
+        <div className="p-6 sm:p-10 pt-5 sm:pt-6 print:p-4 print:pt-3">
 
         {/* Cabeçalho Oficial Timbrado */}
         <div className="border-b border-slate-200/90 pb-6 flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -407,7 +441,7 @@ ${getPublicUrl()}`;
         </div>
 
         {/* Título do Laudo */}
-        <div className="mt-5 text-center">
+        <div className="mt-4 print:mt-2 text-center">
           <span className="inline-block px-4 py-1.5 bg-gradient-to-r from-teal-50 via-sky-50 to-teal-50 text-teal-900 text-xs font-black uppercase tracking-widest rounded-full border border-teal-200/80 shadow-2xs">
             {isUltrasound
               ? 'LAUDO DE ULTRASSONOGRAFIA VETERINÁRIA'
@@ -416,7 +450,7 @@ ${getPublicUrl()}`;
         </div>
 
         {/* Informações do Paciente e da Solicitação */}
-        <div className="my-5 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 text-xs">
+        <div className="my-4 print:my-2.5 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-5 print:p-3 rounded-2xl border border-slate-200/80 text-xs">
           {/* Dados do Paciente */}
           <div className="space-y-2 border-b md:border-b-0 md:border-r border-slate-200 pb-3 md:pb-0 md:pr-4">
             <div className="text-[11px] font-bold uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
@@ -453,7 +487,7 @@ ${getPublicUrl()}`;
 
         {/* Histórico Clínico Informado */}
         {exam.clinicalHistory && (
-          <div className="mb-6 bg-amber-50/70 border border-amber-200/80 p-3.5 rounded-xl text-xs">
+          <div className="mb-4 print:mb-2.5 bg-amber-50/70 border border-amber-200/80 p-3.5 print:p-2.5 rounded-xl text-xs">
             <span className="font-bold text-amber-900 block mb-0.5">Histórico Clínico e Suspeita Diagnóstica:</span>
             <p className="text-slate-700 italic leading-relaxed">
               &quot;{exam.clinicalHistory}&quot; {exam.suspectedDiagnosis ? `— Suspeita: ${exam.suspectedDiagnosis}` : ''}
@@ -462,7 +496,7 @@ ${getPublicUrl()}`;
         )}
 
         {/* Seções do Laudo */}
-        <div className="space-y-6 text-xs text-slate-800 leading-relaxed">
+        <div className="space-y-4 print:space-y-2.5 text-xs text-slate-800 leading-relaxed">
           {/* Técnica */}
           <div>
             <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
@@ -566,7 +600,7 @@ ${getPublicUrl()}`;
         </div>
 
         {/* Rodapé e Carimbo */}
-        <div className="mt-10 pt-6 border-t-2 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="mt-6 pt-4 print:mt-4 print:pt-3 border-t-2 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
           {/* Autenticação Digital e QR Code */}
           <div className="flex items-center gap-3">
             <div className="w-14 h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-700 shadow-2xs">
@@ -601,6 +635,7 @@ ${getPublicUrl()}`;
           </div>
         </div>
       </div>
+    </div>
 
       {/* Modal WhatsApp */}
       {showWhatsAppModal && (
