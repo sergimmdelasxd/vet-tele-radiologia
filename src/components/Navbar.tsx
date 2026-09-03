@@ -106,6 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
             {!user && pathname === '/' && (
               <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-600 font-semibold">
                 <Link href="/#como-funciona" className="hover:text-teal-600 transition">Como Funciona</Link>
+                <Link href="/#modalidades" className="hover:text-teal-600 transition">Modalidades</Link>
                 <Link href="/#precos" className="hover:text-teal-600 transition">Preços &amp; Planos</Link>
                 <Link href="/#calculadora" className="hover:text-teal-600 transition">Simulador</Link>
                 <Link href="/#corpo-clinico" className="hover:text-teal-600 transition">Especialistas</Link>
