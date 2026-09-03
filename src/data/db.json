@@ -41,7 +41,8 @@
       "crmv": "CRMV-SP 38.412",
       "phone": "(11) 97111-2233",
       "uf": "SP",
-      "createdAt": "2026-07-15T08:00:00Z"
+      "createdAt": "2026-07-15T08:00:00Z",
+      "clinicLogo": "/uploads/1788470407479-0-20260418-085648_20260418133338_2_JPG.jpg"
     },
     {
       "id": "user-admin-ricardo",
@@ -206,7 +207,7 @@
         }
       ],
       "createdAt": "2026-09-02T19:29:36.034Z",
-      "updatedAt": "2026-09-02T19:30:02.530Z",
+      "updatedAt": "2026-09-03T21:20:07.664Z",
       "deadline": "2026-09-03T07:29:36.034Z",
       "report": {
         "examId": "VET-2026-110",
@@ -221,7 +222,8 @@
         "id": "rep-1788377402530",
         "reportedAt": "2026-09-02T19:30:02.530Z",
         "digitalSignatureHash": "VET-SIGN-1788377402530-IE2BBWS"
-      }
+      },
+      "clinicLogo": "/uploads/1788470407479-0-20260418-085648_20260418133338_2_JPG.jpg"
     },
     {
       "id": "VET-2026-109",
