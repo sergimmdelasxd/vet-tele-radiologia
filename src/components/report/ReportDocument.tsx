@@ -342,73 +342,67 @@ ${getPublicUrl()}`;
         <div className="h-2 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 -mx-8 sm:-mx-12 -mt-8 sm:-mt-12 mb-8 print:h-1.5 print:mb-6" />
 
         {/* Cabeçalho Oficial Timbrado */}
-        <div className="border-b border-slate-200/90 pb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          {/* Lado Esquerdo: Marca VetTeleRad */}
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20">
-              {isUltrasound ? <Waves className="w-7 h-7" /> : <Activity className="w-7 h-7" />}
-            </div>
-            <div>
-              <h1 className="text-2xl font-black tracking-tight text-slate-900">
-                Vet<span className="text-teal-600">Tele</span>Rad
-              </h1>
-              <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                {isUltrasound
-                  ? 'Centro Especializado de Teleultrassonografia Veterinária'
-                  : 'Centro Especializado de Telerradiologia Veterinária'}
-              </p>
-            </div>
-          </div>
-
-          {/* Lado Direito: Logotipo da Clínica Parceira Solicitante */}
-          <div className="flex items-center gap-4 sm:border-l sm:border-slate-200 sm:pl-5">
+        <div className="border-b border-slate-200/90 pb-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+          {/* LADO ESQUERDO: LOGO DA CLÍNICA SOLICITANTE COM MAIOR DESTAQUE */}
+          <div className="flex-1 flex items-center justify-start min-h-[72px]">
             {currentClinicLogo ? (
-              <div className="flex items-center gap-3">
-                <div className="h-14 max-w-[170px] flex items-center justify-center p-1 bg-white rounded-xl border border-slate-200 shadow-2xs">
+              <div className="relative group">
+                <div className="h-16 sm:h-20 max-w-[320px] flex items-center justify-start">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={currentClinicLogo}
-                    alt={`Logo ${exam.clinicName}`}
-                    className="max-h-full max-w-full object-contain"
+                    alt="Logotipo da Clínica Solicitante"
+                    className="max-h-full max-w-full object-contain object-left drop-shadow-xs"
                   />
                 </div>
-                <div className="text-left text-xs">
-                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Clínica Solicitante</span>
-                  <strong className="text-slate-900 text-sm block leading-tight truncate max-w-[180px]">{exam.clinicName}</strong>
-                  {exam.clinicPhone && <span className="text-[11px] text-slate-500 block">{exam.clinicPhone}</span>}
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold mt-0.5"
-                  >
-                    Alterar logotipo
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-1"
+                >
+                  Alterar logotipo
+                </button>
               </div>
             ) : (
-              <div className="text-left sm:text-right text-xs text-slate-500">
-                <div className="font-bold text-slate-800">Central Nacional de Diagnóstico</div>
-                <div>contato@vettelerad.com.br • (11) 3003-9820</div>
-                <div className="flex sm:justify-end items-center gap-2 mt-1 font-mono text-[11px]">
-                  <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-semibold border border-slate-200">
-                    Protocolo: {exam.id}
-                  </span>
-                  <span className="px-2 py-0.5 bg-teal-50 text-teal-800 rounded-md font-semibold border border-teal-200">
-                    {isUltrasound ? 'ULTRASSOM' : 'RAIO-X'}
-                  </span>
-                </div>
-                <div className="mt-2 print:hidden">
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 border border-teal-200 px-2.5 py-1 rounded-lg transition cursor-pointer shadow-2xs"
-                  >
-                    <Building2 className="w-3.5 h-3.5 text-teal-600" />
-                    <span>+ Anexar Logo da Clínica</span>
-                  </button>
-                </div>
+              <div className="flex items-center gap-3 print:hidden">
+                <button
+                  type="button"
+                  onClick={() => logoInputRef.current?.click()}
+                  className="h-16 px-4 border-2 border-dashed border-teal-300 hover:border-teal-500 rounded-2xl bg-teal-50/40 hover:bg-teal-50 text-teal-800 text-xs font-bold flex items-center gap-2.5 transition cursor-pointer"
+                >
+                  <Building2 className="w-5 h-5 text-teal-600" />
+                  <div className="text-left">
+                    <span className="block">+ Anexar Logotipo da Clínica</span>
+                    <span className="text-[10px] text-teal-600 font-normal">Exibição com destaque no cabeçalho</span>
+                  </div>
+                </button>
               </div>
             )}
+          </div>
+
+          {/* LADO DIREITO: LOGO DA TELERRADIOLOGIA (VetTeleRad) */}
+          <div className="flex items-center gap-3.5 sm:border-l sm:border-slate-200 sm:pl-6 shrink-0">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-teal-500 to-cyan-600 flex items-center justify-center text-white shadow-sm shadow-teal-500/20 shrink-0">
+              {isUltrasound ? <Waves className="w-6 h-6" /> : <Activity className="w-6 h-6" />}
+            </div>
+            <div className="text-left">
+              <div className="text-xl font-black tracking-tight text-slate-900 leading-tight">
+                Vet<span className="text-teal-600">Tele</span>Rad
+              </div>
+              <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                {isUltrasound
+                  ? 'Teleultrassonografia Veterinária'
+                  : 'Telerradiologia Veterinária'}
+              </p>
+              <div className="flex items-center gap-2 mt-1 font-mono text-[10px]">
+                <span className="px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-semibold border border-slate-200">
+                  Protocolo: {exam.id}
+                </span>
+                <span className="px-2 py-0.5 bg-teal-50 text-teal-800 rounded-md font-semibold border border-teal-200">
+                  {isUltrasound ? 'ULTRASSOM' : 'RAIO-X'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -421,7 +415,7 @@ ${getPublicUrl()}`;
           </span>
         </div>
 
-        {/* Informações do Paciente e da Clínica */}
+        {/* Informações do Paciente e da Solicitação */}
         <div className="my-5 grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-50/70 p-5 rounded-2xl border border-slate-200/80 text-xs">
           {/* Dados do Paciente */}
           <div className="space-y-2 border-b md:border-b-0 md:border-r border-slate-200 pb-3 md:pb-0 md:pr-4">
@@ -440,16 +434,15 @@ ${getPublicUrl()}`;
             </div>
           </div>
 
-          {/* Dados da Clínica e Solicitante */}
+          {/* Dados da Solicitação e Exame */}
           <div className="space-y-2 md:pl-2">
-            <div className="text-[11px] font-bold uppercase tracking-wider text-sky-800 flex items-center gap-1.5">
-              <Building2 className="w-3.5 h-3.5 text-sky-600" />
-              <span>Clínica Solicitante</span>
+            <div className="text-[11px] font-bold uppercase tracking-wider text-teal-800 flex items-center gap-1.5">
+              <Stethoscope className="w-3.5 h-3.5 text-teal-600" />
+              <span>Dados da Solicitação</span>
             </div>
             <div className="space-y-1.5 text-slate-700">
-              <div><span className="text-slate-500">Estabelecimento:</span> <strong className="text-slate-900">{exam.clinicName}</strong></div>
-              <div><span className="text-slate-500">Médico Solicitante:</span> <strong>{exam.requestingVet}</strong></div>
-              <div><span className="text-slate-500">Estudo Realizado:</span> <strong className="text-teal-700">{exam.region}</strong></div>
+              <div><span className="text-slate-500">Médico(a) Solicitante:</span> <strong className="text-slate-900">{exam.requestingVet}</strong></div>
+              <div><span className="text-slate-500">Estudo Realizado:</span> <strong className="text-teal-700 font-bold">{exam.region}</strong></div>
               {isUltrasound && exam.fastingHours && (
                 <div><span className="text-slate-500">Preparo Clínico:</span> <strong>{exam.fastingHours}</strong></div>
               )}

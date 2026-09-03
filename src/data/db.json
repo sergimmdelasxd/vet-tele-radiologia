@@ -13,7 +13,8 @@
       "uf": "SP",
       "createdAt": "2026-08-01T10:00:00Z",
       "balance": 355,
-      "plan": "PRO"
+      "plan": "PRO",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "user-clinic-petcare",
@@ -28,7 +29,8 @@
       "uf": "RJ",
       "createdAt": "2026-08-10T14:30:00Z",
       "balance": 200,
-      "plan": "HOSPITAL"
+      "plan": "HOSPITAL",
+      "clinicLogo": "/logos/petcare-logo.svg"
     },
     {
       "id": "user-rad-camila",
@@ -136,7 +138,8 @@
         "id": "rep-1788454606099",
         "reportedAt": "2026-09-03T16:56:46.099Z",
         "digitalSignatureHash": "VET-SIGN-1788454606099-N8VKP3D"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-111",
@@ -165,7 +168,8 @@
       "images": [],
       "createdAt": "2026-09-02T19:40:04.126Z",
       "updatedAt": "2026-09-02T19:40:04.126Z",
-      "deadline": "2026-09-02T21:40:04.126Z"
+      "deadline": "2026-09-02T21:40:04.126Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-110",
@@ -269,7 +273,8 @@
         "id": "rep-1788377140833",
         "reportedAt": "2026-09-02T19:25:40.833Z",
         "digitalSignatureHash": "VET-SIGN-1788377140833-ERB4PXT"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-108",
@@ -509,7 +514,8 @@
       ],
       "createdAt": "2026-09-02T03:22:02.058Z",
       "updatedAt": "2026-09-02T03:22:02.058Z",
-      "deadline": "2026-09-02T15:22:02.058Z"
+      "deadline": "2026-09-02T15:22:02.058Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-106",
@@ -621,7 +627,8 @@
       },
       "createdAt": "2026-08-30T10:15:00Z",
       "updatedAt": "2026-08-30T11:45:00Z",
-      "deadline": "2026-08-30T22:15:00Z"
+      "deadline": "2026-08-30T22:15:00Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-102",
@@ -672,7 +679,8 @@
         "id": "rep-1788372984276",
         "reportedAt": "2026-09-02T18:16:24.276Z",
         "digitalSignatureHash": "VET-SIGN-1788372984276-PG0XWGH"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-103",
@@ -728,7 +736,8 @@
       },
       "createdAt": "2026-09-01T21:30:00Z",
       "updatedAt": "2026-09-01T22:40:00Z",
-      "deadline": "2026-09-02T09:30:00Z"
+      "deadline": "2026-09-02T09:30:00Z",
+      "clinicLogo": "/logos/petcare-logo.svg"
     },
     {
       "id": "VET-2026-104",
@@ -783,7 +792,8 @@
         "id": "rep-1788372931925",
         "reportedAt": "2026-09-02T18:15:31.925Z",
         "digitalSignatureHash": "VET-SIGN-1788372931925-LOZ796Q"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-105",
@@ -838,7 +848,8 @@
         "id": "rep-1788318400406",
         "reportedAt": "2026-09-02T03:06:40.406Z",
         "digitalSignatureHash": "VET-SIGN-1788318400406-06PUN69"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     }
   ],
   "transactions": [

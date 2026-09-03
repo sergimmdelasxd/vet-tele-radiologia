@@ -265,40 +265,36 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
             {/* PREVIEW DO CABEÇALHO TIMBRADO */}
             <div className="p-3.5 rounded-2xl bg-gradient-to-r from-teal-50/60 via-slate-50 to-sky-50/60 border border-slate-200/80">
               <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider block mb-2">
-                Simulação de como aparecerá no laudo impresso e PDF:
+                Simulação do cabeçalho timbrado oficial (Maior destaque para sua logo):
               </span>
-              <div className="bg-white rounded-xl p-3 border border-slate-200/90 shadow-2xs flex items-center justify-between gap-3 text-xs">
-                {/* Lado Esquerdo: Marca do Laudo */}
-                <div className="flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-teal-600 text-white flex items-center justify-center font-black text-xs">
+              <div className="bg-white rounded-2xl p-4 border border-slate-200/90 shadow-2xs flex items-center justify-between gap-4 text-xs">
+                {/* Lado Esquerdo: Logo da Clínica em Maior Destaque */}
+                <div className="flex-1 flex items-center justify-start">
+                  {clinicLogo ? (
+                    <div className="h-12 sm:h-14 max-w-[200px] flex items-center justify-start">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={clinicLogo} alt="Logo" className="max-h-full max-w-full object-contain object-left" />
+                    </div>
+                  ) : (
+                    <div className="h-12 px-4 border-2 border-dashed border-teal-300 rounded-xl text-[11px] text-teal-700 bg-teal-50/40 flex items-center justify-center font-bold">
+                      Sua Logo com Maior Destaque Aqui
+                    </div>
+                  )}
+                </div>
+
+                <div className="text-slate-200 font-light text-xl">|</div>
+
+                {/* Lado Direito: Logo da Telerradiologia */}
+                <div className="flex items-center gap-2.5 shrink-0 pl-2">
+                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-teal-500 to-cyan-600 text-white flex items-center justify-center font-black text-xs shadow-xs">
                     VT
                   </div>
                   <div>
-                    <strong className="text-slate-900 block text-[11px] leading-tight">VetTeleRad</strong>
-                    <span className="text-[9px] text-slate-500">Centro Diagnóstico</span>
-                  </div>
-                </div>
-
-                <div className="text-slate-300 font-light">|</div>
-
-                {/* Lado Direito: Logo e Nome da Clínica */}
-                <div className="flex items-center gap-2">
-                  {clinicLogo ? (
-                    <div className="h-8 max-w-[100px] flex items-center justify-center">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={clinicLogo} alt="Logo" className="max-h-full max-w-full object-contain" />
-                    </div>
-                  ) : (
-                    <div className="h-8 px-2 border border-dashed border-slate-300 rounded text-[9px] text-slate-400 flex items-center justify-center italic">
-                      Sua Logo Aqui
-                    </div>
-                  )}
-                  <div className="text-right">
-                    <strong className="text-slate-900 block text-[11px] leading-tight truncate max-w-[140px]">
-                      {clinicName || 'Nome da Clínica'}
+                    <strong className="text-slate-900 block text-xs leading-none font-black">
+                      Vet<span className="text-teal-600">Tele</span>Rad
                     </strong>
-                    <span className="text-[9px] text-slate-500">
-                      {phone || '(XX) XXXXX-XXXX'}
+                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider block mt-0.5">
+                      Telerradiologia
                     </span>
                   </div>
                 </div>
