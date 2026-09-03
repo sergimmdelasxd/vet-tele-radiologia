@@ -56,8 +56,10 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
     }
   };
 
+  const isLight = pathname === '/';
+
   return (
-    <header className="bg-slate-900 border-b border-slate-800 sticky top-0 z-40 text-slate-100 shadow-md">
+    <header className={`${isLight ? 'bg-white/90 backdrop-blur-md border-b border-slate-200/80 text-slate-800 shadow-xs' : 'bg-slate-900 border-b border-slate-800 text-slate-100 shadow-md'} sticky top-0 z-40 transition-colors`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo e Nome */}
@@ -67,10 +69,10 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
                 <Activity className="w-6 h-6 text-white" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                  Vet<span className="text-cyan-400">Tele</span>Rad
+                <span className={`text-xl font-black tracking-tight flex items-center gap-1.5 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+                  Vet<span className={isLight ? 'text-teal-600' : 'text-cyan-400'}>Tele</span>Rad
                 </span>
-                <span className="block text-[10px] text-cyan-200/70 tracking-wider font-semibold uppercase -mt-1">
+                <span className={`block text-[10px] tracking-wider font-semibold uppercase -mt-1 ${isLight ? 'text-slate-500' : 'text-cyan-200/70'}`}>
                   Telerradiologia Veterinária
                 </span>
               </div>
@@ -102,12 +104,12 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
 
             {/* Links Institucionais (Exibidos apenas para visitantes não logados na Página Inicial) */}
             {!user && pathname === '/' && (
-              <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-400 font-medium">
-                <Link href="/#como-funciona" className="hover:text-cyan-400 transition">Como Funciona</Link>
-                <Link href="/#precos" className="hover:text-cyan-400 transition">Preços &amp; Planos</Link>
-                <Link href="/#calculadora" className="hover:text-cyan-400 transition">Simulador</Link>
-                <Link href="/#corpo-clinico" className="hover:text-cyan-400 transition">Especialistas</Link>
-                <Link href="/#faq" className="hover:text-cyan-400 transition">FAQ</Link>
+              <nav className="hidden xl:flex items-center gap-5 ml-6 text-xs text-slate-600 font-semibold">
+                <Link href="/#como-funciona" className="hover:text-teal-600 transition">Como Funciona</Link>
+                <Link href="/#precos" className="hover:text-teal-600 transition">Preços &amp; Planos</Link>
+                <Link href="/#calculadora" className="hover:text-teal-600 transition">Simulador</Link>
+                <Link href="/#corpo-clinico" className="hover:text-teal-600 transition">Especialistas</Link>
+                <Link href="/#faq" className="hover:text-teal-600 transition">FAQ</Link>
               </nav>
             )}
           </div>
@@ -348,13 +350,17 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick }) => {
               <div className="flex items-center gap-2">
                 <Link
                   href="/login"
-                  className="text-xs sm:text-sm font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg hover:bg-slate-800 transition"
+                  className={`text-xs sm:text-sm font-semibold px-3.5 py-2 rounded-xl transition ${
+                    isLight
+                      ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 border border-slate-200/90'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
+                  }`}
                 >
                   Entrar no Portal
                 </Link>
                 <Link
                   href="/cadastro"
-                  className="text-xs sm:text-sm font-semibold text-white bg-cyan-600 hover:bg-cyan-500 px-3.5 py-2 rounded-lg shadow-sm transition"
+                  className="text-xs sm:text-sm font-semibold text-white bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 px-4 py-2 rounded-xl shadow-md shadow-teal-500/20 transition active:scale-95"
                 >
                   Cadastrar Clínica
                 </Link>

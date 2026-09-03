@@ -12,7 +12,7 @@
       "phone": "(11) 98765-4321",
       "uf": "SP",
       "createdAt": "2026-08-01T10:00:00Z",
-      "balance": 400,
+      "balance": 355,
       "plan": "PRO"
     },
     {
@@ -84,6 +84,60 @@
     }
   ],
   "exams": [
+    {
+      "id": "VET-2026-112",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "(11) 98765-4321",
+      "modality": "RADIOGRAFIA",
+      "patientName": "silvia",
+      "species": "Canino",
+      "breed": "golden",
+      "age": "04 anos",
+      "weight": "15 kg",
+      "gender": "Fêmea",
+      "isCastrated": true,
+      "ownerName": "SIlvia",
+      "region": "Coluna Torácica",
+      "projections": [
+        "Laterolateral (LL)",
+        "Ventrodorsal (VD)",
+        "Laterolateral Esquerda (LL-E)",
+        "Laterolateral Direita (LL-D)"
+      ],
+      "clinicalHistory": "caiu do quarto andar",
+      "suspectedDiagnosis": "",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788454541248-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-03T16:55:41.248Z"
+        }
+      ],
+      "createdAt": "2026-09-03T16:56:22.368Z",
+      "updatedAt": "2026-09-03T16:56:46.099Z",
+      "deadline": "2026-09-04T04:56:22.368Z",
+      "report": {
+        "examId": "VET-2026-112",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico focado na transição toracolombar (T10 a L3) nas projeções ortogonais Laterolateral centrada e Ventrodorsal.",
+        "findings": "Alinhamento dos corpos vertebrais íntegro, sem evidência de luxação ou subluxação vertebral no segmento toracolombar.\nEspaços discais intervertebrais na transição T11-T12, T12-T13, T13-L1, L1-L2 e L2-L3 com aberturas discais preservadas e simétricas.\nAusência de opacidades mineralizadas projetadas no interior dos forames intervertebrais ou no assoalho do canal vertebral (ausência de discopatias tipo Hansen I calcificadas aparentes).\nPlatôs vertebrais adjacentes contínuos, com margens bem definidas, sem esclerose subcondral patológica ou colapso vertebral.\nProcessos articulares sem osteofitose ou deformidades associadas.",
+        "conclusion": "Coluna toracolombar sem sinais radiográficos conclusivos de extrusão discal mineralizada ou espondilopatia degenerativa evidente.",
+        "recommendations": "Ressaltamos que hérnias discais não mineralizadas (Hansen tipo II ou extrusões sem calcificação radiográfica) necessitam de exame tomográfico ou de ressonância magnética para avaliação definitiva da medula espinhal.",
+        "keyImageIds": [],
+        "id": "rep-1788454606099",
+        "reportedAt": "2026-09-03T16:56:46.099Z",
+        "digitalSignatureHash": "VET-SIGN-1788454606099-N8VKP3D"
+      }
+    },
     {
       "id": "VET-2026-111",
       "clinicId": "user-clinic-vetlife",
@@ -788,6 +842,18 @@
     }
   ],
   "transactions": [
+    {
+      "id": "tx-deb-1788454582457-196",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-112",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-112",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-03T16:56:22.457Z"
+    },
     {
       "id": "tx-deb-1788378004143-485",
       "clinicId": "user-clinic-vetlife",
