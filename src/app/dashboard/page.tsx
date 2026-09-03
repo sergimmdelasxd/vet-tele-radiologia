@@ -33,7 +33,8 @@ import {
   Timer,
   RotateCcw,
   User as UserIcon,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { DicomXrayViewer } from '@/components/viewer/DicomXrayViewer';
@@ -43,6 +44,49 @@ import { NewExamModal } from '@/components/dashboard/NewExamModal';
 import { FinancialModal } from '@/components/dashboard/FinancialModal';
 import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
 import { Exam, User, ExamStatus, ExamPriority, ExamModality } from '@/types';
+
+// Calculador dinâmico de SLA e contagem regressiva de urgências
+function getSlaCountdown(exam: Exam) {
+  if (exam.status === 'REPORTED') return null;
+
+  const now = Date.now();
+  const deadline = exam.deadline
+    ? new Date(exam.deadline).getTime()
+    : new Date(exam.createdAt).getTime() + (exam.priority === 'EMERGENCY' ? 2 : exam.priority === 'URGENT' ? 4 : 24) * 3600 * 1000;
+
+  const diffMs = deadline - now;
+  const isOverdue = diffMs <= 0;
+  const totalMinutes = Math.abs(Math.floor(diffMs / (1000 * 60)));
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (isOverdue) {
+    return {
+      label: `SLA Excedido (${hours > 0 ? `${hours}h ` : ''}${minutes}m)`,
+      isOverdue: true,
+      isCritical: true,
+      color: 'bg-rose-100 text-rose-900 border-rose-300 animate-pulse font-extrabold'
+    };
+  }
+
+  if (diffMs <= 45 * 60 * 1000) {
+    return {
+      label: `SLA Crítico: ${minutes}m restantes`,
+      isOverdue: false,
+      isCritical: true,
+      color: 'bg-rose-50 text-rose-800 border-rose-300 animate-pulse font-bold'
+    };
+  }
+
+  return {
+    label: `SLA: ${hours > 0 ? `${hours}h ` : ''}${minutes}m`,
+    isOverdue: false,
+    isCritical: false,
+    color: exam.priority === 'EMERGENCY' || exam.priority === 'URGENT'
+      ? 'bg-amber-50 text-amber-900 border-amber-300 font-bold'
+      : 'bg-slate-100 text-slate-700 border-slate-200 font-medium'
+  };
+}
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -975,11 +1019,12 @@ export default function DashboardPage() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredAndSortedExams.map(exam => {
-                    const isUrgent = exam.priority === 'URGENT';
+                    const isUrgent = exam.priority === 'URGENT' || exam.priority === 'EMERGENCY';
                     const isReported = exam.status === 'REPORTED';
                     const isPending = exam.status === 'PENDING';
                     const isInProgress = exam.status === 'IN_PROGRESS';
                     const isUltrasound = exam.modality === 'ULTRASSOM';
+                    const sla = getSlaCountdown(exam);
 
                     return (
                       <tr 
@@ -1007,9 +1052,10 @@ export default function DashboardPage() {
                               </span>
                             )}
 
-                            {isUrgent && (
-                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-50 text-rose-800 border border-rose-200 animate-pulse w-fit">
-                                <Flame className="w-2.5 h-2.5 text-rose-600" /> Urgência 2h
+                            {sla && (
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] border w-fit shadow-2xs ${sla.color}`}>
+                                {sla.isOverdue || sla.isCritical ? <Flame className="w-2.5 h-2.5 text-rose-600" /> : <Clock className="w-2.5 h-2.5 text-amber-600" />}
+                                <span>{sla.label}</span>
                               </span>
                             )}
                           </div>
@@ -1153,6 +1199,7 @@ export default function DashboardPage() {
               const isPending = exam.status === 'PENDING';
               const isInProgress = exam.status === 'IN_PROGRESS';
               const isUltrasound = exam.modality === 'ULTRASSOM';
+              const sla = getSlaCountdown(exam);
 
               return (
                 <div
@@ -1244,10 +1291,11 @@ export default function DashboardPage() {
                             </span>
                           )}
 
-                          {/* Prioridade Urgente */}
-                          {isUrgent && (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black bg-rose-50 text-rose-800 border border-rose-200 animate-pulse">
-                              <Flame className="w-3 h-3 text-rose-600" /> Urgência 2h
+                          {/* SLA / Urgência */}
+                          {sla && (
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] border shadow-2xs ${sla.color}`}>
+                              {sla.isOverdue || sla.isCritical ? <Flame className="w-3 h-3 text-rose-600" /> : <Clock className="w-3 h-3 text-amber-600" />}
+                              <span>{sla.label}</span>
                             </span>
                           )}
 

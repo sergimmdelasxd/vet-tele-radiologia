@@ -22,7 +22,7 @@ export interface User {
 
 export type Species = 'Canino' | 'Felino' | 'Equino' | 'Bovino' | 'Silvestre/Exótico';
 
-export type ExamPriority = 'NORMAL' | 'URGENT';
+export type ExamPriority = 'NORMAL' | 'URGENT' | 'EMERGENCY';
 
 export type ExamStatus = 'PENDING' | 'IN_PROGRESS' | 'REPORTED' | 'CANCELLED';
 

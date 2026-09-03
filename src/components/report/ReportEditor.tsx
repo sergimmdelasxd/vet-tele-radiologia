@@ -261,9 +261,25 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       )}
 
       {successMsg && (
-        <div className="p-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-          <span>{successMsg}</span>
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+            <div>
+              <span className="font-bold">{successMsg}</span>
+              <p className="text-[11px] text-emerald-700 mt-0.5">O laudo oficial já está timbrado e disponível para a clínica parceira.</p>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(
+              `Olá equipe da clínica ${exam.clinicName}! O laudo do paciente *${exam.patientName}* (${exam.species}) foi concluído e assinado por ${currentRadiologistName} (${currentRadiologistCrmv}). Acesse e baixe o laudo oficial timbrado aqui: ${typeof window !== 'undefined' ? window.location.origin : ''}/laudo/${exam.id}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs self-start sm:self-auto shrink-0 active:scale-95"
+            title="Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"
+          >
+            <span>📲 Notificar Clínica via WhatsApp</span>
+          </a>
         </div>
       )}
 

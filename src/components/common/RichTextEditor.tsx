@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { 
@@ -14,7 +14,11 @@ import {
   RemoveFormatting, 
   Type, 
   Sparkles,
-  Plus
+  Plus,
+  Mic,
+  MicOff,
+  Zap,
+  Check
 } from 'lucide-react';
 
 interface RichTextEditorProps {
@@ -24,6 +28,33 @@ interface RichTextEditorProps {
   minHeight?: string;
   className?: string;
 }
+
+const QUICK_MACROS = [
+  {
+    category: 'Tórax & Coração (RX)',
+    items: [
+      { label: 'Tórax Normal', text: '<p>Silhueta cardíaca com dimensões e conformação habituais. Campos pulmonares com radiopacidade e trama broncovascular preservadas. Traqueia torácica e cúpula diafragmática íntegras.</p>' },
+      { label: 'Cardiomegalia / VHS Elevado', text: '<p>Aumento da silhueta cardíaca com elevação da traqueia torácica e contato esternal aumentado. VHS acima dos limites fisiológicos da espécie.</p>' },
+      { label: 'Padrão Broncoalveolar', text: '<p>Aumento da radiopacidade pulmonar com infiltrado de padrão misto broncoalveolar e reforço peribrônquico difuso, sugerindo processo inflamatório/infeccioso.</p>' }
+    ]
+  },
+  {
+    category: 'Abdômen & Órgãos (RX/USG)',
+    items: [
+      { label: 'Abdômen Normal (RX)', text: '<p>Órgãos abdominais com distribuição gasosa fisiológica. Contraste seroso e detalhes peritoneais preservados. Ausência de corpos estranhos radiopacos evidentes.</p>' },
+      { label: 'Ultrassom Abdominal Normal', text: '<p>Fígado com dimensões preservadas e ecotextura homogênea. Vesícula biliar repleta com conteúdo anecogênico e paredes finas. Baço, rins e bexiga sem alterações ecográficas.</p>' },
+      { label: 'Sedimento / Cistite (USG)', text: '<p>Vesícula urinária moderadamente repleta, apresentando discreto espessamento parietal irregular e quantidade moderada de sedimento ecogênico em suspensão.</p>' }
+    ]
+  },
+  {
+    category: 'Ortopedia & Coluna',
+    items: [
+      { label: 'Espondilose Deformante', text: '<p>Presença de osteófitos ventromarginais em pontes ósseas (espondilose deformante) em corpos vertebrais lombares, sem sinais de lise óssea ativa.</p>' },
+      { label: 'Displasia Coxofemoral', text: '<p>Incongruência articular coxofemoral bilateral com arrasamento acetabular, espessamento de colos e esclerose marginal da cabeça femoral.</p>' },
+      { label: 'Sem Sinais de Fratura', text: '<p>Ausência de soluções de continuidade óssea, desvios axiais ou lesões líticas/proliferativas agressivas nas estruturas esqueléticas avaliadas.</p>' }
+    ]
+  }
+];
 
 const FONT_FAMILIES = [
   { label: 'Padrão (Inter / Sans)', value: 'Inter, system-ui, -apple-system, sans-serif' },
@@ -54,15 +85,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [selectedFont, setSelectedFont] = useState<string>(FONT_FAMILIES[0].value);
   const [selectedSize, setSelectedSize] = useState<string>(FONT_SIZES[1].value);
   const [isFocused, setIsFocused] = useState<boolean>(false);
-
-  // Sincronizar o valor externo apenas quando houver diferença real
-  useEffect(() => {
-    if (editorRef.current) {
-      if (editorRef.current.innerHTML !== value) {
-        editorRef.current.innerHTML = value || '';
-      }
-    }
-  }, [value]);
+  const [isListening, setIsListening] = useState<boolean>(false);
+  const [speechSupported, setSpeechSupported] = useState<boolean>(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const handleInput = useCallback(() => {
     if (editorRef.current) {
@@ -74,6 +100,80 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }
     }
   }, [onChange]);
+
+  // Inicializar Web Speech Recognition (Ditado por Voz para Laudos)
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        setSpeechSupported(true);
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = 'pt-BR';
+
+        recognition.onresult = (event: any) => {
+          const results = event.results;
+          const transcript = results[results.length - 1][0].transcript;
+          if (transcript && transcript.trim()) {
+            editorRef.current?.focus();
+            const textToInsert = ' ' + transcript.trim() + '. ';
+            document.execCommand('insertText', false, textToInsert);
+            handleInput();
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error('Speech recognition error:', event.error);
+          setSpeechError('Não foi possível capturar o áudio. Verifique o microfone.');
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+      }
+    }
+  }, [handleInput]);
+
+  const toggleListening = () => {
+    setSpeechError(null);
+    if (!speechSupported) {
+      alert('O seu navegador atual não suporta a API nativa de reconhecimento de voz. Recomendamos utilizar o Google Chrome ou Microsoft Edge para usar o ditado por voz.');
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+    } else {
+      editorRef.current?.focus();
+      try {
+        recognitionRef.current?.start();
+        setIsListening(true);
+      } catch (err) {
+        console.error('Falha ao iniciar reconhecimento:', err);
+      }
+    }
+  };
+
+  // Inserir trecho HTML na posição do cursor
+  const insertHtmlSnippet = (html: string) => {
+    editorRef.current?.focus();
+    document.execCommand('insertHTML', false, html);
+    handleInput();
+  };
+
+  // Sincronizar o valor externo apenas quando houver diferença real
+  useEffect(() => {
+    if (editorRef.current) {
+      if (editorRef.current.innerHTML !== value) {
+        editorRef.current.innerHTML = value || '';
+      }
+    }
+  }, [value]);
 
   // Executar comandos padrão de formatação
   const execCmd = (command: string, arg: string = '') => {
@@ -109,15 +209,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     handleInput();
   };
 
-  // Inserir títulos de seções padronizadas do laudo com 1 clique
-  const insertSectionTitle = (title: string, isMintHighlight: boolean = false) => {
+  // Inserir títulos de seções padronizadas do laudo com 1 clique (sem tabelas verdes)
+  const insertSectionTitle = (title: string) => {
     editorRef.current?.focus();
-    let snippet = '';
-    if (isMintHighlight) {
-      snippet = `<p style="margin-top: 14px; margin-bottom: 6px;"><strong style="color: #0f766e; background-color: #f0fdf4; padding: 3px 8px; border-radius: 6px; border: 1px solid #a7f3d0; font-size: 13px;">${title}</strong></p><p><br></p>`;
-    } else {
-      snippet = `<p style="margin-top: 14px; margin-bottom: 6px;"><strong style="color: #0f172a; font-size: 13px; text-decoration: underline;">${title}</strong></p><p><br></p>`;
-    }
+    const snippet = `<p style="margin-top: 14px; margin-bottom: 6px;"><strong style="color: #0f172a; font-size: 13px; text-decoration: underline;">${title}</strong></p><p><br></p>`;
     document.execCommand('insertHTML', false, snippet);
     handleInput();
   };
@@ -267,10 +362,54 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           <RemoveFormatting className="w-4 h-4" />
         </button>
 
+        <div className="h-5 w-px bg-slate-200 mx-0.5" />
+
+        {/* DITADO POR VOZ */}
+        <button
+          type="button"
+          onClick={toggleListening}
+          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-xl text-xs font-bold transition shadow-2xs cursor-pointer ${
+            isListening 
+              ? 'bg-rose-500 hover:bg-rose-600 text-white animate-pulse ring-2 ring-rose-300' 
+              : 'bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200'
+          }`}
+          title={isListening ? "Clique para pausar o ditado por voz" : "Clique e fale para ditar o laudo por voz"}
+        >
+          {isListening ? <MicOff className="w-3.5 h-3.5" /> : <Mic className="w-3.5 h-3.5" />}
+          <span>{isListening ? 'Ouvindo...' : 'Ditar por Voz'}</span>
+        </button>
+
+        {/* MENU DE FRASES RÁPIDAS / MACROS */}
+        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl px-2 py-1 shadow-2xs">
+          <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+          <select
+            defaultValue=""
+            onChange={(e) => {
+              if (e.target.value) {
+                insertHtmlSnippet(e.target.value);
+                e.target.value = '';
+              }
+            }}
+            className="bg-transparent text-xs text-slate-800 font-medium outline-none cursor-pointer pr-1 max-w-[170px]"
+            title="Inserir Frase Rápida / Macro Pré-configurada"
+          >
+            <option value="" disabled>⚡ Frases Rápidas...</option>
+            {QUICK_MACROS.map((group) => (
+              <optgroup key={group.category} label={group.category}>
+                {group.items.map((item) => (
+                  <option key={item.label} value={item.text}>
+                    {item.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+        </div>
+
         {/* ATALHOS RÁPIDOS DE SEÇÃO */}
         <div className="flex items-center gap-1.5 ml-auto">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden lg:inline">
-            Atalhos:
+          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider hidden xl:inline">
+            Títulos:
           </span>
           <button
             type="button"
@@ -283,15 +422,39 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => insertSectionTitle('IMPRESSÃO DIAGNÓSTICA:', true)}
-            className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl text-[11px] font-bold text-emerald-800 transition cursor-pointer shadow-2xs"
+            onClick={() => insertSectionTitle('IMPRESSÃO DIAGNÓSTICA:')}
+            className="inline-flex items-center gap-1 px-2.5 py-1 bg-teal-50 hover:bg-teal-100 border border-teal-200 rounded-xl text-[11px] font-bold text-teal-800 transition cursor-pointer shadow-2xs"
             title="Inserir cabeçalho de Impressão Diagnóstica"
           >
-            <Sparkles className="w-3 h-3 text-emerald-600" />
-            <span>+ Impressão Diagnóstica</span>
+            <Sparkles className="w-3 h-3 text-teal-600" />
+            <span>+ Impressão</span>
           </button>
         </div>
       </div>
+
+      {/* STATUS DE DITADO ATIVO */}
+      {isListening && (
+        <div className="px-4 py-2 bg-rose-50 border-b border-rose-200/80 flex items-center justify-between text-xs text-rose-800 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-500 animate-ping" />
+            <span className="font-semibold">Microfone ativo: Fale pausadamente os achados clínicos e diagnósticos...</span>
+          </div>
+          <button 
+            type="button" 
+            onClick={toggleListening}
+            className="text-[11px] font-bold text-rose-700 hover:text-rose-900 underline cursor-pointer"
+          >
+            Pausar Gravação
+          </button>
+        </div>
+      )}
+
+      {speechError && (
+        <div className="px-4 py-1.5 bg-amber-50 border-b border-amber-200 text-xs text-amber-800 flex items-center justify-between">
+          <span>{speechError}</span>
+          <button type="button" onClick={() => setSpeechError(null)} className="font-bold ml-2">✕</button>
+        </div>
+      )}
 
       {/* ÁREA EDITÁVEL DO LAUDO (CONTENT EDITABLE) */}
       <div

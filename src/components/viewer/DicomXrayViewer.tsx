@@ -16,7 +16,8 @@ import {
   Eye,
   Camera,
   Layers,
-  Sparkles
+  Sparkles,
+  Columns2
 } from 'lucide-react';
 import { ExamImage } from '@/types';
 
@@ -35,6 +36,8 @@ export const DicomXrayViewer: React.FC<DicomViewerProps> = ({
   onVhsCalculated
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isSplitView, setIsSplitView] = useState(false);
+  const [secondIndex, setSecondIndex] = useState(images.length > 1 ? 1 : 0);
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -222,6 +225,21 @@ export const DicomXrayViewer: React.FC<DicomViewerProps> = ({
             <Heart className="w-3.5 h-3.5 text-rose-400" />
             <span className="hidden md:inline font-semibold">Cálculo VHS</span>
           </button>
+
+          {images.length > 1 && (
+            <button
+              onClick={() => setIsSplitView(prev => !prev)}
+              className={`p-1.5 rounded-lg text-xs font-semibold transition flex items-center gap-1.5 ${
+                isSplitView 
+                  ? 'bg-teal-600 text-white shadow-sm ring-1 ring-teal-400' 
+                  : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700'
+              }`}
+              title="Comparar duas projeções lado a lado (Split View)"
+            >
+              <Columns2 className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">{isSplitView ? 'Tela Única' : 'Lado a Lado'}</span>
+            </button>
+          )}
         </div>
 
         {/* Controles de Imagem (Zoom, Rotação, Inversão, Reset) */}
@@ -302,29 +320,92 @@ export const DicomXrayViewer: React.FC<DicomViewerProps> = ({
       </div>
 
       {/* Main Radiograph Canvas Area */}
-      <div 
-        className="flex-1 relative overflow-hidden flex items-center justify-center cursor-crosshair bg-black"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
-      >
-        {/* Imagem com transformações aplicadas */}
-        <div
-          style={{
-            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${isFlipped ? -1 : 1})`,
-            filter: `brightness(${brightness}%) contrast(${contrast}%) ${isInverted ? 'invert(1)' : ''}`,
-            transition: isDragging ? 'none' : 'transform 0.1s ease-out, filter 0.15s ease'
-          }}
-          className="relative max-w-full max-h-full flex items-center justify-center pointer-events-none"
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={currentImage.url}
-            alt={currentImage.label || 'Radiografia Veterinária'}
-            className="max-h-[560px] object-contain pointer-events-none shadow-2xl"
-          />
+      {isSplitView && images.length > 1 ? (
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-2 p-2 bg-black overflow-hidden h-full">
+          {/* Painel Esquerdo (Imagem A) */}
+          <div className="relative border border-slate-800 rounded-xl overflow-hidden flex flex-col bg-slate-950">
+            <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-700 text-[11px] font-mono text-teal-300">
+              <span className="font-bold">Esq:</span>
+              <select
+                value={currentIndex}
+                onChange={e => setCurrentIndex(Number(e.target.value))}
+                className="bg-transparent text-slate-200 outline-none cursor-pointer"
+              >
+                {images.map((img, idx) => (
+                  <option key={img.id || idx} value={idx} className="bg-slate-900 text-white">
+                    {img.projection || img.label || `Projeção ${idx + 1}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 flex items-center justify-center overflow-hidden p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={images[currentIndex]?.url}
+                alt="Projeção 1"
+                style={{
+                  filter: `brightness(${brightness}%) contrast(${contrast}%) ${isInverted ? 'invert(1)' : ''}`,
+                  transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${isFlipped ? -1 : 1})`
+                }}
+                className="max-h-[520px] max-w-full object-contain pointer-events-none shadow-2xl transition"
+              />
+            </div>
+          </div>
+
+          {/* Painel Direito (Imagem B) */}
+          <div className="relative border border-slate-800 rounded-xl overflow-hidden flex flex-col bg-slate-950">
+            <div className="absolute top-2 left-2 z-20 flex items-center gap-1.5 bg-slate-900/90 backdrop-blur-xs px-2.5 py-1 rounded-lg border border-slate-700 text-[11px] font-mono text-sky-300">
+              <span className="font-bold">Dir:</span>
+              <select
+                value={secondIndex}
+                onChange={e => setSecondIndex(Number(e.target.value))}
+                className="bg-transparent text-slate-200 outline-none cursor-pointer"
+              >
+                {images.map((img, idx) => (
+                  <option key={img.id || idx} value={idx} className="bg-slate-900 text-white">
+                    {img.projection || img.label || `Projeção ${idx + 1}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex-1 flex items-center justify-center overflow-hidden p-2">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={images[secondIndex]?.url}
+                alt="Projeção 2"
+                style={{
+                  filter: `brightness(${brightness}%) contrast(${contrast}%) ${isInverted ? 'invert(1)' : ''}`,
+                  transform: `scale(${zoom}) rotate(${rotation}deg) scaleX(${isFlipped ? -1 : 1})`
+                }}
+                className="max-h-[520px] max-w-full object-contain pointer-events-none shadow-2xl transition"
+              />
+            </div>
+          </div>
         </div>
+      ) : (
+        <div 
+          className="flex-1 relative overflow-hidden flex items-center justify-center cursor-crosshair bg-black"
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleWheel}
+        >
+          {/* Imagem com transformações aplicadas */}
+          <div
+            style={{
+              transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg) scaleX(${isFlipped ? -1 : 1})`,
+              filter: `brightness(${brightness}%) contrast(${contrast}%) ${isInverted ? 'invert(1)' : ''}`,
+              transition: isDragging ? 'none' : 'transform 0.1s ease-out, filter 0.15s ease'
+            }}
+            className="relative max-w-full max-h-full flex items-center justify-center pointer-events-none"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={currentImage.url}
+              alt={currentImage.label || 'Radiografia Veterinária'}
+              className="max-h-[560px] object-contain pointer-events-none shadow-2xl"
+            />
+          </div>
 
         {/* Linhas de Medição da Régua desenhadas por cima */}
         {activeTool === 'ruler' && rulerPoints.length > 0 && (
@@ -381,6 +462,7 @@ export const DicomXrayViewer: React.FC<DicomViewerProps> = ({
           </div>
         )}
       </div>
+      )}
 
       {/* Bottom Bar: Presets & Carrossel de Miniaturas */}
       <div className="bg-slate-900 border-t border-slate-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 z-20">
