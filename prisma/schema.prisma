@@ -1,0 +1,318 @@
+// Prisma Schema para VetTeleRad Telerradiologia Veterinária
+// Banco de Dados PostgreSQL (compatível com Supabase / Neon / AWS RDS)
+// Criptografia em Repouso, Trilha de Auditoria e Conformidade com a LGPD
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  CLINIC
+  RADIOLOGIST
+  ADMIN
+}
+
+enum ClinicPlan {
+  AVULSO
+  PRO
+  HOSPITAL
+}
+
+enum ExamPriority {
+  NORMAL
+  URGENT
+  EMERGENCY
+}
+
+enum ExamStatus {
+  PENDING
+  IN_PROGRESS
+  REPORTED
+  CANCELLED
+}
+
+enum ExamModality {
+  RADIOGRAFIA
+  ULTRASSOM
+}
+
+enum TransactionType {
+  CREDIT_PURCHASE
+  EXAM_DEBIT
+  REFUND
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  BOLETO
+  SALDO
+}
+
+enum AppointmentStatus {
+  SCHEDULED
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id          String      @id @default(cuid())
+  name        String
+  email       String      @unique
+  password    String
+  role        UserRole    @default(CLINIC)
+  clinicName  String?
+  crmv        String?     // CRMV-SP 12.345
+  phone       String?
+  uf          String?     // SP, RJ, MG...
+  cnpj        String?
+  avatar      String?
+  clinicLogo  String?     // Logotipo para exibição no laudo timbrado
+  balance     Float       @default(0.0) // Saldo pré-pago para laudos
+  plan        ClinicPlan  @default(AVULSO)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  // Relacionamentos
+  exams         Exam[]
+  transactions  FinancialTransaction[]
+  appointments  Appointment[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Exam {
+  id                  String       @id // Ex: VET-2026-101
+  clinicId            String
+  clinicName          String
+  requestingVet       String
+  clinicPhone         String?
+  clinicLogo          String?
+  modality            ExamModality
+  
+  // Dados do Paciente Animal
+  patientName         String
+  species             String       // Canino, Felino, etc.
+  breed               String
+  age                 String
+  weight              String
+  gender              String
+  isCastrated         Boolean      @default(false)
+  ownerName           String       // Tutor responsável (protegido por LGPD)
+  
+  // Dados Clínicos do Exame
+  region              String
+  projections         String[]     @default([])
+  clinicalHistory     String       @db.Text
+  suspectedDiagnosis  String?      @db.Text
+  priority            ExamPriority @default(NORMAL)
+  status              ExamStatus   @default(PENDING)
+  
+  // Específico para Ultrassonografia
+  fastingHours        String?
+  trichotomyDone      Boolean?     @default(false)
+  ultrasoundType      String?
+  
+  deadline            DateTime
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  // Relacionamentos
+  clinic              User         @relation(fields: [clinicId], references: [id])
+  images              ExamImage[]
+  report              Report?
+
+  @@index([clinicId])
+  @@index([status])
+  @@index([priority])
+  @@map("exams")
+}
+
+model ExamImage {
+  id           String    @id @default(cuid())
+  examId       String
+  url          String
+  label        String
+  projection   String?
+  thumbnailUrl String?
+  isDicom      Boolean   @default(false)
+  fileSize     Int?
+  originalName String?
+  uploadedAt   DateTime  @default(now())
+
+  exam         Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@index([examId])
+  @@map("exam_images")
+}
+
+model Report {
+  id                   String    @id @default(cuid())
+  examId               String    @unique
+  radiologistId        String
+  radiologistName      String
+  radiologistCrmv      String
+  technique            String    @db.Text
+  findings             String    @db.Text
+  conclusion           String    @db.Text
+  recommendations      String    @db.Text
+  vhsScore             String?
+  norbergAngle         String?
+  ultrasoundOrgans     String[]  @default([])
+  keyImageIds          String[]  @default([])
+  reportedAt           DateTime  @default(now())
+  digitalSignatureHash String    // Hash SHA-256 criptográfico para validade legal
+
+  exam                 Exam      @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  @@map("reports")
+}
+
+model FinancialTransaction {
+  id            String          @id @default(cuid())
+  clinicId      String
+  clinicName    String
+  examId        String?
+  type          TransactionType
+  amount        Float
+  description   String
+  paymentMethod PaymentMethod
+  status        String          @default("COMPLETED")
+  createdAt     DateTime        @default(now())
+
+  clinic        User            @relation(fields: [clinicId], references: [id])
+
+  @@index([clinicId])
+  @@map("financial_transactions")
+}
+
+model Appointment {
+  id                      String            @id // Ex: AG-2026-01
+  date                    String            // YYYY-MM-DD
+  time                    String            // HH:mm
+  durationMinutes         Int               @default(30)
+  clinicId                String
+  clinicName              String
+  requestingVet           String
+  specialistId            String?
+  specialistName          String?
+  patientName             String
+  species                 String
+  breed                   String
+  age                     String?
+  weight                  String?
+  ownerName               String
+  ownerPhone              String?
+  modality                ExamModality
+  region                  String
+  preparationInstructions String?           @db.Text
+  notes                   String?           @db.Text
+  status                  AppointmentStatus @default(SCHEDULED)
+  examId                  String?
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  clinic                  User              @relation(fields: [clinicId], references: [id])
+
+  @@index([clinicId])
+  @@index([date])
+  @@map("appointments")
+}
+
+model ReportTemplate {
+  id              String       @id @default(cuid())
+  modality        ExamModality
+  title           String
+  category        String
+  technique       String       @db.Text
+  findings        String       @db.Text
+  conclusion      String       @db.Text
+  recommendations String       @db.Text
+  createdBy       String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@map("report_templates")
+}
+
+model QuickPhrase {
+  id        String   @id @default(cuid())
+  shortcut  String   // Ex: /torax-normal
+  title     String
+  category  String
+  content   String   @db.Text
+  createdBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("quick_phrases")
+}
+
+model TeachingCase {
+  id                   String       @id @default(cuid())
+  title                String
+  species              String
+  breed                String
+  age                  String?
+  category             String
+  modality             ExamModality
+  difficulty           String
+  summary              String       @db.Text
+  clinicalHistory      String?      @db.Text
+  findings             String       @db.Text
+  diagnosis            String       @db.Text
+  keyPoints            String[]     @default([])
+  differentialDiagnosis String[]    @default([])
+  images               Json         // Array de { id, url, label }
+  createdBy            String
+  viewsCount           Int          @default(0)
+  createdAt            DateTime     @default(now())
+
+  @@map("teaching_cases")
+}
+
+model AppNotification {
+  id         String   @id @default(cuid())
+  userId     String?
+  targetRole String   @default("ALL")
+  type       String
+  title      String
+  message    String   @db.Text
+  examId     String?
+  link       String?
+  read       Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([targetRole])
+  @@map("notifications")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  userId       String?
+  userName     String?
+  userRole     String?
+  userEmail    String?
+  action       String   // LOGIN, CREATE_EXAM, CREATE_REPORT, DOWNLOAD_REPORT...
+  resourceType String   // EXAM, REPORT, USER, FINANCIAL, AUTH...
+  resourceId   String?
+  details      String   @db.Text
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user         User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([action])
+  @@index([resourceId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

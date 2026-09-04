@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { findUserByEmail } from '@/lib/db';
 import { signToken, COOKIE_NAME } from '@/lib/auth';
+import { recordAuditTrail } from '@/lib/audit';
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +33,16 @@ export async function POST(request: Request) {
 
     const token = signToken(user);
     const { password: _, ...userWithoutPassword } = user;
+
+    // Registro de Auditoria LGPD
+    recordAuditTrail({
+      user,
+      action: 'LOGIN',
+      resourceType: 'AUTH',
+      resourceId: user.id,
+      details: `Autenticação bem-sucedida do usuário ${user.name} (${user.role}) via credenciais seguras.`,
+      req: request
+    });
 
     const response = NextResponse.json({
       success: true,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
-import { getAllExams, createExam, findUserById, findUserByEmail, createUser } from '@/lib/db';
+import { getAllExams, createExam, findUserById, findUserByEmail, createUser, debitExamCost } from '@/lib/db';
+import { recordAuditTrail } from '@/lib/audit';
 import bcrypt from 'bcryptjs';
 
 export async function GET(request: Request) {
@@ -60,6 +61,7 @@ export async function POST(request: Request) {
       priority,
       requestingVet,
       clinicPhone,
+      clinicLogo,
       fastingHours,
       trichotomyDone,
       ultrasoundType,
@@ -79,6 +81,8 @@ export async function POST(request: Request) {
     let finalClinicId = user.userId;
     let finalClinicName = user.clinicName || user.name;
     let finalClinicPhone = clinicPhone || '';
+    const userFromDb = await findUserById(user.userId);
+    let finalClinicLogo = clinicLogo || user.clinicLogo || userFromDb?.clinicLogo || '';
     let finalRequestingVet = requestingVet || user.name;
 
     // Se for radiologista ou admin criando exame em nome de uma clínica
@@ -96,6 +100,7 @@ export async function POST(request: Request) {
             password: bcrypt.hashSync('123456', 10),
             role: 'CLINIC',
             phone: newClinicData.phone || '',
+            clinicLogo: newClinicData.clinicLogo || clinicLogo || '',
             uf: newClinicData.uf || 'SP',
             crmv: newClinicData.crmv || '',
             cnpj: newClinicData.cnpj || ''
@@ -104,6 +109,9 @@ export async function POST(request: Request) {
         finalClinicId = existingClinic.id;
         finalClinicName = existingClinic.clinicName || newClinicData.clinicName;
         finalClinicPhone = existingClinic.phone || newClinicData.phone || '';
+        if (!finalClinicLogo && existingClinic.clinicLogo) {
+          finalClinicLogo = existingClinic.clinicLogo;
+        }
         finalRequestingVet = newClinicData.responsibleVet || requestingVet || 'Médico Veterinário';
       } else if (clinicId && clinicId !== 'new') {
         const existingClinic = await findUserById(clinicId);
@@ -111,6 +119,9 @@ export async function POST(request: Request) {
           finalClinicId = existingClinic.id;
           finalClinicName = existingClinic.clinicName || existingClinic.name;
           finalClinicPhone = existingClinic.phone || clinicPhone || '';
+          if (!finalClinicLogo && existingClinic.clinicLogo) {
+            finalClinicLogo = existingClinic.clinicLogo;
+          }
           finalRequestingVet = requestingVet || existingClinic.name;
         } else if (clinicName) {
           finalClinicId = clinicId;
@@ -130,6 +141,7 @@ export async function POST(request: Request) {
       clinicName: finalClinicName,
       requestingVet: finalRequestingVet,
       clinicPhone: finalClinicPhone,
+      clinicLogo: finalClinicLogo,
       modality: modality === 'ULTRASSOM' ? 'ULTRASSOM' : 'RADIOGRAFIA',
       patientName,
       species,
@@ -148,6 +160,23 @@ export async function POST(request: Request) {
       trichotomyDone: Boolean(trichotomyDone),
       ultrasoundType: ultrasoundType || undefined,
       images: Array.isArray(images) ? images : []
+    });
+
+    // Registra débito automático do custo do laudo na conta da clínica
+    try {
+      debitExamCost(finalClinicId, newExam.id, newExam.modality, newExam.priority);
+    } catch (debitErr) {
+      console.warn('Erro não bloqueante ao registrar débito:', debitErr);
+    }
+
+    // Registro de Auditoria LGPD
+    recordAuditTrail({
+      user: { id: user.userId, name: user.name, role: user.role, email: user.email },
+      action: 'CREATE_EXAM',
+      resourceType: 'EXAM',
+      resourceId: newExam.id,
+      details: `Exame ${newExam.modality} (${newExam.region}) cadastrado para paciente ${newExam.patientName} (${newExam.species}) pela clínica ${newExam.clinicName}.`,
+      req: request
     });
 
     return NextResponse.json({ success: true, exam: newExam }, { status: 201 });

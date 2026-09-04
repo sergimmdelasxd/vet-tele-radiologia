@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
 import { saveReport, getExamById } from '@/lib/db';
+import { recordAuditTrail } from '@/lib/audit';
 
 export async function POST(
   request: Request,
@@ -36,9 +37,10 @@ export async function POST(
       keyImageIds
     } = body;
 
-    if (!findings || !conclusion) {
+    const reportContent = findings || conclusion;
+    if (!reportContent || !reportContent.trim()) {
       return NextResponse.json(
-        { error: 'Os campos de Descrição dos Achados e Conclusão Diagnóstica são obrigatórios' },
+        { error: 'O conteúdo do laudo com achados e impressão diagnóstica é obrigatório' },
         { status: 400 }
       );
     }
@@ -49,12 +51,22 @@ export async function POST(
       radiologistName: user.name,
       radiologistCrmv: user.crmv || 'CRMV Veterinário',
       technique: technique || 'Estudo radiográfico padrão em projeções ortogonais.',
-      findings,
-      conclusion,
+      findings: findings || reportContent,
+      conclusion: conclusion || findings || reportContent,
       recommendations: recommendations || 'Correlação com a evolução clínica e novos exames complementares a critério médico veterinário.',
       vhsScore: vhsScore || undefined,
       norbergAngle: norbergAngle || undefined,
       keyImageIds: Array.isArray(keyImageIds) ? keyImageIds : []
+    });
+
+    // Trilha de Auditoria LGPD
+    recordAuditTrail({
+      user: { id: user.userId, name: user.name, role: user.role, email: user.email },
+      action: 'CREATE_REPORT',
+      resourceType: 'REPORT',
+      resourceId: updatedExam?.report?.id || id,
+      details: `Emissão e assinatura digital do laudo do exame ${id} (${exam.patientName} / ${exam.species}) por ${user.name} (${user.crmv || 'CRMV'}).`,
+      req: request
     });
 
     return NextResponse.json({

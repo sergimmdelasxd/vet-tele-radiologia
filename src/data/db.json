@@ -11,7 +11,10 @@
       "cnpj": "12.345.678/0001-90",
       "phone": "(11) 98765-4321",
       "uf": "SP",
-      "createdAt": "2026-08-01T10:00:00Z"
+      "createdAt": "2026-08-01T10:00:00Z",
+      "balance": 355,
+      "plan": "PRO",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "user-clinic-petcare",
@@ -24,7 +27,10 @@
       "cnpj": "98.765.432/0001-11",
       "phone": "(21) 99888-7766",
       "uf": "RJ",
-      "createdAt": "2026-08-10T14:30:00Z"
+      "createdAt": "2026-08-10T14:30:00Z",
+      "balance": 200,
+      "plan": "HOSPITAL",
+      "clinicLogo": "/logos/petcare-logo.svg"
     },
     {
       "id": "user-rad-camila",
@@ -35,7 +41,8 @@
       "crmv": "CRMV-SP 38.412",
       "phone": "(11) 97111-2233",
       "uf": "SP",
-      "createdAt": "2026-07-15T08:00:00Z"
+      "createdAt": "2026-07-15T08:00:00Z",
+      "clinicLogo": "/uploads/1788470407479-0-20260418-085648_20260418133338_2_JPG.jpg"
     },
     {
       "id": "user-admin-ricardo",
@@ -59,10 +66,266 @@
       "crmv": "",
       "cnpj": "",
       "id": "user-1788319113363",
-      "createdAt": "2026-09-02T03:18:33.363Z"
+      "createdAt": "2026-09-02T03:18:33.363Z",
+      "balance": 200,
+      "plan": "AVULSO"
+    },
+    {
+      "name": "Sérgio Haroldo Heim Junior",
+      "email": "sergioheimjr2@gmail.com",
+      "password": "$2b$10$tJ3Yq84Pn9qmkjzbsQCx9OxKYF2P5Ash7.tW4IOLGHw5qqHdhu2lS",
+      "role": "CLINIC",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "crmv": "18630",
+      "phone": "45998225363",
+      "cnpj": "12341234124324241",
+      "uf": "SP",
+      "id": "user-1788372782919",
+      "createdAt": "2026-09-02T18:13:02.919Z",
+      "balance": 4324534531631,
+      "plan": "AVULSO"
     }
   ],
   "exams": [
+    {
+      "id": "VET-2026-112",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "(11) 98765-4321",
+      "modality": "RADIOGRAFIA",
+      "patientName": "silvia",
+      "species": "Canino",
+      "breed": "golden",
+      "age": "04 anos",
+      "weight": "15 kg",
+      "gender": "Fêmea",
+      "isCastrated": true,
+      "ownerName": "SIlvia",
+      "region": "Coluna Torácica",
+      "projections": [
+        "Laterolateral (LL)",
+        "Ventrodorsal (VD)",
+        "Laterolateral Esquerda (LL-E)",
+        "Laterolateral Direita (LL-D)"
+      ],
+      "clinicalHistory": "caiu do quarto andar",
+      "suspectedDiagnosis": "",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788454541248-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-03T16:55:41.248Z"
+        }
+      ],
+      "createdAt": "2026-09-03T16:56:22.368Z",
+      "updatedAt": "2026-09-03T16:56:46.099Z",
+      "deadline": "2026-09-04T04:56:22.368Z",
+      "report": {
+        "examId": "VET-2026-112",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico focado na transição toracolombar (T10 a L3) nas projeções ortogonais Laterolateral centrada e Ventrodorsal.",
+        "findings": "Alinhamento dos corpos vertebrais íntegro, sem evidência de luxação ou subluxação vertebral no segmento toracolombar.\nEspaços discais intervertebrais na transição T11-T12, T12-T13, T13-L1, L1-L2 e L2-L3 com aberturas discais preservadas e simétricas.\nAusência de opacidades mineralizadas projetadas no interior dos forames intervertebrais ou no assoalho do canal vertebral (ausência de discopatias tipo Hansen I calcificadas aparentes).\nPlatôs vertebrais adjacentes contínuos, com margens bem definidas, sem esclerose subcondral patológica ou colapso vertebral.\nProcessos articulares sem osteofitose ou deformidades associadas.",
+        "conclusion": "Coluna toracolombar sem sinais radiográficos conclusivos de extrusão discal mineralizada ou espondilopatia degenerativa evidente.",
+        "recommendations": "Ressaltamos que hérnias discais não mineralizadas (Hansen tipo II ou extrusões sem calcificação radiográfica) necessitam de exame tomográfico ou de ressonância magnética para avaliação definitiva da medula espinhal.",
+        "keyImageIds": [],
+        "id": "rep-1788454606099",
+        "reportedAt": "2026-09-03T16:56:46.099Z",
+        "digitalSignatureHash": "VET-SIGN-1788454606099-N8VKP3D"
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
+    },
+    {
+      "id": "VET-2026-111",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "",
+      "modality": "ULTRASSOM",
+      "patientName": "Bobbie",
+      "species": "Canino",
+      "breed": "Pastor Alemão",
+      "age": "5 anos",
+      "weight": "Não informado",
+      "gender": "Macho",
+      "isCastrated": true,
+      "ownerName": "Tutor não informado",
+      "region": "VetBlue",
+      "projections": [
+        "Geral"
+      ],
+      "clinicalHistory": "Dispneia aguda pós atropelamento",
+      "suspectedDiagnosis": "Contusão pulmonar / Pneumotórax",
+      "priority": "URGENT",
+      "status": "PENDING",
+      "trichotomyDone": false,
+      "images": [],
+      "createdAt": "2026-09-02T19:40:04.126Z",
+      "updatedAt": "2026-09-02T19:40:04.126Z",
+      "deadline": "2026-09-02T21:40:04.126Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
+    },
+    {
+      "id": "VET-2026-110",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "requestingVet": "Sérgio Haroldo Heim Junior",
+      "clinicPhone": "45998225363",
+      "modality": "RADIOGRAFIA",
+      "patientName": "DFSAFDSADF",
+      "species": "Canino",
+      "breed": "SSSSSSSS",
+      "age": "22222",
+      "weight": "A232 kg",
+      "gender": "Macho",
+      "isCastrated": true,
+      "ownerName": "SERGIO",
+      "region": "PELVE",
+      "projections": [
+        "Laterolateral Direita (LL-D)",
+        "Ventrodorsal (VD)"
+      ],
+      "clinicalHistory": "DOR",
+      "suspectedDiagnosis": "SERGIO",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788377335277-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-02T19:28:55.277Z"
+        }
+      ],
+      "createdAt": "2026-09-02T19:29:36.034Z",
+      "updatedAt": "2026-09-03T21:20:07.664Z",
+      "deadline": "2026-09-03T07:29:36.034Z",
+      "report": {
+        "examId": "VET-2026-110",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "RADIOGRAFIA DE PELVE PROJEÇOES LATERAIS E VENTRO DORSAL",
+        "findings": "Pelve\n●    Radiopacidade óssea preservada;\n●    Ausência de linha radiolucente (fratura);\n●    Tecidos moles preservados;\nArticulações coxofemorais\n●    Cabeças femorais apresentando menos de 50% da cobertura acetabular, com importante remodelamento e\nesclerose de suas margens articular, com espessamento dos colos femorais, gerando perda da conformação\nanatômica habitual;\n●    Fossas acetabulares apresentando importante arrasamento com esclerose remodelamento das suas\nmargens articulares;\n●    Tecidos moles adjacentes preservados;\nArticulações Sacroilíacas\n●    Articulações em congruência;\n●    Radiopacidade óssea preservada;\nRegião lombossacra\n●    Presença de espondilose ventrolateral  anquilosante e deformante entre o segmento das vértebras L2-S1\ncom esclerose de suas respectivas margens vertebrais. Corpo da vértebra S1 não fusionada com o corpo da\nvértebra S2, apresentando deslocamento ventral em relação ao corpo da vértebra S1\n\nIMPRESSÃO DIAGNÓSTICA:\nImagens radiográficas da pelve evidenciam importante incongruência articular das articulações\ncoxofemorais, associado a sinais de doença articular degenerativa avançada.\n Evidenciado sinais de degeneração vertebral entre o segmento das vértebras L2-S1, tendo como\nprincipais diagnósticos diferenciais instabilidade/discopatia associada. Recomenda-se realização de\ntomografia computadorizada para maior acurácia diagnóstica",
+        "conclusion": "Imagens radiográficas da pelve evidenciam importante incongruência articular das articulações\ncoxofemorais, associado a sinais de doença articular degenerativa avançada.\n Evidenciado sinais de degeneração vertebral entre o segmento das vértebras L2-S1, tendo como\nprincipais diagnósticos diferenciais instabilidade/discopatia associada. Recomenda-se realização de\ntomografia computadorizada para maior acurácia diagnóstica",
+        "recommendations": "Correlação com evolução clínica e exames laboratoriais do paciente.",
+        "keyImageIds": [],
+        "id": "rep-1788377402530",
+        "reportedAt": "2026-09-02T19:30:02.530Z",
+        "digitalSignatureHash": "VET-SIGN-1788377402530-IE2BBWS"
+      },
+      "clinicLogo": "/uploads/1788470407479-0-20260418-085648_20260418133338_2_JPG.jpg"
+    },
+    {
+      "id": "VET-2026-109",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "clinicPhone": "(11) 98765-4321",
+      "modality": "RADIOGRAFIA",
+      "patientName": "SAFSAFDSA",
+      "species": "Canino",
+      "breed": "DSFAFDSAFDA",
+      "age": "DFSAFDAS",
+      "weight": "14 kg",
+      "gender": "Macho",
+      "isCastrated": false,
+      "ownerName": "FDSAFDSAFDAS",
+      "region": "PELVE",
+      "projections": [
+        "Laterolateral Direita (LL-D)",
+        "Ventrodorsal (VD)"
+      ],
+      "clinicalHistory": "FDASFDAS",
+      "suspectedDiagnosis": "",
+      "priority": "NORMAL",
+      "status": "REPORTED",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788376868847-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-02T19:21:08.847Z"
+        }
+      ],
+      "createdAt": "2026-09-02T19:21:36.212Z",
+      "updatedAt": "2026-09-02T19:25:40.833Z",
+      "deadline": "2026-09-03T07:21:36.212Z",
+      "report": {
+        "examId": "VET-2026-109",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico padrão em projeções ortogonais.",
+        "findings": "Campos pulmonares com trama vascular preservada. Silhueta cardíaca com morfologia normal. Ausência de alterações ósseas focais.\n\nIMPRESSÃO DIAGNÓSTICA:\n1. Estudo radiográfico dentro dos padrões de normalidade.",
+        "conclusion": "1. Estudo radiográfico dentro dos padrões de normalidade.",
+        "recommendations": "Acompanhamento clínico de rotina.",
+        "keyImageIds": [],
+        "id": "rep-1788377140833",
+        "reportedAt": "2026-09-02T19:25:40.833Z",
+        "digitalSignatureHash": "VET-SIGN-1788377140833-ERB4PXT"
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
+    },
+    {
+      "id": "VET-2026-108",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "requestingVet": "Sérgio Haroldo Heim Junior",
+      "clinicPhone": "",
+      "modality": "RADIOGRAFIA",
+      "patientName": "dfasdfs",
+      "species": "Canino",
+      "breed": "asfasfsadfasfdsadfa",
+      "age": "12",
+      "weight": "122 kg",
+      "gender": "Macho",
+      "isCastrated": false,
+      "ownerName": "assssss",
+      "region": "Tórax (3 projeções)",
+      "projections": [
+        "Laterolateral Direita (LL-D)",
+        "Ventrodorsal (VD)"
+      ],
+      "clinicalHistory": "adsdsfasdf",
+      "suspectedDiagnosis": "",
+      "priority": "NORMAL",
+      "status": "PENDING",
+      "trichotomyDone": false,
+      "images": [
+        {
+          "id": "img-demo-1788372844193-1",
+          "url": "/xrays/canine-thorax-lateral.svg",
+          "label": "Projeção Laterolateral Direita",
+          "projection": "LL-D",
+          "uploadedAt": "2026-09-02T18:14:04.193Z"
+        },
+        {
+          "id": "upload-1788372864173-0",
+          "url": "/uploads/1788372864169-0-canine-thorax-lateral.svg",
+          "label": "canine-thorax-lateral",
+          "projection": "Projeção Padrão",
+          "isDicom": false,
+          "fileSize": 7278,
+          "originalName": "canine-thorax-lateral.svg",
+          "uploadedAt": "2026-09-02T18:14:24.173Z"
+        }
+      ],
+      "createdAt": "2026-09-02T18:14:28.514Z",
+      "updatedAt": "2026-09-02T18:14:28.514Z",
+      "deadline": "2026-09-03T06:14:28.514Z"
+    },
     {
       "id": "VET-2026-107",
       "clinicId": "user-clinic-vetlife",
@@ -253,7 +516,8 @@
       ],
       "createdAt": "2026-09-02T03:22:02.058Z",
       "updatedAt": "2026-09-02T03:22:02.058Z",
-      "deadline": "2026-09-02T15:22:02.058Z"
+      "deadline": "2026-09-02T15:22:02.058Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-106",
@@ -278,7 +542,7 @@
       "clinicalHistory": "Exame cadastrado diretamente pela Dra. Camila (Radiologista) para cl�nica externa",
       "suspectedDiagnosis": "Avalia��o pr�-operat�ria",
       "priority": "NORMAL",
-      "status": "PENDING",
+      "status": "REPORTED",
       "trichotomyDone": false,
       "images": [
         {
@@ -289,8 +553,22 @@
         }
       ],
       "createdAt": "2026-09-02T03:18:33.365Z",
-      "updatedAt": "2026-09-02T03:18:33.365Z",
-      "deadline": "2026-09-02T15:18:33.365Z"
+      "updatedAt": "2026-09-02T18:16:52.855Z",
+      "deadline": "2026-09-02T15:18:33.365Z",
+      "report": {
+        "examId": "VET-2026-106",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico obtido em projeções ortogonais com técnica de alto contraste e foco fino.",
+        "findings": "aaaaaaaaaaaaaaaaaaaaaa",
+        "conclusion": "aaaaaaaaaaaaaa",
+        "recommendations": "Correlação com os dados clínicos, laboratoriais e evolução do paciente. Novos exames de imagem complementares a critério médico veterinário.",
+        "keyImageIds": [],
+        "id": "rep-1788373012855",
+        "reportedAt": "2026-09-02T18:16:52.855Z",
+        "digitalSignatureHash": "VET-SIGN-1788373012855-N3IH5KJ"
+      }
     },
     {
       "id": "VET-2026-101",
@@ -351,7 +629,8 @@
       },
       "createdAt": "2026-08-30T10:15:00Z",
       "updatedAt": "2026-08-30T11:45:00Z",
-      "deadline": "2026-08-30T22:15:00Z"
+      "deadline": "2026-08-30T22:15:00Z",
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-102",
@@ -376,7 +655,7 @@
       "clinicalHistory": "Queda do sofá há 1 hora. Claudicação de grau IV em membro torácico direito, dor intensa à palpação e crepitação óssea.",
       "suspectedDiagnosis": "Fratura óssea de rádio e ulna",
       "priority": "URGENT",
-      "status": "PENDING",
+      "status": "REPORTED",
       "images": [
         {
           "id": "img-102-1",
@@ -387,8 +666,23 @@
         }
       ],
       "createdAt": "2026-09-01T22:00:00Z",
-      "updatedAt": "2026-09-01T22:00:00Z",
-      "deadline": "2026-09-02T00:00:00Z"
+      "updatedAt": "2026-09-02T18:16:24.276Z",
+      "deadline": "2026-09-02T00:00:00Z",
+      "report": {
+        "examId": "VET-2026-102",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Estudo radiográfico obtido em projeções ortogonais com técnica de alto contraste e foco fino.",
+        "findings": "aaaaaaa",
+        "conclusion": "aaaaaaa",
+        "recommendations": "Correlação com os dadaaaaaaaaaaaaos clínicos, laboratoriais e evolução do paciente. Novos exames de imagem complementares a critério médico veterinário.",
+        "keyImageIds": [],
+        "id": "rep-1788372984276",
+        "reportedAt": "2026-09-02T18:16:24.276Z",
+        "digitalSignatureHash": "VET-SIGN-1788372984276-PG0XWGH"
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-103",
@@ -444,7 +738,8 @@
       },
       "createdAt": "2026-09-01T21:30:00Z",
       "updatedAt": "2026-09-01T22:40:00Z",
-      "deadline": "2026-09-02T09:30:00Z"
+      "deadline": "2026-09-02T09:30:00Z",
+      "clinicLogo": "/logos/petcare-logo.svg"
     },
     {
       "id": "VET-2026-104",
@@ -473,7 +768,7 @@
       "clinicalHistory": "Cobertura confirmada há aproximadamente 35 dias. Avaliação de prenhez, número aproximado de vesículas e viabilidade fetal.",
       "suspectedDiagnosis": "Confirmação de gestação e viabilidade fetal",
       "priority": "NORMAL",
-      "status": "PENDING",
+      "status": "REPORTED",
       "images": [
         {
           "id": "img-104-1",
@@ -484,8 +779,23 @@
         }
       ],
       "createdAt": "2026-09-01T22:15:00Z",
-      "updatedAt": "2026-09-01T22:15:00Z",
-      "deadline": "2026-09-02T10:15:00Z"
+      "updatedAt": "2026-09-02T18:15:31.925Z",
+      "deadline": "2026-09-02T10:15:00Z",
+      "report": {
+        "examId": "VET-2026-104",
+        "radiologistId": "user-rad-camila",
+        "radiologistName": "Dra. Camila Siqueira",
+        "radiologistCrmv": "CRMV-SP 38.412",
+        "technique": "Exame ultrassonográfico realizado em aparelho de alta resolução com transdutores microconvexo e linear multifrequenciais (5.0 a 10.0 MHz), após tricotomia e aplicação de gel acústico.",
+        "findings": "dfasfdasfads",
+        "conclusion": "dfasfdas",
+        "recommendations": "Correlação com os dados clínicos, laboratoriais e evolução do paciente. Novos exames de imagem complementares a critério médico veterinário.",
+        "keyImageIds": [],
+        "id": "rep-1788372931925",
+        "reportedAt": "2026-09-02T18:15:31.925Z",
+        "digitalSignatureHash": "VET-SIGN-1788372931925-LOZ796Q"
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
     },
     {
       "id": "VET-2026-105",
@@ -540,7 +850,513 @@
         "id": "rep-1788318400406",
         "reportedAt": "2026-09-02T03:06:40.406Z",
         "digitalSignatureHash": "VET-SIGN-1788318400406-06PUN69"
-      }
+      },
+      "clinicLogo": "/logos/vetlife-logo.svg"
+    }
+  ],
+  "transactions": [
+    {
+      "id": "tx-deb-1788454582457-196",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-112",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-112",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-03T16:56:22.457Z"
+    },
+    {
+      "id": "tx-deb-1788378004143-485",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-111",
+      "type": "EXAM_DEBIT",
+      "amount": 85,
+      "description": "Laudo Ultrassom (Plantão Urgência) — Exame VET-2026-111",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:40:04.143Z"
+    },
+    {
+      "id": "tx-deb-1788377376059-215",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "examId": "VET-2026-110",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-110",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:29:36.059Z"
+    },
+    {
+      "id": "tx-deb-1788376896252-257",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-109",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-109",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T19:21:36.252Z"
+    },
+    {
+      "id": "tx-deb-1788372868559-307",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "examId": "VET-2026-108",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Raio-X (Rotina) — Exame VET-2026-108",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T18:14:28.559Z"
+    },
+    {
+      "id": "tx-1788372809211-971",
+      "clinicId": "user-1788372782919",
+      "clinicName": "Sérgio Haroldo Heim Junior",
+      "type": "CREDIT_PURCHASE",
+      "amount": 4324534531521,
+      "description": "Recarga de Créditos via PIX Instantâneo",
+      "paymentMethod": "PIX",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T18:13:29.212Z"
+    },
+    {
+      "id": "tx-1788371332618-339",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "CREDIT_PURCHASE",
+      "amount": 150,
+      "description": "Recarga de Créditos via PIX Instantâneo",
+      "paymentMethod": "PIX",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-02T17:48:52.618Z"
+    },
+    {
+      "id": "tx-seed-1",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "CREDIT_PURCHASE",
+      "amount": 500,
+      "description": "Recarga de Créditos via PIX Instantâneo",
+      "paymentMethod": "PIX",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-25T11:00:00Z"
+    },
+    {
+      "id": "tx-seed-2",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "examId": "VET-2026-101",
+      "type": "EXAM_DEBIT",
+      "amount": 45,
+      "description": "Laudo Radiográfico Tórax — Thor (VET-2026-101)",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-01T20:15:00Z"
+    },
+    {
+      "id": "tx-seed-3",
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "type": "EXAM_DEBIT",
+      "amount": 75,
+      "description": "Laudo Ultrassonográfico de Urgência — Luna",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-01T22:30:00Z"
+    },
+    {
+      "id": "tx-seed-4",
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "type": "CREDIT_PURCHASE",
+      "amount": 300,
+      "description": "Recarga Inicial via Cartão de Crédito",
+      "paymentMethod": "CREDIT_CARD",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-28T09:30:00Z"
+    },
+    {
+      "id": "tx-seed-5",
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "type": "EXAM_DEBIT",
+      "amount": 100,
+      "description": "Débito 2 Laudos Radiográficos Ortopédicos",
+      "paymentMethod": "SALDO",
+      "status": "COMPLETED",
+      "createdAt": "2026-08-30T16:00:00Z"
+    }
+  ],
+  "appointments": [
+    {
+      "id": "AG-2026-01",
+      "date": "2026-09-02",
+      "time": "08:30",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Rex",
+      "species": "Canino",
+      "breed": "Pastor Alemão",
+      "age": "5 anos",
+      "weight": "36.0 kg",
+      "ownerName": "Fernando Alencar",
+      "ownerPhone": "(11) 98111-2233",
+      "modality": "RADIOGRAFIA",
+      "region": "Pelve e Coxofemoral (Ângulo de Norberg)",
+      "preparationInstructions": "Sedação leve autorizada pelo tutor. Não requer jejum hídrico.",
+      "notes": "Avaliação preventiva de displasia coxofemoral. Leve claudicação pós-esforço.",
+      "status": "COMPLETED",
+      "createdAt": "2026-09-01T14:00:00Z",
+      "updatedAt": "2026-09-02T09:15:00Z"
+    },
+    {
+      "id": "AG-2026-02",
+      "date": "2026-09-02",
+      "time": "10:00",
+      "durationMinutes": 40,
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "requestingVet": "Dr. Lucas Silveira",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Nina",
+      "species": "Felino",
+      "breed": "Siamês",
+      "age": "8 anos",
+      "weight": "4.1 kg",
+      "ownerName": "Patrícia Guimarães",
+      "ownerPhone": "(21) 97654-3210",
+      "modality": "ULTRASSOM",
+      "region": "Ultrassonografia Abdominal Total",
+      "preparationInstructions": "Jejum alimentar estrito de 8h, bexiga cheia e tricotomia prévia.",
+      "notes": "Vômitos frequentes e perda de peso nos últimos 4 dias.",
+      "status": "IN_PROGRESS",
+      "createdAt": "2026-09-01T16:30:00Z",
+      "updatedAt": "2026-09-02T10:05:00Z"
+    },
+    {
+      "id": "AG-2026-03",
+      "date": "2026-09-02",
+      "time": "11:30",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza",
+      "specialistId": "user-admin-ricardo",
+      "specialistName": "Dr. Ricardo Valença",
+      "patientName": "Bob",
+      "species": "Canino",
+      "breed": "Shih Tzu",
+      "age": "3 anos",
+      "weight": "6.5 kg",
+      "ownerName": "Renata Vasconcelos",
+      "ownerPhone": "(11) 99888-4455",
+      "modality": "ULTRASSOM",
+      "region": "Ultrassonografia do Trato Urinário (Rins e Bexiga)",
+      "preparationInstructions": "Reter micção por no mínimo 2 horas para avaliação vesical repleta.",
+      "notes": "Disúria, hematúria e histórico prévio de cálculos vesicais.",
+      "status": "CONFIRMED",
+      "createdAt": "2026-09-01T18:00:00Z",
+      "updatedAt": "2026-09-02T08:00:00Z"
+    },
+    {
+      "id": "AG-2026-04",
+      "date": "2026-09-02",
+      "time": "14:00",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Luke",
+      "species": "Canino",
+      "breed": "Golden Retriever",
+      "age": "2 anos",
+      "weight": "31.0 kg",
+      "ownerName": "Marcos Vinícius",
+      "ownerPhone": "(11) 98777-6655",
+      "modality": "RADIOGRAFIA",
+      "region": "Tórax (3 projeções: LL-D, LL-E e VD)",
+      "preparationInstructions": "Recomenda-se tutor acompanhar o posicionamento. Sem jejum alimentar.",
+      "notes": "Tosse seca e intolerância a esforço físico.",
+      "status": "SCHEDULED",
+      "createdAt": "2026-09-02T08:30:00Z",
+      "updatedAt": "2026-09-02T08:30:00Z"
+    },
+    {
+      "id": "AG-2026-05",
+      "date": "2026-09-02",
+      "time": "16:00",
+      "durationMinutes": 40,
+      "clinicId": "user-clinic-petcare",
+      "clinicName": "Hospital Veterinário PetCare",
+      "requestingVet": "Dr. Lucas Silveira",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Mel",
+      "species": "Felino",
+      "breed": "Persa",
+      "age": "4 anos",
+      "weight": "3.8 kg",
+      "ownerName": "Cláudia Ramos",
+      "ownerPhone": "(21) 98123-4567",
+      "modality": "ULTRASSOM",
+      "region": "Ultrassonografia Gestacional (Viabilidade Fetal)",
+      "preparationInstructions": "Tricotomia abdominal sutil. Jejum curto de 4h.",
+      "notes": "Gestação aos 45 dias. Contagem de fetos e batimentos cardíacos fetais.",
+      "status": "SCHEDULED",
+      "createdAt": "2026-09-02T09:00:00Z",
+      "updatedAt": "2026-09-02T09:00:00Z"
+    },
+    {
+      "id": "AG-2026-06",
+      "date": "2026-09-03",
+      "time": "09:00",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Toby",
+      "species": "Canino",
+      "breed": "Beagle",
+      "age": "7 anos",
+      "weight": "14.2 kg",
+      "ownerName": "Rodrigo Faro",
+      "ownerPhone": "(11) 99123-8877",
+      "modality": "RADIOGRAFIA",
+      "region": "Coluna Toracolombar e Lombar",
+      "preparationInstructions": "Manipulação cautelosa durante o transporte e contenção.",
+      "notes": "Dor intensa à palpação vertebral e relutância em subir escadas.",
+      "status": "CONFIRMED",
+      "createdAt": "2026-09-02T10:00:00Z",
+      "updatedAt": "2026-09-02T10:00:00Z"
+    },
+    {
+      "date": "2026-09-02",
+      "time": "17:00",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "Max",
+      "species": "Canino",
+      "breed": "Rottweiler",
+      "age": "4 anos",
+      "weight": "",
+      "ownerName": "Julio Cesar",
+      "ownerPhone": "(11) 98989-1122",
+      "modality": "RADIOGRAFIA",
+      "region": "Membro Pélvico (Articulação do Joelho)",
+      "preparationInstructions": "Sedação leve recomendada",
+      "notes": "Suspeita de ruptura de ligamento cruzado cranial (RLCC)",
+      "status": "COMPLETED",
+      "id": "AG-2026-07",
+      "createdAt": "2026-09-02T18:07:44.985Z",
+      "updatedAt": "2026-09-02T18:07:46.048Z",
+      "examId": "VET-2026-108"
+    },
+    {
+      "date": "2026-09-02",
+      "time": "17:00",
+      "durationMinutes": 30,
+      "clinicId": "user-clinic-vetlife",
+      "clinicName": "Clínica Veterinária VetLife 24h",
+      "requestingVet": "Dra. Mariana Souza (VetLife)",
+      "specialistId": "user-rad-camila",
+      "specialistName": "Dra. Camila Siqueira",
+      "patientName": "fdsafdas",
+      "species": "Canino",
+      "breed": "dfasfda",
+      "age": "",
+      "weight": "",
+      "ownerName": "fdafdasf",
+      "ownerPhone": "314124124124312",
+      "modality": "ULTRASSOM",
+      "region": "Ultrassonografia Abdominal Total",
+      "preparationInstructions": "Jejum alimentar de 8 horas e bexiga cheia.",
+      "notes": "",
+      "status": "IN_PROGRESS",
+      "id": "AG-2026-08",
+      "createdAt": "2026-09-02T18:10:43.902Z",
+      "updatedAt": "2026-09-02T18:11:14.424Z"
+    }
+  ],
+  "templates": [
+    {
+      "id": "tpl-rx-pelve",
+      "modality": "RADIOGRAFIA",
+      "title": "Pelve e Articulações Coxofemorais - Padrão Normal / Triagem",
+      "category": "Membros & Articulações",
+      "technique": "Estudo radiográfico da pelve e articulações coxofemorais em projeção Ventrodorsal (VD) com membros pélvicos estendidos, paralelos e com rotação interna dos fêmures, incluindo patelas no campo.",
+      "findings": "Cabeças femorais esféricas, de contornos regulares e superfície articular lisa bilateralmente.\nArticulações coxofemorais congruentes, com mais de 50% da cabeça femoral contida na fossa acetabular.\nBordos acetabulares craniais e dorsais regulares, sem proliferações osteofíticas ou esclerose subcondral patológica.\nColos femorais delgados, sem neoformação óssea (ausência de linha de Morgan).\nEspaços articulares uniformes e simétricos.\nÂngulo de Norberg estimado bilateralmente dentro dos limites da normalidade (> 105°).\nSínfise púbica e ossos ilíacos com densidades e alinhamento preservados, sem evidências de fraturas.",
+      "conclusion": "1. Estudo radiográfico da pelve dentro dos padrões de normalidade radiográfica.\n2. Ausência de sinais radiográficos compatíveis com Displasia Coxofemoral ou osteoartrose no momento.",
+      "recommendations": "Em pacientes jovens em fase de desenvolvimento esquelético, sugere-se reavaliação radiográfica após a maturidade óssea definitiva conforme preconizado pela raça."
+    },
+    {
+      "id": "tpl-rx-torax",
+      "modality": "RADIOGRAFIA",
+      "title": "Tórax Canino/Felino - Estudo em 3 Projeções (Padrão Normal)",
+      "category": "Cavidades & Tronco",
+      "technique": "Estudo radiográfico do tórax obtido em projeções ortogonais (Laterolateral Direita, Laterolateral Esquerda e Ventrodorsal), com boa técnica radiográfica em pico inspiratório.",
+      "findings": "Campos pulmonares apresentando radiopacidade e trama broncovascular preservadas, sem evidências de infiltrados alveolares, intersticiais ou nodulações patológicas.\nSilhueta cardíaca com dimensões e contornos anatômicos normais, com volume e contato esterno-cardíaco preservados (VHS dentro dos valores de referência para a raça).\nTraqueia intratorácica de trajeto retilíneo e calibre uniforme, sem colapsos ou desvios anormais.\nEspaço pleural sem espessamentos, efusão líquida ou pneumotórax.\nCúpula diafragmática íntegra, com convexidade fisiológica e inserções preservadas.\nArcabouço costal e coluna torácica sem alterações morfológicas significativas.",
+      "conclusion": "Estudo radiográfico torácico dentro dos limites de normalidade radiográfica para a espécie e idade relatadas.",
+      "recommendations": "Correlação com a evolução clínica e ausculta cardiopulmonar. Repetir o exame caso haja persistência ou piora de sintomas respiratórios."
+    },
+    {
+      "id": "tpl-rx-abdomen",
+      "modality": "RADIOGRAFIA",
+      "title": "Abdômen Simples - Estudo Radiográfico de Rotina (Padrão Normal)",
+      "category": "Cavidades & Tronco",
+      "technique": "Estudo radiográfico da cavidade abdominal nas projeções ortogonais Laterolateral Direita e Ventrodorsal.",
+      "findings": "Detalhe de contraste peritoneal satisfatório para o escore corporal do paciente.\nEstômago em localização habitual, com quantidade fisiológica de gás e conteúdo fluido/alimentar, sem dilatações obstrutivas ou corpos estranhos radiopacos.\nAlças de intestino delgado uniformemente distribuídas, com calibre luminal normal, sem padrão de plissamento ou retenção obstrutiva de gás em cacho de uvas.\nCólons preenchidos por conteúdo fecal de radiopacidade habitual e quantidade moderada de gás no reto.\nFígado com dimensões preservadas, contornos regulares e bordos ventrais afilados contidos no arco costal.\nBaço anatômico no plano radiográfico ventrodorsal.\nRins visibilizados bilateralmente em topografia retroperitoneal, com morfologia e radiopacidades preservadas.\nVesícula urinária com moderada repleção líquida, contornos regulares, sem cálculos radiopacos radiograficamente detectáveis.",
+      "conclusion": "Estudo radiográfico da cavidade abdominal dentro dos padrões de normalidade.",
+      "recommendations": "Acompanhamento clínico. Caso haja dor abdominal persistente ou vômitos recorrentes, recomenda-se ultrassonografia abdominal complementar para avaliação das camadas murais e parênquimas."
+    },
+    {
+      "id": "tpl-rx-carpo",
+      "modality": "RADIOGRAFIA",
+      "title": "Carpo e Metacarpos - Estudo Radiográfico Ortopédico",
+      "category": "Membros & Articulações",
+      "technique": "Estudo radiográfico da articulação do carpo e metacarpos nas projeções ortogonais Dorsopalmar (DP) e Mediolateral (ML).",
+      "findings": "Articulações antebraquiocárpica, mediocárpica e carpometacárpica alinhadas, com interlinhas articulares uniformes e preservadas.\nOssos do carpo (radial, ulnar, acessório e cárpicos de I a IV) com densidades, contornos e relações mantidas, sem osteofitose periarticular ou esclerose subcondral patológica.\nOssos metacarpianos com corticais contínuas, espessuras normais e cavidades medulares homogêneas.\nAusência de soluções de continuidade óssea completas ou incompletas (sem fraturas evidentes) ou luxações/subluxações carpometacárpicas.\nTecidos moles periarticulares com volume e radiopacidade normais, sem evidência de efusão ou edema focal.",
+      "conclusion": "Estudo radiográfico do carpo e metacarpo sem alterações articulares osteoproliferativas ou fraturas ósseas agudas.",
+      "recommendations": "Em caso de suspeita de instabilidade ligamentar ou hiperextensão do carpo pós-trauma, realizar incidências sob estresse mecânico (hiperextensão forçada)."
+    },
+    {
+      "id": "tpl-rx-coluna-toracica",
+      "modality": "RADIOGRAFIA",
+      "title": "Coluna Torácica - Estudo Estrutural (T1 a T13)",
+      "category": "Coluna Vertebral",
+      "technique": "Estudo radiográfico da coluna vertebral torácica (T1 a T13) nas projeções ortogonais Laterolateral (LL) e Ventrodorsal (VD).",
+      "findings": "Alinhamento do eixo vertebral torácico mantido, sem desvios escolióticos ou xifóticos anômalos.\nCorpos vertebrais de T1 a T13 íntegros, com radiopacidade óssea preservada, corticais uniformes e processos espinhosos de conformação normal.\nEspaços discais intervertebrais com amplitude simétrica e uniforme ao longo de todo o segmento torácico, sem diminuições focais ou mineralizações do núcleo pulposo no interior do canal vertebral.\nArticulações costovertebrais e processos articulares com contornos regulares, sem proliferações osteofíticas ventrais ou espondiloses deformantes proeminentes.\nForames intervertebrais com conformação ovalada e radiotransparência preservadas.",
+      "conclusion": "Coluna torácica com morfologia e alinhamento preservados, sem sinais de discopatia mineralizada ou espondilose anquilosante.",
+      "recommendations": "Correlação com exame neurológico detalhado (reflexos espinhais e palpação epaxial). Métodos avançados (TC/RM) a critério clínico caso haja déficits motores."
+    },
+    {
+      "id": "tpl-rx-coluna-lombar",
+      "modality": "RADIOGRAFIA",
+      "title": "Coluna Lombar e Junção Lombossacra (L1 a L7 - S1)",
+      "category": "Coluna Vertebral",
+      "technique": "Estudo radiográfico da coluna lombar (L1 a L7) e transição lombossacra (L7-S1) nas projeções Laterolateral (LL) e Ventrodorsal (VD).",
+      "findings": "Alinhamento vertebral preservado nos eixos laterolateral e ventrodorsal.\nCorpos vertebrais lombares com formato anatômico preservado e densidade óssea homogênea.\nEspaços discais intervertebrais de L1 a L7 com dimensões simétricas e paralelas.\nJunção lombossacra (L7-S1) com alinhamento mantido e canal vertebral sem estreitamentos ósseos extrínsecos aparentes.\nForames intervertebrais lombares amplos e radiotransparentes, sem opacidades mineralizadas suspeitas.\nAusência de pontes ósseas intervertebrais (espondilose deformante) ou lesões osteolíticas nos platôs vertebrais (sem sinais de espondilodiscite).",
+      "conclusion": "Estudo radiográfico da coluna lombar e transição lombossacra dentro dos padrões normais para a espécie.",
+      "recommendations": "Correlação com exame físico e palpação lombossacra. Em caso de dor na elevação da cauda ou suspeita de síndrome da cauda equina, considerar tomografia ou ressonância magnética."
+    },
+    {
+      "id": "tpl-rx-coluna-toracolombar",
+      "modality": "RADIOGRAFIA",
+      "title": "Coluna Toracolombar - Triagem de Discopatias (T11 a L3)",
+      "category": "Coluna Vertebral",
+      "technique": "Estudo radiográfico focado na transição toracolombar (T10 a L3) nas projeções ortogonais Laterolateral centrada e Ventrodorsal.",
+      "findings": "Alinhamento dos corpos vertebrais íntegro, sem evidência de luxação ou subluxação vertebral no segmento toracolombar.\nEspaços discais intervertebrais na transição T11-T12, T12-T13, T13-L1, L1-L2 e L2-L3 com aberturas discais preservadas e simétricas.\nAusência de opacidades mineralizadas projetadas no interior dos forames intervertebrais ou no assoalho do canal vertebral (ausência de discopatias tipo Hansen I calcificadas aparentes).\nPlatôs vertebrais adjacentes contínuos, com margens bem definidas, sem esclerose subcondral patológica ou colapso vertebral.\nProcessos articulares sem osteofitose ou deformidades associadas.",
+      "conclusion": "Coluna toracolombar sem sinais radiográficos conclusivos de extrusão discal mineralizada ou espondilopatia degenerativa evidente.",
+      "recommendations": "Ressaltamos que hérnias discais não mineralizadas (Hansen tipo II ou extrusões sem calcificação radiográfica) necessitam de exame tomográfico ou de ressonância magnética para avaliação definitiva da medula espinhal."
+    },
+    {
+      "id": "tpl-rx-coluna-cervical",
+      "modality": "RADIOGRAFIA",
+      "title": "Coluna Cervical - Estudo Estrutural (C1 a C7)",
+      "category": "Coluna Vertebral",
+      "technique": "Estudo radiográfico da coluna cervical (C1 a C7) nas projeções Laterolateral em posição neutra e Ventrodorsal centrada.",
+      "findings": "Alinhamento e curvatura fisiológica da coluna cervical mantidos.\nArticulação atlantoaxial (C1-C2) congruente, com dente do áxis íntegro, de dimensões anatômicas normais e distância atlantoaxial dorsal preservada (sem sinais de subluxação atlantoaxial evidente).\nCorpos vertebrais de C2 a C7 com contornos e radiopacidades preservados.\nEspaços intervertebrais discais cervicais com larguras preservadas e sem calcificações in situ ou no interior do canal espinhal.\nForames intervertebrais com conformação anatômica livre de proliferações ósseas obstrutivas.\nTecidos moles cervicais ventrais e traqueia com trajeto anatômico normal.",
+      "conclusion": "Estudo radiográfico da coluna cervical dentro dos limites da normalidade para a espécie e idade relatadas.",
+      "recommendations": "Acompanhamento neurológico. Em caso de cervicalgia intensa ou tetraparesia, evitar manipulações forçadas e proceder com diagnóstico por imagem avançado (Tomografia / RM)."
+    },
+    {
+      "id": "tpl-rx-cotovelo",
+      "modality": "RADIOGRAFIA",
+      "title": "Cotovelo - Triagem Ortopédica e Displasia de Cotovelo",
+      "category": "Membros & Articulações",
+      "technique": "Estudo radiográfico da articulação do cotovelo nas projeções ortogonais Mediolateral (ML) em flexão a 90° e Craniocaudal (CrCd).",
+      "findings": "Articulação umerorradioulnar com congruência e interlinha articular preservada em toda a extensão.\nProcesso ancôneo da ulna fusionado à diáfise ulnar, com margens dorsais lisas e regulares, sem linha de radiotransparência de não união (ausência de não união do processo ancôneo - NUPA).\nProcesso coronóide medial da ulna visibilizado com contorno nítido, sem evidência de fragmentação (FPCM) ou esclerose da incisura troclear ulnar.\nCôndilos umerais com contornos anatômicos regulares, sem achatamento subcondral ou osteocondrite dissecante (OCD) evidente.\nAusência de proliferações osteofíticas marginais ou efusão articular na cápsula craniodorsal.",
+      "conclusion": "Articulação do cotovelo congruente, sem sinais radiográficos de osteoartrose ou displasia de cotovelo no presente estudo.",
+      "recommendations": "Em pacientes com claudicação persistente do membro torácico e suspeita de fragmentação inicial de coronóide medial (FPCM oculta ao RX), recomenda-se tomografia computadorizada do cotovelo."
+    },
+    {
+      "id": "tpl-rx-cranio",
+      "modality": "RADIOGRAFIA",
+      "title": "Crânio e Face - Estudo Radiográfico Estrutural",
+      "category": "Cabeça",
+      "technique": "Estudo radiográfico do crânio obtido nas projeções Laterolateral (LL), Dorsoventral (DV) e rostrocaudal com boca aberta.",
+      "findings": "Calota craniana com contornos ósseos contínuos e espessuras simétricas, sem áreas de lise óssea, afundamentos ou fraturas.\nSeios nasais e frontais apresentando padrão de radiotransparência simétrico e homogêneo bilateralmente, com septo nasal íntegro e conchas nasais preservadas, sem velamento mucoso ou efeito de massa expansiva.\nBulas timpânicas com paredes ósseas delgadas, lisas e lúmen preenchido fisiologicamente por gás (radiotransparente), sem espessamento parietal ou sinais de otite média.\nMandíbulas e arcos zigomáticos alinhados e íntegros, sem solução de continuidade.\nArticulações temporomandibulares congruentes e simétricas.",
+      "conclusion": "Estudo radiográfico do crânio sem alterações osteolíticas, seios nasais arejados e bulas timpânicas preservadas.",
+      "recommendations": "Em caso de secreção nasal unilateral crônica ou sintomas neurológicos vestibulares, indica-se rinoscopia ou tomografia computadorizada de crânio para avaliação milimétrica de tecidos moles profundos."
+    },
+    {
+      "id": "tpl-rx-joelho",
+      "modality": "RADIOGRAFIA",
+      "title": "Joelho - Articulação Femorotibiopatelar e Integridade Ligamentar",
+      "category": "Membros & Articulações",
+      "technique": "Estudo radiográfico da articulação do joelho nas projeções ortogonais Mediolateral (ML) flexionada a 90° e Caudocranial (CdCr).",
+      "findings": "Articulação femorotibiopatelar congruente, com alinhamento e interlinha fêmoro-tibial medial e lateral preservadas.\nPatela posicionada centralmente no sulco troclear femoral, sem desvios mediais ou laterais (sem luxação patelar evidente no plano radiográfico).\nCoxim adiposo infrapatelar radiotransparente e preservado, sem sinais de compressão ou apagamento por efusão articular volumosa.\nFabelas femorais e sesamóide poplíteo íntegros e em topografia habitual.\nEspaço articular fêmoro-tibial sem evidência de gaveta anterior tibial (deslocamento cranial da tíbia) no decúbito.\nAusência de osteófitos no polo distal da patela, cristas trocleares ou platô tibial (sem sinais de osteoartrose secundária a ruptura de ligamento cruzado cranial - RLCC).",
+      "conclusion": "Articulação femorotibiopatelar congruente, sem sinais radiográficos indiretos de efusão articular ou osteofitose por instabilidade ligamentar.",
+      "recommendations": "Lembramos que o diagnóstico definitivo de ruptura parcial de ligamento cruzado cranial deve ser complementado com testes clínicos ortopédicos específicos (teste de gaveta e compressão tibial)."
+    },
+    {
+      "id": "tpl-rx-radio-ulna",
+      "modality": "RADIOGRAFIA",
+      "title": "Rádio e Ulna (Antebraço) - Estudo Estrutural Diafisário",
+      "category": "Membros & Articulações",
+      "technique": "Estudo radiográfico do antebraço (rádio e ulna) nas projeções ortogonais Craniocaudal (CrCd) e Mediolateral (ML), incluindo articulações do cotovelo e carpo adjacentes.",
+      "findings": "Diáfises ósseas de rádio e ulna com paralelismo e curvaturas anatômicas preservadas.\nCorticais ósseas contínuas, homogêneas e bem delimitadas, sem reações periosteais ativas, lise cortical ou soluções de continuidade (sem evidências de fraturas completas, incompletas ou em galho verde).\nCavidade medular com radiopacidade habitual, sem lesões osteolíticas focais ou sinais de panosteíte.\nEspaço interósseo preservado ao longo do comprimento dos ossos do antebraço.\nFises de crescimento (em caso de animais jovens) com espessuras simétricas e fechamento sincronizado, sem desvios angulares (sem síndrome do rádio curto).\nTecidos moles do membro com volume e contornos anatômicos normais.",
+      "conclusion": "Rádio e ulna íntegros, sem alterações ósseas focais, fraturas ou deformidades angulares evidentes.",
+      "recommendations": "Correlação com exame físico e palpação ortopédica."
+    },
+    {
+      "id": "tpl-usg-abdominal-total",
+      "modality": "ULTRASSOM",
+      "title": "Ultrassom Abdominal Total - Varredura de Rotina Completa (Padrão Normal)",
+      "category": "Cavidades & Tronco",
+      "technique": "Exame ultrassonográfico abdominal total realizado com aparelho de alta resolução, transdutores microconvexo e linear multifrequenciais (5.0 a 10.0 MHz), após tricotomia ampla e aplicação de gel acústico condutor.",
+      "findings": "FÍGADO: Dimensões anatômicas preservadas, bordos afilados e cápsula regular. Ecotextura fina e homogênea, ecogenicidade normal. Sistema vascular portal e veias hepáticas de calibre preservado.\nVESÍCULA BILIAR: Moderadamente distendida por conteúdo anecogênico homogêneo (bile líquida), paredes finas, lisas e normoespessas, sem cálculos ou sedimento litiásico.\nBAÇO: Dimensões e contornos preservados, parênquima homogêneo com padrão finamente granuloso, vascularização hilar ao Doppler preservada.\nRINS: Simétricos, contornos lisos e regulares. Boa distinção da relação corticomedular. Ecogenicidade cortical preservada. Pelves renais sem evidência de ectasia ou cálculos obstrutivos.\nBEXIGA URINÁRIA: Boa repleção hídrica, paredes lisas e regulares, conteúdo luminal anecogênico sem sedimento celular, coágulos ou urolitíases.\nTRATO GASTROINTESTINAL: Estômago e alças intestinais com estratificação parietal preservada em todos os segmentos. Motilidade observada. Espessuras das camadas dentro dos limites fisiológicos.\nPÂNCREAS E ADRENAIS: Em topografias anatômicas habituais, sem aumentos de volume ou perda de ecotextura evidente.\nCAVIDADE PERITONEAL: Ausência de líquido livre abdominal peritoneal ou linfonodomegalias mesentéricas.",
+      "conclusion": "Exame ultrassonográfico da cavidade abdominal sem alterações ecográficas patológicas detectáveis no momento.",
+      "recommendations": "Acompanhamento clínico de rotina."
+    },
+    {
+      "id": "tpl-usg-tfast",
+      "modality": "ULTRASSOM",
+      "title": "TFAST - Triagem Torácica Focada em Trauma e Emergência (POCUS)",
+      "category": "Protocolos de Emergência (POCUS)",
+      "technique": "Avaliação ultrassonográfica torácica focada à beira do leito (TFAST - Thoracic Focused Assessment with Sonography for Trauma) nos sítios acústicos fundamentais bilaterais: Tórax Dorsal (CTS), Pericárdico (PCS) e Hepático-Diafragmático (DH).",
+      "findings": "SÍTIO TÓRAX DORSAL (CTS) BILATERAL:\n- Identificado deslizamento pleural normal (Lung Sliding) ativo bilateralmente.\n- Presença de Linhas A horizontais fisiológicas, sem ausência de deslizamento ou presença de ponto de pulmão (Lung Point).\n- Ausência de sinais ecográficos de pneumotórax.\n\nSÍTIO PERICÁRDICO (PCS) / CARDÍACO:\n- Janela ecocardiográfica com contratilidade cardíaca rítmica presente.\n- Ausência de líquido anecogênico acumulado no saco pericárdico (sem efusão pericárdica ou tamponamento cardíaco).\n\nSÍTIO HEPÁTICO-DIAFRAGMÁTICO (DH):\n- Visualizada linha diafragmática íntegra com cauda de cometa e sinal de espelho preservados.\n- Ausência de líquido livre no espaço pleural caudal.",
+      "conclusion": "Protocolo TFAST Negativo: Ausência de evidências ecográficas de pneumotórax ou efusão pericárdica/pleural no momento da avaliação à beira do leito.",
+      "recommendations": "Monitorização clínica contínua dos parâmetros respiratórios e oximetria de pulso. Repetir o protocolo TFAST caso haja descompensação ou piora respiratória do paciente."
+    },
+    {
+      "id": "tpl-usg-afast",
+      "modality": "ULTRASSOM",
+      "title": "AFAST - Triagem Abdominal Focada em Trauma e Líquido Livre (POCUS)",
+      "category": "Protocolos de Emergência (POCUS)",
+      "technique": "Avaliação ultrassonográfica abdominal focada à beira do leito (AFAST - Abdominal Focused Assessment with Sonography for Trauma) investigando os 4 sítios fundamentais para pontuação de fluido abdominal (AFS - Abdominal Fluid Score).",
+      "findings": "SÍTIO DIAFRAGMÁTICO-HEPÁTICO (DH):\n- Ausência de acúmulo de líquido livre entre lobos hepáticos e diafragma ou perivesicular.\n\nSÍTIO ESPLENORRENAL (SR):\n- Ausência de lâmina anecogênica no polo cranial do rim esquerdo e espaço peri-esplênico.\n\nSÍTIO CISTOCÓLICO (CC):\n- Bexiga urinária íntegra, repleta, sem acúmulo de fluido livre anecogênico no recesso pélvico perivesical.\n\nSÍTIO HEPATORRENAL (HR):\n- Ausência de líquido livre na interface entre o rim direito e o lobo caudado hepático.\n\nESCORE DE FLUIDO ABDOMINAL (AFS - Abdominal Fluid Score): 0/4 (Negativo).",
+      "conclusion": "Protocolo AFAST Negativo (Escore AFS: 0/4): Ausência de líquido livre cavitário abdominal detectável no momento da triagem de emergência.",
+      "recommendations": "Repetir a varredura AFAST em 4 a 6 horas (ou imediatamente em caso de queda de hematócrito, hipotensão ou sinais de choque hemorrágico pós-trauma)."
+    },
+    {
+      "id": "tpl-usg-vetblue",
+      "modality": "ULTRASSOM",
+      "title": "VetBlue - Ultrassonografia Pulmonar Regional à Beira do Leito",
+      "category": "Protocolos de Emergência (POCUS)",
+      "technique": "Exame ultrassonográfico pulmonar regional padronizado (VetBlue - Veterinary Bedside Lung Ultrasound Examination) com transdutor microconvexo/linear nos 4 sítios pulmonares anatômicos bilaterais: Caudodorsal (CD), Perihilar (PH), Médio (MD) e Cranial (CR).",
+      "findings": "SÍTIO CAUDODORSAL (CD) BILATERAL:\n- Linha pleural regular com sinal de deslizamento (Lung Sliding) ativo e preservado.\n- Predomínio de Linhas A fisiológicas (linhas hiperecogênicas equidistantes horizontais).\n- Ausência de Linhas B patológicas (> 3 por campo acústico intercostal).\n\nSÍTIO PERIHILAR (PH) BILATERAL:\n- Deslizamento pleural evidente. Ausência de padrão interstício-alveolar ou sinais de edema pulmonar cardiogênico.\n\nSÍTIO MÉDIO (MD) BILATERAL:\n- Parênquima subpleural com aeração normal. Sem áreas de consolidação ou sinal de hepatização pulmonar.\n\nSÍTIO CRANIAL (CR) BILATERAL:\n- Deslizamento pleural mantido. Ausência de broncogramas aéreos dinâmicos ou lesões nodulares periféricas.\n\nSINAIS ADICIONAIS:\n- Ausência de linhas de fragmentação pleural, pneumotórax ou efusão pleural associada.",
+      "conclusion": "Protocolo VetBlue com predomínio de Perfil A pulmonar fisiológico bilateralmente, sem evidências ecográficas de síndrome interstício-alveolar (edema/contusão) ou consolidação no momento.",
+      "recommendations": "Correlação direta com padrão de respiração, ausculta pulmonar e gasometria. Repetir o VetBlue caso haja instalação de taquipneia, tosse aguda ou cianose."
     }
   ]
 }

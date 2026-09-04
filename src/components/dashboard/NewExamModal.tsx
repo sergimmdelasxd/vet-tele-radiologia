@@ -19,6 +19,7 @@ import {
   Building2
 } from 'lucide-react';
 import { Exam, ExamImage, ExamModality, ExamPriority, Species, UserRole } from '@/types';
+import { RegionSelector } from '@/components/common/RegionSelector';
 
 interface NewExamModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ interface NewExamModalProps {
   onExamCreated: (exam: Exam) => void;
   defaultClinicName?: string;
   defaultVetName?: string;
+  defaultClinicLogo?: string;
   userRole?: UserRole;
 }
 
@@ -35,10 +37,22 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   onExamCreated,
   defaultClinicName = '',
   defaultVetName = '',
+  defaultClinicLogo = '',
   userRole = 'CLINIC'
 }) => {
   // Modalidade: Radiografia ou Ultrassonografia
   const [modality, setModality] = useState<ExamModality>('RADIOGRAFIA');
+
+  // Logotipo da clínica para o laudo
+  const [clinicLogo, setClinicLogo] = useState(defaultClinicLogo || '');
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false);
+  const logoFileRef = React.useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (defaultClinicLogo) {
+      setClinicLogo(defaultClinicLogo);
+    }
+  }, [defaultClinicLogo]);
 
   const [patientName, setPatientName] = useState('');
   const [species, setSpecies] = useState<Species>('Canino');
@@ -125,7 +139,13 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   ]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const currentExamPrice = modality === 'ULTRASSOM'
+    ? (priority === 'URGENT' ? 85.00 : 60.00)
+    : (priority === 'URGENT' ? 65.00 : 45.00);
 
   if (!isOpen) return null;
 
@@ -168,26 +188,92 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
     );
   };
 
-  // Upload de arquivos locais
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload real de arquivos locais para o servidor (/api/upload)
+  const uploadFilesToServer = async (fileList: FileList | File[]) => {
+    if (!fileList || fileList.length === 0) return;
+    setIsUploading(true);
+    setErrorMsg(null);
+    try {
+      const formData = new FormData();
+      Array.from(fileList).forEach(file => {
+        formData.append('files', file);
+      });
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao processar upload dos arquivos');
+      }
+
+      if (data.files && Array.isArray(data.files)) {
+        const newImgs: ExamImage[] = data.files.map((f: any) => ({
+          id: f.id,
+          url: f.url,
+          label: f.label || f.originalName,
+          projection: modality === 'ULTRASSOM' ? 'Corte Ecográfico' : 'Projeção Padrão',
+          isDicom: f.isDicom,
+          fileSize: f.size,
+          originalName: f.originalName,
+          uploadedAt: f.uploadedAt
+        }));
+        setUploadedImages(prev => [...prev, ...newImgs]);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || 'Falha ao enviar arquivo');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      uploadFilesToServer(e.target.files);
+    }
+  };
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
+    setIsUploadingLogo(true);
+    try {
+      const formData = new FormData();
+      formData.append('files', files[0]);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      if (data.files && data.files[0]) {
+        setClinicLogo(data.files[0].url);
+      }
+    } catch (err) {
+      console.error('Erro no upload do logotipo:', err);
+    } finally {
+      setIsUploadingLogo(false);
+    }
+  };
 
-    Array.from(files).forEach((file, idx) => {
-      const reader = new FileReader();
-      reader.onload = event => {
-        if (event.target?.result) {
-          const newImg: ExamImage = {
-            id: `img-upload-${Date.now()}-${idx}`,
-            url: event.target.result as string,
-            label: file.name.replace(/\.[^/.]+$/, ""),
-            uploadedAt: new Date().toISOString()
-          };
-          setUploadedImages(prev => [...prev, newImg]);
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      uploadFilesToServer(e.dataTransfer.files);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   // Botões de carregar amostra rápida
@@ -278,6 +364,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           fastingHours: modality === 'ULTRASSOM' ? fastingHours : undefined,
           trichotomyDone: modality === 'ULTRASSOM' ? trichotomyDone : undefined,
           ultrasoundType: modality === 'ULTRASSOM' ? ultrasoundType : undefined,
+          clinicLogo: clinicLogo || undefined,
           images: uploadedImages,
           ...(isRadiologistOrAdmin ? {
             clinicId: clinicMode === 'SELECT' ? selectedClinicId : 'new',
@@ -703,26 +790,38 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           {/* DADOS ESPECÍFICOS DO EXAME CONFORME MODALIDADE */}
           {modality === 'ULTRASSOM' ? (
             /* Campos de Ultrassonografia */
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-blue-800/40 space-y-3">
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-blue-800/40 space-y-4">
               <h3 className="text-xs font-bold text-blue-400 uppercase tracking-wider flex items-center gap-1.5">
-                <Waves className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Detalhes da Ultrassonografia (USG)
+                <Waves className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Região e Protocolo de Ultrassonografia (USG)
               </h3>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Menu Interativo de Regiões */}
+              <RegionSelector
+                selectedRegion={ultrasoundType}
+                currentModality="ULTRASSOM"
+                onSelectRegion={(regName, defaultProjs, defaultFast, targetMod) => {
+                  if (targetMod && targetMod !== 'ULTRASSOM') {
+                    handleModalityChange(targetMod);
+                    setRegion(regName);
+                    if (defaultProjs && defaultProjs.length > 0) setSelectedProjections(defaultProjs);
+                    return;
+                  }
+                  setUltrasoundType(regName);
+                  if (defaultFast) setFastingHours(defaultFast);
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                 <div className="sm:col-span-2">
-                  <label className="block text-slate-400 mb-1">Tipo de Ultrassom Solicitado *</label>
-                  <select
+                  <label className="block text-slate-400 mb-1">Região / Protocolo Selecionado *</label>
+                  <input
+                    type="text"
+                    required
                     value={ultrasoundType}
                     onChange={e => setUltrasoundType(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-blue-500 cursor-pointer"
-                  >
-                    <option value="Ultrassonografia Abdominal Total">Ultrassonografia Abdominal Total</option>
-                    <option value="Acompanhamento Obstétrico / Gestacional">Acompanhamento Obstétrico / Gestacional</option>
-                    <option value="Ultrassom do Trato Urinário (Rins e Bexiga)">Ultrassom do Trato Urinário (Rins e Bexiga)</option>
-                    <option value="Triagem A-FAST / T-FAST Emergencial (Trauma/Líquido Livre)">Triagem A-FAST / T-FAST Emergencial (Trauma/Líquido Livre)</option>
-                    <option value="Ultrassonografia Cervical e Tireoide">Ultrassonografia Cervical e Tireoide</option>
-                    <option value="Ultrassonografia Ocular">Ultrassonografia Ocular</option>
-                  </select>
+                    placeholder="Ex: Ultrassom Abdominal, TFAST, AFAST, VetBlue..."
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-blue-500 font-semibold text-xs"
+                  />
                 </div>
 
                 <div>
@@ -813,20 +912,39 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
             </div>
           ) : (
             /* Campos de Radiografia (Raio-X) */
-            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-3">
-              <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider">
-                {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. Região e Detalhes da Radiografia' : '2. Região e Detalhes da Radiografia'}
+            <div className="bg-slate-950/50 p-4 rounded-xl border border-slate-800 space-y-4">
+              <h3 className="text-xs font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5" /> {(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? '3. ' : '2. '}Região Anatômica e Detalhes da Radiografia (Raio-X)
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+
+              {/* Menu Interativo de Regiões */}
+              <RegionSelector
+                selectedRegion={region}
+                currentModality="RADIOGRAFIA"
+                onSelectRegion={(regName, defaultProjs, defaultFast, targetMod) => {
+                  if (targetMod && targetMod !== 'RADIOGRAFIA') {
+                    handleModalityChange(targetMod);
+                    setUltrasoundType(regName);
+                    if (defaultFast) setFastingHours(defaultFast);
+                    return;
+                  }
+                  setRegion(regName);
+                  if (defaultProjs && defaultProjs.length > 0) {
+                    setSelectedProjections(defaultProjs);
+                  }
+                }}
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800/60">
                 <div>
-                  <label className="block text-slate-400 mb-1">Região Anatômica *</label>
+                  <label className="block text-slate-400 mb-1">Região Anatômica Selecionada *</label>
                   <input
                     type="text"
                     required
-                    placeholder="Ex: Tórax (3 projeções), Abdômen Total, Membro Pélvico"
+                    placeholder="Ex: Pelve, Tórax, Abdômen, Coluna Lombar..."
                     value={region}
                     onChange={e => setRegion(e.target.value)}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500 font-semibold text-xs"
                   />
                 </div>
 
@@ -942,22 +1060,43 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
             </div>
 
             {/* Drag & Drop Area */}
-            <label className="border-2 border-dashed border-slate-700 hover:border-cyan-500 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer bg-slate-900/50 hover:bg-slate-900 transition group">
-              <UploadCloud className="w-8 h-8 text-slate-500 group-hover:text-cyan-400 transition" />
-              <div className="text-center">
-                <span className="font-semibold text-slate-200">Clique para enviar arquivos de imagem</span>
-                <p className="text-[10px] text-slate-500 mt-0.5">
-                  Suporta cortes de ultrassom, capturas DICOM, JPEG, PNG e WebP
-                </p>
-              </div>
-              <input
-                type="file"
-                multiple
-                accept="image/*,.dcm"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+            <div
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-xl p-5 flex flex-col items-center justify-center gap-2 transition relative ${
+                isDragging
+                  ? 'border-cyan-400 bg-cyan-950/40 shadow-lg shadow-cyan-500/10'
+                  : 'border-slate-700 hover:border-cyan-500/80 bg-slate-900/50 hover:bg-slate-900/80'
+              }`}
+            >
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2 py-3 text-cyan-400">
+                  <div className="w-8 h-8 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin" />
+                  <span className="text-xs font-semibold">Processando upload seguro dos arquivos...</span>
+                </div>
+              ) : (
+                <>
+                  <UploadCloud className={`w-8 h-8 transition ${isDragging ? 'text-cyan-400 scale-110' : 'text-slate-400'}`} />
+                  <div className="text-center">
+                    <label className="font-semibold text-slate-200 cursor-pointer hover:text-cyan-300 transition">
+                      <span>Clique para escolher arquivos</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,.dcm,.dicom"
+                        onChange={handleFileInputChange}
+                        className="hidden"
+                      />
+                    </label>
+                    <span className="text-slate-400 text-xs"> ou arraste e solte aqui</span>
+                    <p className="text-[10px] text-slate-400 mt-0.5">
+                      Suporta arquivos DICOM (.dcm), cortes de ultrassom, JPEG, PNG e WebP
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Imagens Anexadas */}
             {uploadedImages.length > 0 && (
@@ -967,20 +1106,27 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
                     key={img.id}
                     className="relative group bg-slate-900 border border-slate-800 rounded-xl p-2 flex flex-col items-center"
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.url}
-                      alt={img.label}
-                      className="w-full h-24 object-contain rounded-lg bg-black"
-                    />
-                    <span className="text-[10px] text-slate-300 truncate w-full text-center mt-1">
-                      {img.label || `Foto ${idx + 1}`}
+                    {img.isDicom ? (
+                      <div className="w-full h-24 rounded-lg bg-slate-950 flex flex-col items-center justify-center border border-cyan-500/30 text-cyan-300">
+                        <Activity className="w-8 h-8 text-cyan-400 mb-1" />
+                        <span className="text-[10px] font-bold uppercase tracking-wider">Arquivo DICOM</span>
+                      </div>
+                    ) : (
+                      /* eslint-disable-next-line @next/next/no-img-element */
+                      <img
+                        src={img.url}
+                        alt={img.label}
+                        className="w-full h-24 object-contain rounded-lg bg-black"
+                      />
+                    )}
+                    <span className="text-[10px] text-slate-300 truncate w-full text-center mt-1 font-medium">
+                      {img.label || `Arquivo ${idx + 1}`}
                     </span>
                     <button
                       type="button"
                       onClick={() => removeImage(img.id)}
-                      className="absolute top-1 right-1 p-1 bg-rose-950/80 text-rose-300 hover:text-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition"
-                      title="Remover imagem"
+                      className="absolute top-1 right-1 p-1 bg-rose-950/80 text-rose-300 hover:text-rose-100 rounded-full opacity-0 group-hover:opacity-100 transition cursor-pointer"
+                      title="Remover anexo"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -988,34 +1134,109 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
                 ))}
               </div>
             )}
+
+            {/* SEÇÃO: LOGOTIPO DA CLÍNICA PARA O LAUDO TIMBRADO */}
+            <div className="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3 mt-4">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-teal-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <Building2 className="w-3.5 h-3.5 text-teal-400" />
+                  <span>Logotipo da Clínica no Laudo (Opcional)</span>
+                </label>
+                {clinicLogo && (
+                  <button
+                    type="button"
+                    onClick={() => setClinicLogo('')}
+                    className="text-[11px] font-bold text-rose-400 hover:text-rose-300 transition cursor-pointer"
+                  >
+                    Remover deste pedido
+                  </button>
+                )}
+              </div>
+
+              <input
+                ref={logoFileRef}
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+
+              {clinicLogo ? (
+                <div className="flex flex-col sm:flex-row items-center gap-3.5 p-3 bg-slate-900 border border-slate-700/80 rounded-xl">
+                  <div className="h-12 w-28 p-1.5 bg-white rounded-lg border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={clinicLogo} alt="Logo da Clínica" className="max-h-full max-w-full object-contain" />
+                  </div>
+                  <div className="flex-1 text-xs text-center sm:text-left">
+                    <span className="font-bold text-slate-100 block">Logotipo oficial anexado</span>
+                    <span className="text-[11px] text-slate-400">
+                      Será impresso no cabeçalho timbrado oficial deste laudo e no PDF para o tutor.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => logoFileRef.current?.click()}
+                    disabled={isUploadingLogo}
+                    className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs font-bold text-teal-300 rounded-lg border border-slate-700 transition cursor-pointer shrink-0"
+                  >
+                    {isUploadingLogo ? 'Carregando...' : 'Alterar Logo'}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => logoFileRef.current?.click()}
+                  className="border border-dashed border-slate-700 hover:border-teal-500/80 rounded-xl p-4 flex items-center justify-center gap-2.5 cursor-pointer bg-slate-900/40 hover:bg-teal-950/20 transition group"
+                >
+                  <UploadCloud className="w-4 h-4 text-teal-400 group-hover:scale-110 transition-transform" />
+                  <span className="text-xs text-slate-300 font-medium">
+                    {isUploadingLogo ? 'Enviando logotipo...' : '+ Anexar Logotipo da Clínica para o Laudo (PNG, SVG, JPG)'}
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Footer com Botões */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition active:scale-95 text-xs"
-            >
-              {isLoading ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Submetendo Pedido...</span>
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  <span>{(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? 'Cadastrar Exame no Sistema' : 'Enviar para Central de Laudos'}</span>
-                </>
+          {/* Footer com Preço e Botões */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800">
+            {/* Tag de Custo do Exame */}
+            <div className="w-full sm:w-auto flex items-center gap-2 bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-xl text-xs">
+              <span className="text-slate-400">Valor do Laudo:</span>
+              <strong className="text-emerald-400 text-sm font-black font-mono">
+                R$ {currentExamPrice.toFixed(2).replace('.', ',')}
+              </strong>
+              {priority === 'URGENT' && (
+                <span className="px-1.5 py-0.5 rounded text-[10px] bg-rose-500/20 text-rose-300 font-semibold">
+                  SLA Urgência 2h
+                </span>
               )}
-            </button>
+            </div>
+
+            <div className="w-full sm:w-auto flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition text-xs font-semibold"
+              >
+                Cancelar
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading || isUploading}
+                className="inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/20 transition active:scale-95 text-xs cursor-pointer"
+              >
+                {isLoading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <span>Submetendo Pedido...</span>
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    <span>{(userRole === 'RADIOLOGIST' || userRole === 'ADMIN') ? 'Cadastrar Exame no Sistema' : 'Enviar para Central de Laudos'}</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </form>
       </div>

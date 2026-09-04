@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   FileText, 
   Sparkles, 
@@ -9,12 +9,15 @@ import {
   AlertCircle, 
   Stethoscope, 
   Save, 
-  Image as ImageIcon,
-  Waves,
-  Activity
+  Image as ImageIcon, 
+  Waves, 
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import { Exam, ReportTemplate } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
+import { RichTextEditor } from '@/components/common/RichTextEditor';
+import { SaveToCasotecaModal } from '@/components/cases/SaveToCasotecaModal';
 
 interface ReportEditorProps {
   exam: Exam;
@@ -40,9 +43,20 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     ? 'Exame ultrassonográfico realizado em aparelho de alta resolução com transdutores microconvexo e linear multifrequenciais (5.0 a 10.0 MHz), após tricotomia e aplicação de gel acústico.'
     : 'Estudo radiográfico obtido em projeções ortogonais com técnica de alto contraste e foco fino.';
 
+  // Conteúdo inicial unificado (achados + impressão diagnóstica)
+  const getInitialContent = () => {
+    if (!existingReport) return '';
+    if (existingReport.findings && (existingReport.findings.includes('IMPRESSÃO DIAGNÓSTICA') || existingReport.findings.includes('<p>'))) {
+      return existingReport.findings;
+    }
+    if (existingReport.findings && existingReport.conclusion && existingReport.findings !== existingReport.conclusion) {
+      return `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${existingReport.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${existingReport.conclusion.replace(/\n/g, '<br>')}</strong></p>`;
+    }
+    return existingReport.findings || existingReport.conclusion || '';
+  };
+
   const [technique, setTechnique] = useState(existingReport?.technique || defaultTechnique);
-  const [findings, setFindings] = useState(existingReport?.findings || '');
-  const [conclusion, setConclusion] = useState(existingReport?.conclusion || '');
+  const [reportContent, setReportContent] = useState<string>(getInitialContent);
   const [recommendations, setRecommendations] = useState(
     existingReport?.recommendations || 
     'Correlação com os dados clínicos, laboratoriais e evolução do paciente. Novos exames de imagem complementares a critério médico veterinário.'
@@ -56,23 +70,50 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showCasotecaModal, setShowCasotecaModal] = useState(false);
+
+  const [allTemplates, setAllTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
+
+  useEffect(() => {
+    fetch('/api/templates')
+      .then(r => r.json())
+      .then(d => {
+        if (d.templates && d.templates.length > 0) {
+          setAllTemplates(d.templates);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Filtrar templates por modalidade correspondente ou exibir agrupados
-  const usgTemplates = REPORT_TEMPLATES.filter(t => t.modality === 'ULTRASSOM');
-  const xrayTemplates = REPORT_TEMPLATES.filter(t => t.modality === 'RADIOGRAFIA');
+  const usgTemplates = allTemplates.filter(t => t.modality === 'ULTRASSOM');
+  const xrayTemplates = allTemplates.filter(t => t.modality === 'RADIOGRAFIA');
+
+  // Sugestão inteligente para a região anatômica do exame
+  const matchedTemplate = useMemo(() => {
+    if (!exam.region) return null;
+    const regLower = exam.region.toLowerCase();
+    return allTemplates.find(t => 
+      t.title.toLowerCase().includes(regLower) ||
+      regLower.includes(t.title.toLowerCase()) ||
+      t.id.toLowerCase().includes(regLower)
+    );
+  }, [allTemplates, exam.region]);
 
   const handleSelectTemplate = (templateId: string) => {
-    const tpl = REPORT_TEMPLATES.find(t => t.id === templateId);
+    const tpl = allTemplates.find(t => t.id === templateId);
     if (!tpl) return;
 
-    if (findings && !confirm('Deseja substituir o texto atual pelos dados do modelo selecionado?')) {
+    if (reportContent && reportContent.trim() && !confirm('Deseja substituir o texto atual pelos dados do modelo selecionado?')) {
       return;
     }
 
     setTechnique(tpl.technique);
-    setFindings(tpl.findings);
-    setConclusion(tpl.conclusion);
-    setRecommendations(tpl.recommendations);
+    setRecommendations(tpl.recommendations || '');
+
+    const unifiedHtml = `<p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">DESCRIÇÃO DOS ACHADOS:</strong></p><p>${tpl.findings.replace(/\n/g, '<br>')}</p><p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">IMPRESSÃO DIAGNÓSTICA:</strong></p><p><strong>${tpl.conclusion.replace(/\n/g, '<br>')}</strong></p>${tpl.recommendations ? `<p><br></p><p style="margin-bottom: 6px;"><strong style="text-decoration: underline; font-size: 13px;">RECOMENDAÇÕES:</strong></p><p>${tpl.recommendations.replace(/\n/g, '<br>')}</p>` : ''}`;
+
+    setReportContent(unifiedHtml);
   };
 
   const handleToggleKeyImage = (imageId: string) => {
@@ -85,8 +126,8 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     setErrorMsg(null);
     setSuccessMsg(null);
 
-    if (!findings.trim() || !conclusion.trim()) {
-      setErrorMsg('Os campos de Descrição dos Achados e Conclusão Diagnóstica são obrigatórios.');
+    if (!reportContent || !reportContent.trim()) {
+      setErrorMsg('O campo unificado de Achados e Impressão Diagnóstica é obrigatório.');
       return;
     }
 
@@ -97,8 +138,8 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           technique,
-          findings,
-          conclusion,
+          findings: reportContent,
+          conclusion: reportContent,
           recommendations,
           vhsScore: isUltrasound ? undefined : (vhsScore.trim() || undefined),
           norbergAngle: isUltrasound ? undefined : (norbergAngle.trim() || undefined),
@@ -109,6 +150,24 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Falha ao emitir laudo');
+      }
+
+      // Notificar o sistema em tempo real
+      try {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'REPORT_READY',
+            title: `✅ Laudo Concluído: ${exam.patientName}`,
+            message: `O laudo de ${exam.patientName} (${exam.species}) foi assinado digitalmente por ${currentRadiologistName}.`,
+            targetRole: 'CLINIC',
+            examId: exam.id,
+            link: `/laudo/${exam.id}`
+          })
+        });
+      } catch (err) {
+        console.debug(err);
       }
 
       setSuccessMsg(`Laudo de ${isUltrasound ? 'Ultrassonografia' : 'Radiografia'} emitido e assinado com sucesso!`);
@@ -122,39 +181,43 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   };
 
   return (
-    <div className="bg-slate-900/50 p-5 lg:p-7 space-y-6 text-slate-100 min-h-full">
+    <div className="bg-white/95 border border-slate-200/90 p-5 lg:p-7 space-y-6 text-slate-800 min-h-full rounded-3xl shadow-xs">
       {/* Header com Status e Seletor de Templates */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 pb-4">
         <div>
           <div className="flex items-center gap-2">
             {isUltrasound ? (
-              <div className="flex items-center gap-1.5 text-blue-400">
-                <Waves className="w-5 h-5" />
-                <h2 className="text-lg font-bold text-white">Laudo de Ultrassonografia Veterinária</h2>
+              <div className="flex items-center gap-2 text-teal-700">
+                <span className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center">
+                  <Waves className="w-4 h-4 text-teal-600" />
+                </span>
+                <h2 className="text-base sm:text-lg font-black text-slate-900">Laudo de Ultrassonografia Veterinária</h2>
               </div>
             ) : (
-              <div className="flex items-center gap-1.5 text-cyan-400">
-                <Activity className="w-5 h-5" />
-                <h2 className="text-lg font-bold text-white">Laudo Radiológico Veterinário</h2>
+              <div className="flex items-center gap-2 text-sky-700">
+                <span className="w-8 h-8 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center">
+                  <Activity className="w-4 h-4 text-sky-600" />
+                </span>
+                <h2 className="text-base sm:text-lg font-black text-slate-900">Laudo Radiológico Veterinário</h2>
               </div>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Exame: <strong className="text-slate-200">{exam.id}</strong> | Paciente:{' '}
-            <strong className="text-cyan-300">{exam.patientName} ({exam.species})</strong>
+          <p className="text-xs text-slate-500 mt-1">
+            Exame: <strong className="text-slate-800 font-mono">{exam.id}</strong> | Paciente:{' '}
+            <strong className="text-teal-700">{exam.patientName} ({exam.species})</strong>
             {exam.fastingHours && (
-              <span className="text-blue-300 ml-2">• {exam.fastingHours}</span>
+              <span className="text-slate-600 ml-2 font-medium">• {exam.fastingHours}</span>
             )}
           </p>
         </div>
 
         {/* Dropdown de Modelos Rápidos agrupados */}
         <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+          <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
           <select
             onChange={e => handleSelectTemplate(e.target.value)}
             defaultValue=""
-            className="bg-slate-800 border border-slate-700 text-xs text-slate-200 rounded-lg px-3 py-2 outline-none focus:border-cyan-500 transition cursor-pointer max-w-[280px]"
+            className="bg-slate-50 border border-slate-200 text-xs text-slate-800 font-medium rounded-xl px-3 py-2 outline-none focus:bg-white focus:border-teal-500 transition cursor-pointer max-w-[280px] shadow-2xs"
           >
             <option value="" disabled>
               ⚡ Inserir Modelo Pré-configurado...
@@ -196,28 +259,56 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
               </>
             )}
           </select>
+
+          {matchedTemplate && !reportContent && (
+            <button
+              type="button"
+              onClick={() => handleSelectTemplate(matchedTemplate.id)}
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200/80 text-amber-800 text-xs font-bold rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
+              title="Inserir modelo pré-configurado desta região anatômica"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+              <span>Inserir Modelo de {exam.region}</span>
+            </button>
+          )}
         </div>
       </div>
 
       {errorMsg && (
-        <div className="p-3 bg-rose-950/50 border border-rose-800 text-rose-300 rounded-xl text-xs flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
+        <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs flex items-center gap-2">
+          <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
           <span>{errorMsg}</span>
         </div>
       )}
 
       {successMsg && (
-        <div className="p-3 bg-emerald-950/50 border border-emerald-800 text-emerald-300 rounded-xl text-xs flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>{successMsg}</span>
+        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-900 rounded-2xl text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+            <div>
+              <span className="font-bold">{successMsg}</span>
+              <p className="text-[11px] text-emerald-700 mt-0.5">O laudo oficial já está timbrado e disponível para a clínica parceira.</p>
+            </div>
+          </div>
+          <a
+            href={`https://wa.me/?text=${encodeURIComponent(
+              `Olá equipe da clínica ${exam.clinicName}! O laudo do paciente *${exam.patientName}* (${exam.species}) foi concluído e assinado por ${currentRadiologistName} (${currentRadiologistCrmv}). Acesse e baixe o laudo oficial timbrado aqui: ${typeof window !== 'undefined' ? window.location.origin : ''}/laudo/${exam.id}`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs self-start sm:self-auto shrink-0 active:scale-95"
+            title="Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"
+          >
+            <span>📲 Notificar Clínica via WhatsApp</span>
+          </a>
         </div>
       )}
 
       {/* Formulário do Laudo */}
-      <div className="space-y-4 text-xs">
+      <div className="space-y-5 text-xs">
         {/* Técnica Realizada */}
         <div>
-          <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
+          <label className="block text-slate-700 font-semibold mb-1 uppercase tracking-wider text-[11px]">
             {isUltrasound ? 'Técnica e Equipamento Ultrassonográfico' : 'Técnica Radiográfica Realizada'}
           </label>
           <input
@@ -225,15 +316,15 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
             value={technique}
             onChange={e => setTechnique(e.target.value)}
             placeholder="Descreva transdutores utilizados, frequências e preparo..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-200 outline-none focus:border-cyan-500 transition"
+            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-slate-800 outline-none focus:bg-white focus:border-teal-500 transition shadow-2xs text-xs"
           />
         </div>
 
         {/* Mensurações Especiais de Radiografia (apenas se for Raio-X) */}
         {!isUltrasound && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-sky-50/60 p-3.5 rounded-2xl border border-sky-200/80">
             <div>
-              <label className="block text-slate-400 font-medium mb-1 text-[11px]">
+              <label className="block text-sky-950 font-bold mb-1 text-[11px]">
                 Vertebral Heart Score (VHS)
               </label>
               <input
@@ -241,11 +332,11 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
                 value={vhsScore}
                 onChange={e => setVhsScore(e.target.value)}
                 placeholder="Ex: 9.6 v (Normal: até 10.5v)"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 text-xs outline-none focus:border-cyan-500"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-1.5 text-slate-800 text-xs outline-none focus:border-teal-500 shadow-2xs font-mono"
               />
             </div>
             <div>
-              <label className="block text-slate-400 font-medium mb-1 text-[11px]">
+              <label className="block text-sky-950 font-bold mb-1 text-[11px]">
                 Ângulo de Norberg / Ortopédico
               </label>
               <input
@@ -253,68 +344,37 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
                 value={norbergAngle}
                 onChange={e => setNorbergAngle(e.target.value)}
                 placeholder="Ex: Coxofemoral D: 105° | E: 98°"
-                className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 text-xs outline-none focus:border-cyan-500"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-1.5 text-slate-800 text-xs outline-none focus:border-teal-500 shadow-2xs font-mono"
               />
             </div>
           </div>
         )}
 
-        {/* Descrição dos Achados (Órgãos ou Projeções) */}
-        <div>
-          <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px] flex items-center justify-between">
-            <span>
-              {isUltrasound ? 'Descrição dos Achados Ecográficos por Órgão *' : 'Descrição dos Achados Radiográficos *'}
+        {/* CAIXA ÚNICA DE EDIÇÃO COM ACHADOS E IMPRESSÃO DIAGNÓSTICA JUNTOS */}
+        <div className="space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5">
+            <label className="text-slate-900 font-bold text-xs sm:text-sm flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block" />
+              <span>Achados e Impressão Diagnóstica (Caixa Única de Texto Rico) *</span>
+            </label>
+            <span className="text-[11px] text-teal-800 font-semibold bg-teal-50 border border-teal-200/80 px-2.5 py-0.5 rounded-full self-start sm:self-auto shadow-2xs">
+              Negrito, Sublinhado, Itálico, Fontes e Tamanhos
             </span>
-            <span className="text-[10px] text-slate-500 font-normal">
-              {isUltrasound ? 'Fígado, Baço, Rins, Bexiga, TGI, etc.' : 'Estruturado por sistemas'}
-            </span>
-          </label>
-          <textarea
-            rows={8}
-            value={findings}
-            onChange={e => setFindings(e.target.value)}
-            placeholder={
-              isUltrasound
-                ? 'FÍGADO: Dimensões, bordos, ecotextura e arquitetura vascular...\nRINS: Dimensões, ecogenicidade cortical, relação corticomedular e pelve...\nBEXIGA: Repleção, espessura parietal, conteúdo luminal...\nLÍQUIDO LIVRE: Presença ou ausência...'
-                : 'Descreva detalhadamente as estruturas visualizadas...'
-            }
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 leading-relaxed outline-none focus:border-cyan-500 transition font-sans text-xs"
-          />
-        </div>
+          </div>
 
-        {/* Conclusão Diagnóstica */}
-        <div>
-          <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px] text-cyan-400">
-            Conclusão Diagnóstica *
-          </label>
-          <textarea
-            rows={3}
-            value={conclusion}
-            onChange={e => setConclusion(e.target.value)}
-            placeholder="1. Diagnóstico ecográfico / radiográfico principal.&#10;2. Diagnósticos diferenciais e estadiamento."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 leading-relaxed outline-none focus:border-cyan-500 transition font-sans text-xs font-medium"
-          />
-        </div>
-
-        {/* Recomendações Clínicas */}
-        <div>
-          <label className="block text-slate-300 font-semibold mb-1 uppercase tracking-wider text-[11px]">
-            Recomendações e Conduta Sugerida
-          </label>
-          <textarea
-            rows={2}
-            value={recommendations}
-            onChange={e => setRecommendations(e.target.value)}
-            placeholder="Recomendações clínicas, biópsia/punção guiada por USG, exames laboratoriais complementares..."
-            className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-slate-200 leading-relaxed outline-none focus:border-cyan-500 transition font-sans text-xs"
+          <RichTextEditor
+            value={reportContent}
+            onChange={setReportContent}
+            placeholder="Descreva detalhadamente os achados de imagem e elabore a impressão diagnóstica..."
+            minHeight="380px"
           />
         </div>
 
         {/* Seleção de Imagens-Chave para o Laudo */}
         {exam.images.length > 0 && (
           <div>
-            <label className="block text-slate-300 font-semibold mb-2 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-              <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+            <label className="block text-slate-700 font-semibold mb-2 text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+              <ImageIcon className="w-3.5 h-3.5 text-teal-600" />
               Cortes / Imagens Selecionadas para o Laudo
             </label>
             <div className="flex items-center gap-3 overflow-x-auto pb-1">
@@ -325,17 +385,17 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
                     key={img.id}
                     type="button"
                     onClick={() => handleToggleKeyImage(img.id)}
-                    className={`relative rounded-xl overflow-hidden border-2 transition p-1 bg-slate-950 flex flex-col items-center gap-1 shrink-0 ${
-                      isSelected ? 'border-cyan-400 ring-2 ring-cyan-500/20' : 'border-slate-800 opacity-60'
+                    className={`relative rounded-2xl overflow-hidden border-2 transition p-1 bg-slate-50 flex flex-col items-center gap-1 shrink-0 ${
+                      isSelected ? 'border-teal-500 ring-2 ring-teal-500/20 bg-teal-50/30' : 'border-slate-200 opacity-60 hover:opacity-100'
                     }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={img.url} alt={img.label} className="w-20 h-16 object-cover rounded-lg bg-black" />
-                    <span className="text-[10px] text-slate-300 max-w-[80px] truncate">
+                    <img src={img.url} alt={img.label} className="w-20 h-16 object-cover rounded-xl bg-black" />
+                    <span className="text-[10px] text-slate-700 font-medium max-w-[80px] truncate">
                       {img.projection || img.label}
                     </span>
                     {isSelected && (
-                      <div className="absolute top-2 right-2 bg-cyan-500 text-white rounded-full p-0.5">
+                      <div className="absolute top-2 right-2 bg-teal-600 text-white rounded-full p-0.5 shadow-sm">
                         <CheckCircle2 className="w-3 h-3" />
                       </div>
                     )}
@@ -348,39 +408,61 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       </div>
 
       {/* Carimbo do Radiologista e Botão de Ação */}
-      <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-cyan-950 border border-cyan-700/50 flex items-center justify-center text-cyan-400">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-200">
+            <div className="text-xs font-bold text-slate-900">
               {currentRadiologistName}
             </div>
-            <div className="text-[11px] text-cyan-400 font-mono">
+            <div className="text-[11px] text-teal-700 font-mono font-semibold">
               {currentRadiologistCrmv} • {isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista'}
             </div>
           </div>
         </div>
 
-        <button
-          onClick={handleSaveReport}
-          disabled={isSaving}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-lg shadow-cyan-500/25 transition active:scale-95 cursor-pointer"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Assinando e Emitindo...</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              <span>{existingReport ? 'Atualizar e Reassinar Laudo' : 'Emitir e Assinar Laudo'}</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setShowCasotecaModal(true)}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
+            title="Salvar como caso de ensino no Atlas & Casoteca"
+          >
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+            <span>Salvar no Atlas</span>
+          </button>
+
+          <button
+            onClick={handleSaveReport}
+            disabled={isSaving}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Assinando e Emitindo...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>{existingReport ? 'Atualizar e Reassinar Laudo' : 'Emitir e Assinar Laudo'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* MODAL PARA SALVAR CASO NA CASOTECA */}
+      {showCasotecaModal && (
+        <SaveToCasotecaModal
+          exam={exam}
+          findings={reportContent}
+          conclusion={reportContent}
+          onClose={() => setShowCasotecaModal(false)}
+        />
+      )}
     </div>
   );
 };
