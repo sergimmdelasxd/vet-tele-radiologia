@@ -11,11 +11,13 @@ import {
   Save, 
   Image as ImageIcon, 
   Waves, 
-  Activity 
+  Activity,
+  BookOpen
 } from 'lucide-react';
 import { Exam, ReportTemplate } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 import { RichTextEditor } from '@/components/common/RichTextEditor';
+import { SaveToCasotecaModal } from '@/components/cases/SaveToCasotecaModal';
 
 interface ReportEditorProps {
   exam: Exam;
@@ -68,6 +70,7 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [isSaving, setIsSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [showCasotecaModal, setShowCasotecaModal] = useState(false);
 
   const [allTemplates, setAllTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
 
@@ -147,6 +150,24 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Falha ao emitir laudo');
+      }
+
+      // Notificar o sistema em tempo real
+      try {
+        fetch('/api/notifications', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'REPORT_READY',
+            title: `✅ Laudo Concluído: ${exam.patientName}`,
+            message: `O laudo de ${exam.patientName} (${exam.species}) foi assinado digitalmente por ${currentRadiologistName}.`,
+            targetRole: 'CLINIC',
+            examId: exam.id,
+            link: `/laudo/${exam.id}`
+          })
+        });
+      } catch (err) {
+        console.debug(err);
       }
 
       setSuccessMsg(`Laudo de ${isUltrasound ? 'Ultrassonografia' : 'Radiografia'} emitido e assinado com sucesso!`);
@@ -402,24 +423,46 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
           </div>
         </div>
 
-        <button
-          onClick={handleSaveReport}
-          disabled={isSaving}
-          className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer"
-        >
-          {isSaving ? (
-            <>
-              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              <span>Assinando e Emitindo...</span>
-            </>
-          ) : (
-            <>
-              <Save className="w-4 h-4" />
-              <span>{existingReport ? 'Atualizar e Reassinar Laudo' : 'Emitir e Assinar Laudo'}</span>
-            </>
-          )}
-        </button>
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <button
+            type="button"
+            onClick={() => setShowCasotecaModal(true)}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 text-xs font-bold rounded-xl transition active:scale-95 cursor-pointer shadow-2xs"
+            title="Salvar como caso de ensino no Atlas & Casoteca"
+          >
+            <BookOpen className="w-4 h-4 text-indigo-600" />
+            <span>Salvar no Atlas</span>
+          </button>
+
+          <button
+            onClick={handleSaveReport}
+            disabled={isSaving}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 disabled:opacity-50 text-white text-xs font-bold rounded-xl shadow-md shadow-teal-500/20 transition active:scale-95 cursor-pointer"
+          >
+            {isSaving ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span>Assinando e Emitindo...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>{existingReport ? 'Atualizar e Reassinar Laudo' : 'Emitir e Assinar Laudo'}</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
+
+      {/* MODAL PARA SALVAR CASO NA CASOTECA */}
+      {showCasotecaModal && (
+        <SaveToCasotecaModal
+          exam={exam}
+          findings={reportContent}
+          conclusion={reportContent}
+          onClose={() => setShowCasotecaModal(false)}
+        />
+      )}
     </div>
   );
 };

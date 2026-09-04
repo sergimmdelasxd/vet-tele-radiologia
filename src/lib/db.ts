@@ -16,7 +16,9 @@ import {
   ClinicFinancialSummary, 
   PlatformFinancialAnalytics,
   ReportTemplate,
-  QuickPhrase
+  QuickPhrase,
+  TeachingCase,
+  AppNotification
 } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 
@@ -40,6 +42,8 @@ interface DatabaseSchema {
   appointments?: Appointment[];
   templates?: ReportTemplate[];
   quickPhrases?: QuickPhrase[];
+  teachingCases?: TeachingCase[];
+  notifications?: AppNotification[];
 }
 
 function ensureDataDirectory() {
@@ -1431,6 +1435,342 @@ export function deleteQuickPhrase(id: string): boolean {
   db.quickPhrases = db.quickPhrases.filter(p => p.id !== id);
 
   if (db.quickPhrases.length !== initLen) {
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+// ==========================================
+// MÓDULO DE CASOTECA & ATLAS RADIOLÓGICO
+// ==========================================
+
+export const DEFAULT_TEACHING_CASES: TeachingCase[] = [
+  {
+    id: 'case-gdv-1',
+    title: 'Torção Gástrica (GDV) com "Sinal do C-Invertido" / Dobra de Popeye',
+    species: 'Canino',
+    breed: 'Dogue Alemão',
+    age: '6 anos',
+    category: 'Abdômen & Órgãos',
+    modality: 'RADIOGRAFIA',
+    difficulty: 'Intermediário',
+    summary: 'Dilatação vólvulo-gástrica aguda confirmada em projeção laterolateral direita.',
+    clinicalHistory: 'Paciente deu entrada com distensão abdominal aguda, tentativas improdutivas de vômito, sialorreia e taquicardia após refeição copiosa e exercício.',
+    findings: 'Estômago acentuadamente distendido por conteúdo gasoso e líquido. Em decúbito lateral direito, observa-se compartimentalização gasosa com o piloro deslocado dorsocranialmente à esquerda, separado do fundo gástrico por uma banda de tecido mole (Sinal do C-Invertido ou Braço do Popeye). Baço deslocado com esplenomegalia congestiva associada.',
+    diagnosis: 'Dilatação Vólvulo-Gástrica (DVG/GDV) aguda com torção de 180° no sentido horário.',
+    keyPoints: [
+      'A projeção Laterolateral Direita é a técnica ouro obrigatória para diferenciar dilatação simples de torção gástrica.',
+      'O compartimento pilórico preenchido por gás posicionado dorsocranialmente confirma a rotação anatômica.',
+      'Emergência cirúrgica imediata com descompressão gástrica percutânea ou por sonda orogástrica.'
+    ],
+    differentialDiagnosis: ['Dilatação Gástrica Aguda sem Vólvulo', 'Obstrução Mecânica por Corpo Estranho Pilórico'],
+    images: [
+      {
+        id: 'img-gdv-1',
+        url: 'https://images.unsplash.com/photo-1516382799247-87df95d790b7?auto=format&fit=crop&q=80&w=1200',
+        label: 'LL Direita: Compartimentalização e Sinal do C-Invertido'
+      }
+    ],
+    createdBy: 'Dra. Camila Nogueira (CRMV-SP 38.192)',
+    createdAt: '2026-08-15T14:30:00.000Z',
+    viewsCount: 142
+  },
+  {
+    id: 'case-ppdh-2',
+    title: 'Hérnia Peritoneopericárdica Diafragmática (PPDH) Congênita',
+    species: 'Felino',
+    breed: 'Persa',
+    age: '2 anos',
+    category: 'Tórax & Coração',
+    modality: 'RADIOGRAFIA',
+    difficulty: 'Caso Raro',
+    summary: 'Presença de alças intestinais e gordura intra-abdominal no interior da cavidade pericárdica.',
+    clinicalHistory: 'Encaminhado para avaliação radiológica de rotina pré-castração eletiva. Paciente assintomático com sopro sistólico brando.',
+    findings: 'Aumento severo da silhueta cardíaca com perda dos contornos regulares da cúpula diafragmática ventral. Identificam-se estruturas radiopacas heterogêneas e gás intraluminal tubular no interior do saco pericárdico, em contiguidade com o abdômen cranial. Alinhamento esternal e cúpula diafragmática dorsal preservados.',
+    diagnosis: 'Hérnia Diafragmática Peritoneopericárdica (PPDH) congênita com encarceramento parcial de alça intestinal e omento.',
+    keyPoints: [
+      'Anomalia do desenvolvimento embrionário da porção ventral do diafragma e saco pericárdico.',
+      'Comum em felinos, em especial Persas e Siberianos, frequentemente detectada incidentalmente.',
+      'A ultrassonografia e radiografia contrastada com bário podem auxiliar na confirmação da presença de alças gástricas ou intestinais.'
+    ],
+    differentialDiagnosis: ['Cardiomegalia Severa / Cardiomiopatia Hipertrófica', 'Efusão Pericárdica Maciça', 'Hérnia Diafragmática Traumática'],
+    images: [
+      {
+        id: 'img-ppdh-1',
+        url: 'https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&q=80&w=1200',
+        label: 'Projeção Torácica Laterolateral: Gás intestinal em saco pericárdico'
+      }
+    ],
+    createdBy: 'Dr. Roberto Mendonça (CRMV-SP 41.205)',
+    createdAt: '2026-08-20T10:15:00.000Z',
+    viewsCount: 98
+  },
+  {
+    id: 'case-osa-3',
+    title: 'Osteossarcoma Apendicular ("Longe do Cotovelo, Perto do Joelho")',
+    species: 'Canino',
+    breed: 'Rottweiler',
+    age: '8 anos',
+    category: 'Ortopedia & Coluna',
+    modality: 'RADIOGRAFIA',
+    difficulty: 'Básico / Ensino',
+    summary: 'Lesão óssea agressiva clássica com padrão misto e Triângulo de Codman.',
+    clinicalHistory: 'Claudicação de membro pélvico esquerdo progressiva há 3 semanas com aumento de volume doloroso em tíbia proximal.',
+    findings: 'Reação periosteal agressiva mista (lítica e proliferativa) em metáfise proximal da tíbia esquerda. Presença de elevação periosteal triangular patognomônica (Triângulo de Codman) associada a padrão apolillado de lise cortical e áreas de reação periosteal em "raios de sol" (sunburst). A articulação femorotibiopatelar encontra-se preservada, sem invasão óssea articular contraposta.',
+    diagnosis: 'Neoplasia óssea primária agressiva altamente sugestiva de Osteossarcoma Apendicular.',
+    keyPoints: [
+      'Neoplasias ósseas primárias (como osteossarcoma) clássicamente "não cruzam a linha articular".',
+      'Distribuição típica em metáfises de ossos longos: longe do cotovelo (úmero proximal e rádio distal) e perto do joelho (fêmur distal e tíbia proximal).',
+      'Obrigatória radiografia de tórax em 3 projeções (LL Direita, LL Esquerda e VD) para estadiamento de metástases pulmonares.'
+    ],
+    differentialDiagnosis: ['Osteomielite Fúngica ou Bacteriana', 'Fibrossarcoma Ósseo', 'Condrossarcoma'],
+    images: [
+      {
+        id: 'img-osa-1',
+        url: 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200',
+        label: 'Tíbia Esquerda ML e AP: Padrão apolillado e Triângulo de Codman'
+      }
+    ],
+    createdBy: 'Dra. Beatriz Albuquerque (CRMV-RJ 22.840)',
+    createdAt: '2026-08-25T16:00:00.000Z',
+    viewsCount: 215
+  },
+  {
+    id: 'case-calculus-4',
+    title: 'Calculose Uretral Obstrutiva no Arco Isquiático com Bexiga de Esforço',
+    species: 'Canino',
+    breed: 'Schnauzer Miniatura',
+    age: '5 anos',
+    category: 'Abdômen & Órgãos',
+    modality: 'RADIOGRAFIA',
+    difficulty: 'Intermediário',
+    summary: 'Múltiplos urólitos radiopacos com impactação obstrutiva caudal.',
+    clinicalHistory: 'Estrangúria, hematúria e anúria nas últimas 14 horas com distensão abdominal dolorosa.',
+    findings: 'Vesícula urinária severamente repleta ocupando quase a totalidade da cavidade abdominal média e caudal. Notam-se numerosas estruturas com radiopacidade mineral no interior do lúmen vesical, além de duas concreções radiopacas alojadas no trajeto da uretra membranosa ao nível do arco isquiático, causando obstrução mecânica completa.',
+    diagnosis: 'Urolitíase Vesical e Uretral Obstrutiva por cálculos radiopacos (suspeita de Oxalato de Cálcio ou Estruvita).',
+    keyPoints: [
+      'Ao radiografar suspeita de obstrução urinária em machos, a radiografia NUNCA deve cortar a flexura isquiática ou a base peniana.',
+      'A projeção com membros pélvicos tracionados cranialmente ou projeção específica perineal evita a sobreposição dos fêmures sobre a uretra isquiática.'
+    ],
+    differentialDiagnosis: ['Estenose Uretral', 'Neoplasia Vesicouretral (Carcinoma de Células Transicionais)'],
+    images: [
+      {
+        id: 'img-calc-1',
+        url: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200',
+        label: 'Pelve e Uretra Caudal: Cálculos radiopacos retidos no arco isquiático'
+      }
+    ],
+    createdBy: 'Dr. Roberto Mendonça (CRMV-SP 41.205)',
+    createdAt: '2026-09-01T11:20:00.000Z',
+    viewsCount: 167
+  }
+];
+
+export function getTeachingCases(filters?: { category?: string; species?: string; search?: string }): TeachingCase[] {
+  const db = readDatabase();
+  if (!db.teachingCases || db.teachingCases.length === 0) {
+    db.teachingCases = [...DEFAULT_TEACHING_CASES];
+    writeDatabase(db);
+  }
+
+  let cases = db.teachingCases;
+
+  if (filters?.category && filters.category !== 'ALL') {
+    cases = cases.filter(c => c.category === filters.category);
+  }
+
+  if (filters?.species && filters.species !== 'ALL') {
+    cases = cases.filter(c => c.species === filters.species);
+  }
+
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    cases = cases.filter(c => 
+      c.title.toLowerCase().includes(q) ||
+      c.summary.toLowerCase().includes(q) ||
+      c.findings.toLowerCase().includes(q) ||
+      c.diagnosis.toLowerCase().includes(q) ||
+      c.breed.toLowerCase().includes(q)
+    );
+  }
+
+  return cases;
+}
+
+export function getTeachingCaseById(id: string): TeachingCase | null {
+  const db = readDatabase();
+  if (!db.teachingCases) db.teachingCases = [...DEFAULT_TEACHING_CASES];
+  const found = db.teachingCases.find(c => c.id === id);
+  if (found) {
+    found.viewsCount = (found.viewsCount || 0) + 1;
+    writeDatabase(db);
+    return found;
+  }
+  return null;
+}
+
+export function createTeachingCase(data: Omit<TeachingCase, 'id' | 'createdAt' | 'viewsCount'>): TeachingCase {
+  const db = readDatabase();
+  if (!db.teachingCases) db.teachingCases = [...DEFAULT_TEACHING_CASES];
+
+  const newCase: TeachingCase = {
+    id: `case-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    ...data,
+    viewsCount: 0,
+    createdAt: new Date().toISOString()
+  };
+
+  db.teachingCases.unshift(newCase);
+  writeDatabase(db);
+  return newCase;
+}
+
+export function updateTeachingCase(id: string, updates: Partial<TeachingCase>): TeachingCase | null {
+  const db = readDatabase();
+  if (!db.teachingCases) db.teachingCases = [...DEFAULT_TEACHING_CASES];
+
+  const index = db.teachingCases.findIndex(c => c.id === id);
+  if (index === -1) return null;
+
+  db.teachingCases[index] = {
+    ...db.teachingCases[index],
+    ...updates
+  };
+
+  writeDatabase(db);
+  return db.teachingCases[index];
+}
+
+export function deleteTeachingCase(id: string): boolean {
+  const db = readDatabase();
+  if (!db.teachingCases) return false;
+
+  const initLen = db.teachingCases.length;
+  db.teachingCases = db.teachingCases.filter(c => c.id !== id);
+
+  if (db.teachingCases.length !== initLen) {
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+// ==========================================
+// MÓDULO DE NOTIFICAÇÕES EM TEMPO REAL
+// ==========================================
+
+export const DEFAULT_NOTIFICATIONS: AppNotification[] = [
+  {
+    id: 'notif-1',
+    type: 'NEW_URGENT_EXAM',
+    title: '⚠️ Exame de Urgência Recebido (SLA: 2h)',
+    message: 'Thor (Boxer / Canino) submetido pela Clínica VetLife 24h para Radiografia de Tórax.',
+    targetRole: 'RADIOLOGIST',
+    link: '/dashboard',
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 12).toISOString()
+  },
+  {
+    id: 'notif-2',
+    type: 'REPORT_READY',
+    title: '✅ Laudo Assinado & Liberado',
+    message: 'O laudo do exame VET-2026-109 (Luna / Felino) foi concluído e assinado digitalmente.',
+    targetRole: 'CLINIC',
+    link: '/laudo/VET-2026-109',
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 35).toISOString()
+  },
+  {
+    id: 'notif-3',
+    type: 'PAYMENT_CREDITED',
+    title: '💳 Recarga Pix Confirmada',
+    message: 'Crédito de R$ 300,00 aprovado instantaneamente via PIX e adicionado ao seu saldo.',
+    targetRole: 'CLINIC',
+    link: '/dashboard',
+    read: true,
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString()
+  },
+  {
+    id: 'notif-4',
+    type: 'SLA_WARNING',
+    title: '⏱️ Atenção ao SLA de Urgência',
+    message: 'Exame VET-2026-108 possui menos de 45 minutos para conclusão da análise.',
+    targetRole: 'RADIOLOGIST',
+    link: '/dashboard',
+    read: false,
+    createdAt: new Date(Date.now() - 1000 * 60 * 20).toISOString()
+  }
+];
+
+export function getNotifications(userRole?: string, userId?: string): AppNotification[] {
+  const db = readDatabase();
+  if (!db.notifications || db.notifications.length === 0) {
+    db.notifications = [...DEFAULT_NOTIFICATIONS];
+    writeDatabase(db);
+  }
+
+  return db.notifications.filter(n => {
+    if (!userRole) return true;
+    if (userRole === 'ADMIN') return true;
+    if (n.targetRole === 'ALL') return true;
+    if (n.targetRole === userRole) return true;
+    if (userId && n.userId === userId) return true;
+    return false;
+  }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function createNotification(data: Omit<AppNotification, 'id' | 'createdAt' | 'read'>): AppNotification {
+  const db = readDatabase();
+  if (!db.notifications) db.notifications = [...DEFAULT_NOTIFICATIONS];
+
+  const newNotif: AppNotification = {
+    id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    ...data,
+    read: false,
+    createdAt: new Date().toISOString()
+  };
+
+  db.notifications.unshift(newNotif);
+  writeDatabase(db);
+  return newNotif;
+}
+
+export function markNotificationAsRead(id: string): boolean {
+  const db = readDatabase();
+  if (!db.notifications) return false;
+
+  const notif = db.notifications.find(n => n.id === id);
+  if (notif) {
+    notif.read = true;
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+export function markAllNotificationsAsRead(userRole?: string): boolean {
+  const db = readDatabase();
+  if (!db.notifications) return false;
+
+  db.notifications.forEach(n => {
+    if (!userRole || userRole === 'ADMIN' || n.targetRole === 'ALL' || n.targetRole === userRole) {
+      n.read = true;
+    }
+  });
+
+  writeDatabase(db);
+  return true;
+}
+
+export function deleteNotification(id: string): boolean {
+  const db = readDatabase();
+  if (!db.notifications) return false;
+
+  const initLen = db.notifications.length;
+  db.notifications = db.notifications.filter(n => n.id !== id);
+
+  if (db.notifications.length !== initLen) {
     writeDatabase(db);
     return true;
   }

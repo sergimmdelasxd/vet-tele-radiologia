@@ -245,4 +245,44 @@ export interface QuickPhrase {
   updatedAt?: string;
 }
 
+export interface TeachingCase {
+  id: string;
+  title: string;
+  species: Species;
+  breed: string;
+  age?: string;
+  category: 'Tórax & Coração' | 'Abdômen & Órgãos' | 'Ortopedia & Coluna' | 'Crânio & Cervical' | 'Ultrassonografia' | 'Outros';
+  modality: ExamModality;
+  difficulty: 'Básico / Ensino' | 'Intermediário' | 'Avançado' | 'Caso Raro';
+  summary: string;
+  clinicalHistory?: string;
+  findings: string;
+  diagnosis: string;
+  keyPoints: string[];
+  differentialDiagnosis?: string[];
+  images: Array<{
+    id: string;
+    url: string;
+    label: string;
+  }>;
+  createdBy: string;
+  createdAt: string;
+  viewsCount?: number;
+}
+
+export type NotificationType = 'NEW_URGENT_EXAM' | 'REPORT_READY' | 'SLA_WARNING' | 'PAYMENT_CREDITED' | 'INFO';
+
+export interface AppNotification {
+  id: string;
+  userId?: string;
+  targetRole?: UserRole | 'ALL';
+  type: NotificationType;
+  title: string;
+  message: string;
+  examId?: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
+}
+
 
