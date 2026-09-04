@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
 import { getAllExams, createExam, findUserById, findUserByEmail, createUser, debitExamCost } from '@/lib/db';
+import { recordAuditTrail } from '@/lib/audit';
 import bcrypt from 'bcryptjs';
 
 export async function GET(request: Request) {
@@ -167,6 +168,16 @@ export async function POST(request: Request) {
     } catch (debitErr) {
       console.warn('Erro não bloqueante ao registrar débito:', debitErr);
     }
+
+    // Registro de Auditoria LGPD
+    recordAuditTrail({
+      user: { id: user.userId, name: user.name, role: user.role, email: user.email },
+      action: 'CREATE_EXAM',
+      resourceType: 'EXAM',
+      resourceId: newExam.id,
+      details: `Exame ${newExam.modality} (${newExam.region}) cadastrado para paciente ${newExam.patientName} (${newExam.species}) pela clínica ${newExam.clinicName}.`,
+      req: request
+    });
 
     return NextResponse.json({ success: true, exam: newExam }, { status: 201 });
   } catch (error) {

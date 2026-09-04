@@ -1307,11 +1307,14 @@ export default function HomePage() {
             </div>
 
             <div>
-              <h4 className="text-slate-800 font-bold text-xs mb-3 uppercase tracking-wider">Acesso Rápido</h4>
+              <h4 className="text-slate-800 font-bold text-xs mb-3 uppercase tracking-wider">Acesso &amp; LGPD</h4>
               <ul className="space-y-2 text-[11px]">
                 <li><Link href="/login" className="hover:text-teal-600 transition">Entrar no Portal</Link></li>
                 <li><Link href="/cadastro" className="hover:text-teal-600 transition">Cadastrar Clínica Parceira</Link></li>
                 <li><Link href="/dashboard" className="hover:text-teal-600 transition">Worklist &amp; Laudos</Link></li>
+                <li><Link href="/privacidade" className="hover:text-teal-600 transition text-teal-700 font-semibold">Política de Privacidade (LGPD)</Link></li>
+                <li><Link href="/termos" className="hover:text-teal-600 transition">Termos de Uso &amp; SLA</Link></li>
+                <li><Link href="/auditoria" className="hover:text-teal-600 transition">Trilha de Auditoria</Link></li>
               </ul>
             </div>
 
@@ -1321,16 +1324,24 @@ export default function HomePage() {
                 <div>Central 24h: (11) 3003-9820</div>
                 <div>Suporte: contato@vettelerad.com.br</div>
                 <div>São Paulo / SP — Atendimento Nacional</div>
+                <div className="pt-2 text-[10px] text-emerald-700 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Conforme Lei nº 13.709/2018 (LGPD)
+                </div>
               </div>
             </div>
           </div>
 
           <div className="pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
             <div>
-              © 2026 VetTeleRad Tecnologia Veterinária LTDA. Todos os direitos reservados.
+              © 2026 VetTeleRad Tecnologia Veterinária LTDA. Todos os direitos reservados. CNPJ: 12.345.678/0001-90.
             </div>
-            <div>
-              Desenvolvido com responsabilidade técnica e foco em medicina veterinária de precisão.
+            <div className="flex items-center gap-4">
+              <Link href="/privacidade" className="hover:text-teal-600 transition">Privacidade</Link>
+              <span>•</span>
+              <Link href="/termos" className="hover:text-teal-600 transition">Termos</Link>
+              <span>•</span>
+              <Link href="/auditoria" className="hover:text-teal-600 transition">Auditoria</Link>
             </div>
           </div>
         </div>

@@ -18,7 +18,8 @@ import {
   ReportTemplate,
   QuickPhrase,
   TeachingCase,
-  AppNotification
+  AppNotification,
+  AuditLog
 } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 
@@ -57,6 +58,7 @@ interface DatabaseSchema {
   quickPhrases?: QuickPhrase[];
   teachingCases?: TeachingCase[];
   notifications?: AppNotification[];
+  auditLogs?: AuditLog[];
 }
 
 function ensureDataDirectory() {
@@ -569,7 +571,8 @@ function seedDatabase(): DatabaseSchema {
     templates: [...REPORT_TEMPLATES],
     quickPhrases: [...DEFAULT_QUICK_PHRASES],
     teachingCases: [...DEFAULT_TEACHING_CASES],
-    notifications: [...DEFAULT_NOTIFICATIONS]
+    notifications: [...DEFAULT_NOTIFICATIONS],
+    auditLogs: [...DEFAULT_AUDIT_LOGS]
   };
 
   global.__vet_db_cache__ = db;
@@ -656,6 +659,11 @@ export function readDatabase(): DatabaseSchema {
 
     if (!parsed.notifications || parsed.notifications.length === 0) {
       parsed.notifications = [...DEFAULT_NOTIFICATIONS];
+      shouldSave = true;
+    }
+
+    if (!parsed.auditLogs || parsed.auditLogs.length === 0) {
+      parsed.auditLogs = [...DEFAULT_AUDIT_LOGS];
       shouldSave = true;
     }
 
@@ -1867,4 +1875,142 @@ export function deleteNotification(id: string): boolean {
   }
   return false;
 }
+
+// ==========================================
+// MÓDULO DE AUDITORIA & CONFORMIDADE LGPD
+// ==========================================
+
+export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
+  {
+    id: 'log-audit-1',
+    userId: 'user-rad-camila',
+    userName: 'Dra. Camila Siqueira',
+    userRole: 'RADIOLOGIST',
+    userEmail: 'radiologista@vetrad.com.br',
+    action: 'CREATE_REPORT',
+    resourceType: 'REPORT',
+    resourceId: 'rep-101',
+    details: 'Emissão e assinatura digital do laudo radiográfico do paciente Thor (VET-2026-101) com Hash SHA-256 e validação de CRMV-SP 38.412.',
+    ipAddress: '177.136.241.12',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0',
+    createdAt: new Date(Date.now() - 1000 * 60 * 45).toISOString()
+  },
+  {
+    id: 'log-audit-2',
+    userId: 'user-clinic-vetlife',
+    userName: 'Dra. Mariana Souza (VetLife)',
+    userRole: 'CLINIC',
+    userEmail: 'clinica@vetlife.com.br',
+    action: 'DOWNLOAD_REPORT',
+    resourceType: 'REPORT',
+    resourceId: 'rep-101',
+    details: 'Download seguro do laudo timbrado em PDF de alta resolução com carimbo criptográfico.',
+    ipAddress: '189.120.45.88',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/127.0.0.0',
+    createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString()
+  },
+  {
+    id: 'log-audit-3',
+    userId: 'user-clinic-vetlife',
+    userName: 'Dra. Mariana Souza (VetLife)',
+    userRole: 'CLINIC',
+    userEmail: 'clinica@vetlife.com.br',
+    action: 'CREATE_EXAM',
+    resourceType: 'EXAM',
+    resourceId: 'VET-2026-102',
+    details: 'Cadastro e upload de exame radiográfico ortopédico de emergência (Bob / Bulldog Francês) com triagem de fratura e consentimento do tutor registrado.',
+    ipAddress: '189.120.45.88',
+    userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+    createdAt: new Date(Date.now() - 1000 * 60 * 120).toISOString()
+  },
+  {
+    id: 'log-audit-4',
+    userId: 'user-admin-ricardo',
+    userName: 'Dr. Ricardo Valença',
+    userRole: 'ADMIN',
+    userEmail: 'admin@vetrad.com.br',
+    action: 'LOGIN',
+    resourceType: 'AUTH',
+    resourceId: 'auth-session',
+    details: 'Autenticação bem-sucedida no Painel Central Administrativo com token seguro JWT e criptografia TLS 1.3.',
+    ipAddress: '201.86.110.5',
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0',
+    createdAt: new Date(Date.now() - 1000 * 60 * 240).toISOString()
+  },
+  {
+    id: 'log-audit-5',
+    userId: 'user-clinic-petcare',
+    userName: 'Dr. Lucas Silveira (PetCare)',
+    userRole: 'CLINIC',
+    userEmail: 'contato@petcare24h.com.br',
+    action: 'VIEW_EXAM',
+    resourceType: 'EXAM',
+    resourceId: 'VET-2026-103',
+    details: 'Visualização de dados clínicos e imagens ultrassonográficas do paciente Mel (Nefropatia Crônica) em conformidade com sigilo profissional.',
+    ipAddress: '179.184.22.90',
+    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)',
+    createdAt: new Date(Date.now() - 1000 * 60 * 300).toISOString()
+  }
+];
+
+export function getAuditLogs(filters?: {
+  action?: string;
+  resourceType?: string;
+  userId?: string;
+  search?: string;
+}): AuditLog[] {
+  const db = readDatabase();
+  if (!db.auditLogs || db.auditLogs.length === 0) {
+    db.auditLogs = [...DEFAULT_AUDIT_LOGS];
+    writeDatabase(db);
+  }
+
+  let logs = [...db.auditLogs];
+
+  if (filters?.action && filters.action !== 'ALL') {
+    logs = logs.filter(l => l.action === filters.action);
+  }
+
+  if (filters?.resourceType && filters.resourceType !== 'ALL') {
+    logs = logs.filter(l => l.resourceType === filters.resourceType);
+  }
+
+  if (filters?.userId && filters.userId !== 'ALL') {
+    logs = logs.filter(l => l.userId === filters.userId);
+  }
+
+  if (filters?.search) {
+    const q = filters.search.toLowerCase();
+    logs = logs.filter(l =>
+      l.details.toLowerCase().includes(q) ||
+      (l.userName && l.userName.toLowerCase().includes(q)) ||
+      (l.resourceId && l.resourceId.toLowerCase().includes(q)) ||
+      (l.ipAddress && l.ipAddress.includes(q))
+    );
+  }
+
+  return logs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export function createAuditLog(data: Omit<AuditLog, 'id' | 'createdAt'>): AuditLog {
+  const db = readDatabase();
+  if (!db.auditLogs) db.auditLogs = [...DEFAULT_AUDIT_LOGS];
+
+  const newLog: AuditLog = {
+    id: `audit-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    ...data,
+    createdAt: new Date().toISOString()
+  };
+
+  db.auditLogs.unshift(newLog);
+
+  // Mantém os últimos 10.000 logs em disco para controle de tamanho
+  if (db.auditLogs.length > 10000) {
+    db.auditLogs = db.auditLogs.slice(0, 10000);
+  }
+
+  writeDatabase(db);
+  return newLog;
+}
+
 

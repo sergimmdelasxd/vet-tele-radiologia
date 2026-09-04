@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
 import { saveReport, getExamById } from '@/lib/db';
+import { recordAuditTrail } from '@/lib/audit';
 
 export async function POST(
   request: Request,
@@ -56,6 +57,16 @@ export async function POST(
       vhsScore: vhsScore || undefined,
       norbergAngle: norbergAngle || undefined,
       keyImageIds: Array.isArray(keyImageIds) ? keyImageIds : []
+    });
+
+    // Trilha de Auditoria LGPD
+    recordAuditTrail({
+      user: { id: user.userId, name: user.name, role: user.role, email: user.email },
+      action: 'CREATE_REPORT',
+      resourceType: 'REPORT',
+      resourceId: updatedExam?.report?.id || id,
+      details: `Emissão e assinatura digital do laudo do exame ${id} (${exam.patientName} / ${exam.species}) por ${user.name} (${user.crmv || 'CRMV'}).`,
+      req: request
     });
 
     return NextResponse.json({

@@ -285,4 +285,37 @@ export interface AppNotification {
   createdAt: string;
 }
 
+// Conformidade LGPD & Trilha de Auditoria (Audit Trail)
+export type AuditAction = 
+  | 'LOGIN' 
+  | 'LOGOUT' 
+  | 'VIEW_EXAM' 
+  | 'CREATE_EXAM' 
+  | 'UPDATE_EXAM' 
+  | 'CREATE_REPORT' 
+  | 'EDIT_REPORT' 
+  | 'DOWNLOAD_REPORT' 
+  | 'PRINT_REPORT'
+  | 'EXPORT_CLOSING'
+  | 'UPDATE_SETTINGS'
+  | 'EXPORT_LGPD_DATA';
+
+export type AuditResourceType = 'EXAM' | 'REPORT' | 'USER' | 'FINANCIAL' | 'AUTH' | 'SYSTEM';
+
+export interface AuditLog {
+  id: string;
+  userId?: string;
+  userName?: string;
+  userRole?: UserRole;
+  userEmail?: string;
+  action: AuditAction;
+  resourceType: AuditResourceType;
+  resourceId?: string;
+  details: string;
+  ipAddress?: string;
+  userAgent?: string;
+  createdAt: string;
+}
+
+
 
