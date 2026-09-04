@@ -15,7 +15,8 @@ import {
   ClinicPlan, 
   ClinicFinancialSummary, 
   PlatformFinancialAnalytics,
-  ReportTemplate 
+  ReportTemplate,
+  QuickPhrase
 } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 
@@ -38,6 +39,7 @@ interface DatabaseSchema {
   transactions?: FinancialTransaction[];
   appointments?: Appointment[];
   templates?: ReportTemplate[];
+  quickPhrases?: QuickPhrase[];
 }
 
 function ensureDataDirectory() {
@@ -1272,6 +1274,163 @@ export function deleteTemplate(id: string): boolean {
   db.templates = db.templates.filter(t => t.id !== id);
 
   if (db.templates.length !== initLen) {
+    writeDatabase(db);
+    return true;
+  }
+  return false;
+}
+
+// ==========================================
+// MÓDULO DE FRASES RÁPIDAS & MACROS MÉDICAS
+// ==========================================
+
+export const DEFAULT_QUICK_PHRASES: QuickPhrase[] = [
+  {
+    id: 'macro-torax-normal',
+    shortcut: '/torax-normal',
+    title: 'Tórax Normal (RX)',
+    category: 'Tórax & Coração',
+    content: '<p>Silhueta cardíaca com dimensões e conformação anatômica habituais. Campos pulmonares com radiopacidade e trama broncovascular preservadas. Traqueia torácica retilínea e cúpula diafragmática íntegra e de contornos regulares.</p>',
+    createdAt: '2026-09-01T08:00:00.000Z'
+  },
+  {
+    id: 'macro-cardio-vhs',
+    shortcut: '/cardiomegalia',
+    title: 'Cardiomegalia / VHS Elevado',
+    category: 'Tórax & Coração',
+    content: '<p>Aumento global da silhueta cardíaca com elevação dorsal da traqueia torácica e perda do espaço retroesternal. Vertebral Heart Score (VHS) aumentado para a conformação torácica da espécie.</p>',
+    createdAt: '2026-09-01T08:05:00.000Z'
+  },
+  {
+    id: 'macro-broncopneumonia',
+    shortcut: '/broncopneumonia',
+    title: 'Padrão Broncoalveolar / Infiltrado',
+    category: 'Tórax & Coração',
+    content: '<p>Opacificação em campos pulmonares com predomínio cranioventral, evidenciando padrão alveolar com broncogramas aéreos associado a reforço peribrônquico difuso, sugerindo processo inflamatório/infeccioso ativo.</p>',
+    createdAt: '2026-09-01T08:10:00.000Z'
+  },
+  {
+    id: 'macro-pneumotorax',
+    shortcut: '/pneumotorax',
+    title: 'Pneumotórax / Efusão Pleural',
+    category: 'Tórax & Coração',
+    content: '<p>Elevação dorsal da silhueta cardíaca em relação ao esterno com presença de ar livre no espaço pleural (pneumotórax), associado a colabamento parcial de lobos pulmonares caudais.</p>',
+    createdAt: '2026-09-01T08:15:00.000Z'
+  },
+  {
+    id: 'macro-abd-normal',
+    shortcut: '/abdome-normal',
+    title: 'Abdômen Normal (RX)',
+    category: 'Abdômen & Órgãos',
+    content: '<p>Órgãos abdominais com dimensões e posicionamento habituais. Distribuição gasosa fisiológica em alças intestinais, com contraste seroso e detalhamento peritoneal preservados. Ausência de corpos estranhos radiopacos ou massas obstrutivas.</p>',
+    createdAt: '2026-09-01T08:20:00.000Z'
+  },
+  {
+    id: 'macro-usg-normal',
+    shortcut: '/usg-normal',
+    title: 'Ultrassom Abdominal Normal',
+    category: 'Abdômen & Órgãos',
+    content: '<p>Fígado com dimensões preservadas, bordos afilados e ecotextura homogênea. Vesícula biliar repleta com conteúdo anecogênico e paredes finas. Baço, rins, trato gastrintestinal e vesícula urinária sem alterações ecográficas dignas de nota.</p>',
+    createdAt: '2026-09-01T08:25:00.000Z'
+  },
+  {
+    id: 'macro-cistite',
+    shortcut: '/cistite',
+    title: 'Sedimento Urinário / Cistite (USG)',
+    category: 'Abdômen & Órgãos',
+    content: '<p>Vesícula urinária moderadamente repleta, apresentando discreto espessamento parietal irregular difuso com ecogenicidade de mucosa alterada e moderada quantidade de sedimento ecogênico em suspensão (sedimento urinário/cistite).</p>',
+    createdAt: '2026-09-01T08:30:00.000Z'
+  },
+  {
+    id: 'macro-displasia',
+    shortcut: '/displasia',
+    title: 'Displasia Coxofemoral Avançada',
+    category: 'Ortopedia & Coluna',
+    content: '<p>Incongruência articular coxofemoral bilateral acentuada com arrasamento de cavidades acetabulares, subluxação e remodelamento das cabeças femorais associado a osteófitos marginais (doença articular degenerativa avançada / displasia).</p>',
+    createdAt: '2026-09-01T08:35:00.000Z'
+  },
+  {
+    id: 'macro-espondilose',
+    shortcut: '/espondilose',
+    title: 'Espondilose Deformante Ventrolateral',
+    category: 'Ortopedia & Coluna',
+    content: '<p>Presença de osteófitos ventromarginais formando pontes ósseas contíguas entre corpos vertebrais lombares (espondilose anquilosante deformante), sem sinais de lise óssea ativa ou desalinhamento do canal vertebral.</p>',
+    createdAt: '2026-09-01T08:40:00.000Z'
+  },
+  {
+    id: 'macro-sem-fratura',
+    shortcut: '/sem-fratura',
+    title: 'Sem Fraturas / Estruturas Íntegras',
+    category: 'Ortopedia & Coluna',
+    content: '<p>Estruturas ósseas e articulares avaliadas íntegras, sem evidência de soluções de continuidade (fraturas), fissuras, luxações ou reações periosteais atípicas.</p>',
+    createdAt: '2026-09-01T08:45:00.000Z'
+  }
+];
+
+export function getQuickPhrases(): QuickPhrase[] {
+  const db = readDatabase();
+  if (!db.quickPhrases || db.quickPhrases.length === 0) {
+    db.quickPhrases = [...DEFAULT_QUICK_PHRASES];
+    writeDatabase(db);
+  }
+  return db.quickPhrases;
+}
+
+export function getQuickPhraseById(id: string): QuickPhrase | null {
+  const phrases = getQuickPhrases();
+  return phrases.find(p => p.id === id) || null;
+}
+
+export function createQuickPhrase(data: Omit<QuickPhrase, 'id' | 'createdAt'>): QuickPhrase {
+  const db = readDatabase();
+  if (!db.quickPhrases) db.quickPhrases = [...DEFAULT_QUICK_PHRASES];
+
+  let shortcut = data.shortcut.trim();
+  if (!shortcut.startsWith('/')) {
+    shortcut = `/${shortcut}`;
+  }
+
+  const newPhrase: QuickPhrase = {
+    id: `macro-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+    ...data,
+    shortcut,
+    createdAt: new Date().toISOString()
+  };
+
+  db.quickPhrases.push(newPhrase);
+  writeDatabase(db);
+  return newPhrase;
+}
+
+export function updateQuickPhrase(id: string, updates: Partial<QuickPhrase>): QuickPhrase | null {
+  const db = readDatabase();
+  if (!db.quickPhrases) db.quickPhrases = [...DEFAULT_QUICK_PHRASES];
+
+  const index = db.quickPhrases.findIndex(p => p.id === id);
+  if (index === -1) return null;
+
+  if (updates.shortcut && !updates.shortcut.startsWith('/')) {
+    updates.shortcut = `/${updates.shortcut.trim()}`;
+  }
+
+  db.quickPhrases[index] = {
+    ...db.quickPhrases[index],
+    ...updates,
+    updatedAt: new Date().toISOString()
+  };
+
+  writeDatabase(db);
+  return db.quickPhrases[index];
+}
+
+export function deleteQuickPhrase(id: string): boolean {
+  const db = readDatabase();
+  if (!db.quickPhrases) return false;
+
+  const initLen = db.quickPhrases.length;
+  db.quickPhrases = db.quickPhrases.filter(p => p.id !== id);
+
+  if (db.quickPhrases.length !== initLen) {
     writeDatabase(db);
     return true;
   }

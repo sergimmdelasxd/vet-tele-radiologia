@@ -17,7 +17,8 @@ import {
   DollarSign,
   ChevronDown,
   Home,
-  ClipboardList
+  ClipboardList,
+  Zap
 } from 'lucide-react';
 import { User } from '@/types';
 import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
@@ -63,7 +64,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
     }
   };
 
-  const isLight = pathname === '/' || pathname === '/dashboard' || pathname === '/templates' || pathname === '/agenda' || pathname === '/financeiro';
+  const isLight = pathname === '/' || pathname === '/dashboard' || pathname === '/templates' || pathname === '/agenda' || pathname === '/financeiro' || pathname === '/frases-rapidas';
 
   return (
     <header className={`${isLight ? 'bg-white/90 backdrop-blur-md border-b border-slate-200/80 text-slate-800 shadow-xs' : 'bg-slate-900 border-b border-slate-800 text-slate-100 shadow-md'} sticky top-0 z-40 transition-colors`}>
@@ -271,6 +272,29 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
                             </div>
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20">
                               Templates
+                            </span>
+                          </Link>
+
+                          {/* Frases Rápidas & Macros (/) */}
+                          <Link
+                            href="/frases-rapidas"
+                            className="flex items-center justify-between p-2 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-amber-500/30 transition group/item"
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center justify-center shrink-0 group-hover/item:scale-105 transition-transform">
+                                <Zap className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <div className="font-bold text-slate-200 group-hover/item:text-amber-300 transition-colors">
+                                  Frases Rápidas (/)
+                                </div>
+                                <div className="text-[10px] text-slate-400">
+                                  Macros, atalhos e parágrafos
+                                </div>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-mono">
+                              /atalhos
                             </span>
                           </Link>
                         </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import React, { useRef, useEffect, useState, useCallback, useMemo } from 'react';
 import { 
   Bold, 
   Italic, 
@@ -18,8 +18,11 @@ import {
   Mic,
   MicOff,
   Zap,
-  Check
+  Check,
+  Settings,
+  ExternalLink
 } from 'lucide-react';
+import { QuickPhrase } from '@/types';
 
 interface RichTextEditorProps {
   value: string;
@@ -90,6 +93,57 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const [speechError, setSpeechError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
 
+  // Estados de Frases Rápidas e Comando / (Slash Command)
+  const [dbPhrases, setDbPhrases] = useState<QuickPhrase[]>([]);
+  const [isSlashOpen, setIsSlashOpen] = useState<boolean>(false);
+  const [slashQuery, setSlashQuery] = useState<string>('');
+  const [slashSelectedIndex, setSlashSelectedIndex] = useState<number>(0);
+  const [slashPos, setSlashPos] = useState<{ top: number; left: number } | null>(null);
+
+  // Carregar frases rápidas cadastradas do banco de dados
+  useEffect(() => {
+    fetch('/api/macros')
+      .then(res => res.json())
+      .then(data => {
+        if (data.phrases && data.phrases.length > 0) {
+          setDbPhrases(data.phrases);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Lista unificada de macros disponíveis
+  const availableMacros = useMemo(() => {
+    if (dbPhrases.length > 0) return dbPhrases;
+    const fallbackList: QuickPhrase[] = [];
+    QUICK_MACROS.forEach(cat => {
+      cat.items.forEach(item => {
+        fallbackList.push({
+          id: item.label,
+          shortcut: '/' + item.label.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 15),
+          title: item.label,
+          category: cat.category,
+          content: item.text,
+          createdAt: ''
+        });
+      });
+    });
+    return fallbackList;
+  }, [dbPhrases]);
+
+  // Filtro dinâmico para o menu flutuante acionado por /
+  const filteredMacros = useMemo(() => {
+    if (!slashQuery) return availableMacros.slice(0, 8);
+    const q = slashQuery.toLowerCase();
+    return availableMacros
+      .filter(m => 
+        m.shortcut.toLowerCase().includes(q) ||
+        m.title.toLowerCase().includes(q) ||
+        m.category.toLowerCase().includes(q)
+      )
+      .slice(0, 8);
+  }, [availableMacros, slashQuery]);
+
   const handleInput = useCallback(() => {
     if (editorRef.current) {
       const html = editorRef.current.innerHTML;
@@ -100,6 +154,111 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       }
     }
   }, [onChange]);
+
+  // Detectar se o usuário digitou "/" e obter coordenadas para exibir o menu flutuante
+  const checkSlashTrigger = () => {
+    const sel = window.getSelection();
+    if (!sel || !sel.rangeCount) {
+      setIsSlashOpen(false);
+      return;
+    }
+
+    const range = sel.getRangeAt(0);
+    const textNode = range.startContainer;
+    if (!textNode || textNode.nodeType !== Node.TEXT_NODE) {
+      setIsSlashOpen(false);
+      return;
+    }
+
+    const fullText = textNode.textContent || '';
+    const offset = range.startOffset;
+    const textBefore = fullText.slice(0, offset);
+
+    const lastSlash = textBefore.lastIndexOf('/');
+    if (lastSlash === -1) {
+      setIsSlashOpen(false);
+      return;
+    }
+
+    const charBefore = lastSlash > 0 ? textBefore[lastSlash - 1] : ' ';
+    if (charBefore !== ' ' && charBefore !== '\n' && charBefore !== '\u00A0' && lastSlash !== 0) {
+      setIsSlashOpen(false);
+      return;
+    }
+
+    const query = textBefore.slice(lastSlash + 1);
+    if (query.includes(' ') || query.includes('\n') || query.length > 25) {
+      setIsSlashOpen(false);
+      return;
+    }
+
+    setSlashQuery(query.toLowerCase());
+    setIsSlashOpen(true);
+    setSlashSelectedIndex(0);
+
+    const rect = range.getBoundingClientRect();
+    const containerRect = editorRef.current?.getBoundingClientRect();
+    if (rect && containerRect) {
+      const top = Math.max(10, rect.bottom - containerRect.top + 8);
+      const left = Math.min(Math.max(8, rect.left - containerRect.left), Math.max(10, (containerRect.width || 400) - 340));
+      setSlashPos({ top, left });
+    }
+  };
+
+  // Inserir macro substituindo o termo "/termo" digitado
+  const insertSelectedMacro = (macro: { content: string }) => {
+    if (!macro) return;
+    const sel = window.getSelection();
+    if (sel && sel.rangeCount) {
+      const range = sel.getRangeAt(0);
+      const textNode = range.startContainer;
+      if (textNode && textNode.nodeType === Node.TEXT_NODE) {
+        const fullText = textNode.textContent || '';
+        const offset = range.startOffset;
+        const lastSlash = fullText.lastIndexOf('/', offset - 1);
+        if (lastSlash !== -1) {
+          const deleteRange = document.createRange();
+          deleteRange.setStart(textNode, lastSlash);
+          deleteRange.setEnd(textNode, offset);
+          deleteRange.deleteContents();
+          sel.removeAllRanges();
+          sel.addRange(deleteRange);
+        }
+      }
+    }
+
+    editorRef.current?.focus();
+    document.execCommand('insertHTML', false, macro.content);
+    setIsSlashOpen(false);
+    setSlashQuery('');
+    handleInput();
+  };
+
+  // Navegação por teclado no menu / (Setas Cima/Baixo, Enter, Tab e Esc)
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isSlashOpen && filteredMacros.length > 0) {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev + 1) % filteredMacros.length);
+        return;
+      }
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        setSlashSelectedIndex(prev => (prev - 1 + filteredMacros.length) % filteredMacros.length);
+        return;
+      }
+      if (e.key === 'Enter' || e.key === 'Tab') {
+        e.preventDefault();
+        insertSelectedMacro(filteredMacros[slashSelectedIndex]);
+        return;
+      }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        setIsSlashOpen(false);
+        return;
+      }
+    }
+  };
 
   // Inicializar Web Speech Recognition (Ditado por Voz para Laudos)
   useEffect(() => {
@@ -390,20 +549,35 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
                 e.target.value = '';
               }
             }}
-            className="bg-transparent text-xs text-slate-800 font-medium outline-none cursor-pointer pr-1 max-w-[170px]"
-            title="Inserir Frase Rápida / Macro Pré-configurada"
+            className="bg-transparent text-xs text-slate-800 font-medium outline-none cursor-pointer pr-1 max-w-[145px]"
+            title="Inserir Frase Rápida / Macro Pré-configurada (ou digite / no laudo)"
           >
-            <option value="" disabled>⚡ Frases Rápidas...</option>
-            {QUICK_MACROS.map((group) => (
-              <optgroup key={group.category} label={group.category}>
-                {group.items.map((item) => (
-                  <option key={item.label} value={item.text}>
-                    {item.label}
+            <option value="" disabled>⚡ Frases (/) ...</option>
+            {Object.entries(
+              availableMacros.reduce<Record<string, typeof availableMacros>>((acc, item) => {
+                acc[item.category] = acc[item.category] || [];
+                acc[item.category].push(item);
+                return acc;
+              }, {})
+            ).map(([category, items]) => (
+              <optgroup key={category} label={category}>
+                {items.map((item) => (
+                  <option key={item.id || item.shortcut} value={item.content}>
+                    {item.shortcut} - {item.title}
                   </option>
                 ))}
               </optgroup>
             ))}
           </select>
+          <a
+            href="/frases-rapidas"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="p-1 hover:bg-slate-100 rounded-lg text-slate-400 hover:text-teal-700 transition"
+            title="Gerenciar e cadastrar novas frases rápidas"
+          >
+            <Settings className="w-3 h-3" />
+          </a>
         </div>
 
         {/* ATALHOS RÁPIDOS DE SEÇÃO */}
@@ -456,17 +630,91 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
         </div>
       )}
 
-      {/* ÁREA EDITÁVEL DO LAUDO (CONTENT EDITABLE) */}
-      <div
-        ref={editorRef}
-        contentEditable
-        onInput={handleInput}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-        style={{ minHeight }}
-        className="w-full p-5 text-slate-900 text-xs sm:text-sm leading-relaxed outline-none overflow-y-auto focus:bg-white font-sans selection:bg-teal-500 selection:text-white"
-        data-placeholder={placeholder}
-      />
+      {/* ÁREA EDITÁVEL DO LAUDO (CONTENT EDITABLE) COM MENU FLUTUANTE DE / */}
+      <div className="relative flex-1 flex flex-col">
+        <div
+          ref={editorRef}
+          contentEditable
+          onInput={() => {
+            handleInput();
+            checkSlashTrigger();
+          }}
+          onKeyUp={checkSlashTrigger}
+          onKeyDown={handleKeyDown}
+          onClick={checkSlashTrigger}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => {
+            setIsFocused(false);
+            setTimeout(() => setIsSlashOpen(false), 250);
+          }}
+          style={{ minHeight }}
+          className="w-full p-5 text-slate-900 text-xs sm:text-sm leading-relaxed outline-none overflow-y-auto focus:bg-white font-sans selection:bg-teal-500 selection:text-white flex-1"
+          data-placeholder={placeholder}
+        />
+
+        {/* MENU FLUTUANTE DE COMANDO / (SLASH COMMAND POPOVER) */}
+        {isSlashOpen && filteredMacros.length > 0 && (
+          <div
+            style={{
+              top: slashPos?.top ?? 30,
+              left: slashPos?.left ?? 20
+            }}
+            className="absolute z-50 w-80 max-w-[90vw] bg-white border border-slate-200/90 rounded-2xl shadow-xl overflow-hidden animate-in fade-in zoom-in-95 duration-100 flex flex-col"
+            onMouseDown={e => e.preventDefault()}
+          >
+            {/* Header do Menu */}
+            <div className="px-3 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+              <div className="flex items-center gap-1.5 font-bold text-slate-700">
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
+                <span>Frases Rápidas {slashQuery ? `(/${slashQuery})` : ''}</span>
+              </div>
+              <span className="text-[10px] text-slate-400 font-mono">↑ ↓ Enter</span>
+            </div>
+
+            {/* Lista de Macros filtradas */}
+            <div className="max-h-60 overflow-y-auto p-1 space-y-0.5">
+              {filteredMacros.map((macro, idx) => (
+                <button
+                  key={macro.id || idx}
+                  type="button"
+                  onClick={() => insertSelectedMacro(macro)}
+                  onMouseEnter={() => setSlashSelectedIndex(idx)}
+                  className={`w-full text-left p-2 rounded-xl transition flex flex-col gap-0.5 cursor-pointer ${
+                    idx === slashSelectedIndex
+                      ? 'bg-teal-50 text-teal-900 border border-teal-200'
+                      : 'hover:bg-slate-50 text-slate-800 border border-transparent'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-bold text-xs truncate">{macro.title}</span>
+                    <span className="font-mono text-[10px] font-black px-1.5 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200/80 shrink-0">
+                      {macro.shortcut}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[10px] text-slate-500">
+                    <span>{macro.category}</span>
+                    <span className="text-[9px] text-teal-700 font-semibold">{idx === slashSelectedIndex ? 'Enter ↵' : ''}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Footer do Menu com link para gerenciar */}
+            <div className="px-3 py-1.5 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
+              <span>Use <strong>Esc</strong> para fechar</span>
+              <a
+                href="/frases-rapidas"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-teal-700 hover:text-teal-900 font-bold hover:underline inline-flex items-center gap-1"
+              >
+                <span>Gerenciar Frases</span>
+                <ExternalLink className="w-2.5 h-2.5" />
+              </a>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };

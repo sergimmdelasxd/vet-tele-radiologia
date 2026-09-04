@@ -234,4 +234,15 @@ export interface PlatformFinancialAnalytics {
   }>;
 }
 
+export interface QuickPhrase {
+  id: string;
+  shortcut: string; // Ex: "/torax-normal", "/cardio", "/disp"
+  title: string; // Ex: "Tórax Sem Alterações"
+  category: string; // Ex: "Tórax & Coração", "Abdômen & Órgãos", "Ortopedia & Coluna"
+  content: string; // HTML ou texto formatado para inserção
+  createdBy?: string;
+  createdAt: string;
+  updatedAt?: string;
+}
+
 
