@@ -30,10 +30,11 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { clinicLogo, clinicName, name, phone, uf, crmv, cnpj, avatar } = body;
+    const { clinicLogo, signatureImage, clinicName, name, phone, uf, crmv, cnpj, avatar } = body;
 
     const updates: Record<string, any> = {};
     if (clinicLogo !== undefined) updates.clinicLogo = clinicLogo;
+    if (signatureImage !== undefined) updates.signatureImage = signatureImage;
     if (clinicName !== undefined) updates.clinicName = clinicName;
     if (name !== undefined) updates.name = name;
     if (phone !== undefined) updates.phone = phone;
@@ -42,7 +43,7 @@ export async function PATCH(request: Request) {
     if (cnpj !== undefined) updates.cnpj = cnpj;
     if (avatar !== undefined) updates.avatar = avatar;
 
-    const updatedUser = updateUser(payload.userId, updates);
+    const updatedUser = await updateUser(payload.userId, updates);
     if (!updatedUser) {
       return NextResponse.json({ error: 'Usuário não encontrado' }, { status: 404 });
     }

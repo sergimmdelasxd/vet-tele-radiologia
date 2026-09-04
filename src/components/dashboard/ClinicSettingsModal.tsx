@@ -33,6 +33,7 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
 }) => {
   const [clinicName, setClinicName] = useState(user.clinicName || user.name || '');
   const [clinicLogo, setClinicLogo] = useState(user.clinicLogo || '');
+  const [signatureImage, setSignatureImage] = useState(user.signatureImage || '');
   const [phone, setPhone] = useState(user.phone || '');
   const [name, setName] = useState(user.name || '');
   const [crmv, setCrmv] = useState(user.crmv || '');
@@ -40,11 +41,13 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
   const [uf, setUf] = useState(user.uf || 'SP');
 
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingSignature, setIsUploadingSignature] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const signatureInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
 
@@ -53,7 +56,6 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    // Limite de 5MB
     if (file.size > 5 * 1024 * 1024) {
       setErrorMessage('A imagem deve ter no máximo 5MB.');
       return;
@@ -86,8 +88,49 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
     }
   };
 
+  const handleSignatureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const file = files[0];
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('A imagem da assinatura deve ter no máximo 5MB.');
+      return;
+    }
+
+    setIsUploadingSignature(true);
+    setErrorMessage(null);
+    try {
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Erro ao fazer upload da assinatura');
+      }
+
+      if (data.files && data.files[0]) {
+        setSignatureImage(data.files[0].url);
+      }
+    } catch (err: any) {
+      console.error(err);
+      setErrorMessage(err.message || 'Falha ao enviar imagem da assinatura.');
+    } finally {
+      setIsUploadingSignature(false);
+    }
+  };
+
   const handleRemoveLogo = () => {
     setClinicLogo('');
+  };
+
+  const handleRemoveSignature = () => {
+    setSignatureImage('');
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -103,6 +146,7 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
         body: JSON.stringify({
           clinicName,
           clinicLogo,
+          signatureImage,
           phone,
           name,
           crmv,
@@ -301,6 +345,76 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* SEÇÃO DE ASSINATURA E CARIMBO (SE RADIOLOGISTA OU ADMIN) */}
+          {(user.role === 'RADIOLOGIST' || user.role === 'ADMIN') && (
+            <div className="space-y-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <UserCheck className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Assinatura &amp; Carimbo Digitalizado do Especialista</span>
+                </label>
+                {signatureImage && (
+                  <button
+                    type="button"
+                    onClick={handleRemoveSignature}
+                    className="text-[11px] font-bold text-rose-600 hover:text-rose-800 flex items-center gap-1 cursor-pointer transition"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                    <span>Remover Assinatura</span>
+                  </button>
+                )}
+              </div>
+
+              <input
+                type="file"
+                ref={signatureInputRef}
+                onChange={handleSignatureUpload}
+                accept="image/png,image/jpeg,image/webp"
+                className="hidden"
+              />
+
+              {signatureImage ? (
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/90 flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="h-16 w-36 bg-white p-2 rounded-xl border border-slate-200/80 shadow-2xs flex items-center justify-center overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={signatureImage} alt="Assinatura" className="max-h-full max-w-full object-contain" />
+                    </div>
+                    <div>
+                      <span className="text-xs font-bold text-slate-800 block">Assinatura Ativa</span>
+                      <span className="text-[11px] text-teal-600 font-semibold">Exibida no rodapé dos laudos emitidos por você</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => signatureInputRef.current?.click()}
+                    disabled={isUploadingSignature}
+                    className="px-3 py-1.5 bg-white border border-slate-200 hover:border-teal-500 text-slate-700 hover:text-teal-700 text-xs font-bold rounded-xl transition shadow-2xs cursor-pointer"
+                  >
+                    {isUploadingSignature ? 'Enviando...' : 'Trocar Imagem'}
+                  </button>
+                </div>
+              ) : (
+                <div
+                  onClick={() => signatureInputRef.current?.click()}
+                  className="p-5 border-2 border-dashed border-slate-200 hover:border-teal-500 rounded-2xl bg-slate-50/60 hover:bg-teal-50/20 transition cursor-pointer flex items-center justify-center gap-3 text-center"
+                >
+                  <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                    <UploadCloud className="w-5 h-5" />
+                  </div>
+                  <div className="text-left">
+                    <span className="text-xs font-bold text-slate-800 block">
+                      Carregar imagem da sua Assinatura ou Carimbo (CRMV)
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Recomendado: Imagem PNG com fundo transparente (aparecerá nos laudos)
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* SEÇÃO 2: DADOS CADASTRAIS DA CLÍNICA */}
           <div className="space-y-3 pt-2 border-t border-slate-100 text-xs">

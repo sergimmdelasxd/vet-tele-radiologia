@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
-import { saveReport, getExamById } from '@/lib/db';
+import { saveReport, getExamById, findUserById } from '@/lib/db';
 import { recordAuditTrail } from '@/lib/audit';
 
 export async function POST(
@@ -34,7 +34,8 @@ export async function POST(
       recommendations,
       vhsScore,
       norbergAngle,
-      keyImageIds
+      keyImageIds,
+      radiologistSignatureUrl
     } = body;
 
     const reportContent = findings || conclusion;
@@ -45,11 +46,19 @@ export async function POST(
       );
     }
 
+    // Se não veio no body, tenta pegar a assinatura cadastrada no perfil do usuário
+    let signatureUrl = radiologistSignatureUrl;
+    if (!signatureUrl) {
+      const fullUser = await findUserById(user.userId);
+      signatureUrl = fullUser?.signatureImage;
+    }
+
     const updatedExam = await saveReport(id, {
       examId: id,
       radiologistId: user.userId,
       radiologistName: user.name,
       radiologistCrmv: user.crmv || 'CRMV Veterinário',
+      radiologistSignatureUrl: signatureUrl || undefined,
       technique: technique || 'Estudo radiográfico padrão em projeções ortogonais.',
       findings: findings || reportContent,
       conclusion: conclusion || findings || reportContent,

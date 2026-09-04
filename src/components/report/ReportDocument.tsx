@@ -27,11 +27,13 @@ import html2canvas from 'html2canvas-pro';
 interface ReportDocumentProps {
   exam: Exam;
   onClose?: () => void;
+  isDraft?: boolean;
 }
 
-export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose }) => {
+export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, isDraft = false }) => {
   const report = exam.report;
   const isUltrasound = exam.modality === 'ULTRASSOM';
+  const isDraftMode = isDraft || exam.status !== 'REPORTED';
 
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -286,13 +288,13 @@ ${getPublicUrl()}`;
             ) : (
               <Building2 className="w-3.5 h-3.5 text-teal-600" />
             )}
-            <span>{currentClinicLogo ? 'Alterar Logo da Clínica' : '+ Logo da Clínica'}</span>
+            <span>{currentClinicLogo ? 'Alterar Logo' : '+ Logo'}</span>
           </button>
 
           {/* Botão WhatsApp */}
           <button
             onClick={() => setShowWhatsAppModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200/80 shadow-2xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl text-xs font-bold border border-emerald-200/90 shadow-2xs transition cursor-pointer"
             title="Compartilhar no WhatsApp do Veterinário Requisitante ou Tutor"
           >
             <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
@@ -302,18 +304,18 @@ ${getPublicUrl()}`;
           {/* Botão E-mail */}
           <button
             onClick={() => setShowEmailModal(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-xl text-xs font-bold border border-sky-200/80 shadow-2xs transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-sky-50 hover:bg-sky-100 text-sky-800 rounded-xl text-xs font-bold border border-sky-200/90 shadow-2xs transition cursor-pointer"
             title="Enviar Laudo por E-mail"
           >
             <Mail className="w-3.5 h-3.5 text-sky-600" />
             <span>E-mail</span>
           </button>
 
-          {/* Botão Download PDF Direto */}
+          {/* Botão Baixar PDF */}
           <button
             onClick={handleDownloadPdf}
             disabled={isGeneratingPdf}
-            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition cursor-pointer disabled:opacity-50 active:scale-95"
+            className="inline-flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-xs shadow-teal-500/20 transition cursor-pointer disabled:opacity-50"
           >
             {isGeneratingPdf ? (
               <>
@@ -323,7 +325,7 @@ ${getPublicUrl()}`;
             ) : (
               <>
                 <Download className="w-3.5 h-3.5" />
-                <span>Baixar PDF Timbrado</span>
+                <span>Baixar PDF</span>
               </>
             )}
           </button>
@@ -341,6 +343,7 @@ ${getPublicUrl()}`;
             <button
               onClick={onClose}
               className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition cursor-pointer ml-1"
+              title="Fechar"
             >
               <X className="w-5 h-5" />
             </button>
@@ -370,7 +373,21 @@ ${getPublicUrl()}`;
         id={`printable-report-${exam.id}`}
         className="bg-white text-slate-900 rounded-3xl shadow-xl shadow-slate-200/70 max-w-4xl mx-auto border border-slate-200/90 relative font-sans print:border-0 print:shadow-none print:m-0 print:rounded-none print:max-w-none overflow-visible print:overflow-visible"
       >
-        {/* Faixa decorativa superior em gradiente pastel - Sem margens negativas para não cortar o topo */}
+        {/* Marca d'Água de Rascunho / Preliminar */}
+        {isDraftMode && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-20 overflow-hidden select-none">
+            <div className="transform -rotate-45 border-4 border-rose-500/25 bg-rose-50/20 py-6 px-14 rounded-3xl text-center shadow-lg backdrop-blur-2xs">
+              <span className="block text-4xl sm:text-6xl font-black text-rose-600/25 tracking-widest uppercase font-mono">
+                RASCUNHO
+              </span>
+              <span className="block text-xs sm:text-sm font-bold text-rose-700/35 tracking-widest uppercase mt-2 font-mono">
+                DOCUMENTO PRELIMINAR • SEM VALOR MÉDICO-LEGAL
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Faixa decorativa superior em gradiente pastel */}
         <div className="h-2.5 bg-gradient-to-r from-teal-500 via-cyan-500 to-sky-500 w-full rounded-t-3xl print:rounded-none print:h-1.5" />
 
         <div className="p-6 sm:p-10 pt-5 sm:pt-6 print:p-4 print:pt-3">
@@ -607,6 +624,17 @@ ${getPublicUrl()}`;
 
           {/* Carimbo / Assinatura do Especialista */}
           <div className="text-center sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-6">
+            {report.radiologistSignatureUrl && (
+              <div className="mb-2 flex justify-center sm:justify-end">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={report.radiologistSignatureUrl}
+                  alt={`Assinatura e Carimbo de ${report.radiologistName}`}
+                  crossOrigin="anonymous"
+                  className="h-16 max-h-20 max-w-[220px] object-contain drop-shadow-xs"
+                />
+              </div>
+            )}
             <div className="font-serif italic text-lg text-slate-800 font-semibold mb-1">
               {report.radiologistName}
             </div>

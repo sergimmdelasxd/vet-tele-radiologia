@@ -754,6 +754,7 @@ function mapUserFromDB(row: any): User {
     uf: row.uf || undefined,
     avatar: row.avatar || undefined,
     clinicLogo: row.clinic_logo || undefined,
+    signatureImage: row.signature_image || undefined,
     balance: Number(row.balance || 0),
     plan: row.plan || 'AVULSO',
     createdAt: row.created_at
@@ -778,6 +779,7 @@ function mapReportFromDB(row: any): any {
     radiologistId: row.radiologist_id,
     radiologistName: row.radiologist_name,
     radiologistCrmv: row.radiologist_crmv,
+    radiologistSignatureUrl: row.radiologist_signature_url || undefined,
     technique: row.technique || '',
     findings: row.findings || '',
     conclusion: row.conclusion || '',
@@ -962,6 +964,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     if (updates.uf !== undefined) dbUpdates.uf = updates.uf;
     if (updates.cnpj !== undefined) dbUpdates.cnpj = updates.cnpj;
     if (updates.clinicLogo !== undefined) dbUpdates.clinic_logo = updates.clinicLogo;
+    if (updates.signatureImage !== undefined) dbUpdates.signature_image = updates.signatureImage;
     if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
     if (updates.plan !== undefined) dbUpdates.plan = updates.plan;
 
@@ -1195,6 +1198,7 @@ export async function saveReport(
       radiologist_id: reportData.radiologistId || null,
       radiologist_name: reportData.radiologistName,
       radiologist_crmv: reportData.radiologistCrmv,
+      radiologist_signature_url: reportData.radiologistSignatureUrl || null,
       technique: reportData.technique || null,
       findings: reportData.findings,
       conclusion: reportData.conclusion,

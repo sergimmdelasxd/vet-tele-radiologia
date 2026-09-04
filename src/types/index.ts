@@ -15,6 +15,7 @@ export interface User {
   cnpj?: string;
   avatar?: string;
   clinicLogo?: string; // URL da logo da clínica para exibição no laudo
+  signatureImage?: string; // URL da assinatura e carimbo digitalizado do especialista
   balance?: number; // Saldo em conta para laudos (em R$)
   plan?: ClinicPlan; // Plano da clínica parceira
   createdAt: string;
@@ -46,6 +47,7 @@ export interface Report {
   radiologistId: string;
   radiologistName: string;
   radiologistCrmv: string;
+  radiologistSignatureUrl?: string; // Imagem da assinatura/carimbo do especialista
   technique: string;
   findings: string;
   conclusion: string;

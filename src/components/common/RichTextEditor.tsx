@@ -273,10 +273,24 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
         recognition.onresult = (event: any) => {
           const results = event.results;
-          const transcript = results[results.length - 1][0].transcript;
-          if (transcript && transcript.trim()) {
+          const raw = results[results.length - 1][0].transcript;
+          if (raw && raw.trim()) {
             editorRef.current?.focus();
-            const textToInsert = ' ' + transcript.trim() + '. ';
+
+            // Tratamento inteligente de pontuação e comandos médicos por voz
+            let formatted = raw.trim()
+              .replace(/\s+(ponto\s+final|ponto)/gi, '.')
+              .replace(/\s+vírgula/gi, ',')
+              .replace(/\s+dois\s+pontos/gi, ':')
+              .replace(/\s+ponto\s+e\s+vírgula/gi, ';')
+              .replace(/\s+(novo\s+parágrafo|nova\s+linha)/gi, '\n')
+              .replace(/\s+abrir\s+parênteses/gi, ' (')
+              .replace(/\s+fechar\s+parênteses/gi, ')');
+
+            // Capitaliza primeira letra
+            formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1);
+
+            const textToInsert = ' ' + formatted + ' ';
             document.execCommand('insertText', false, textToInsert);
             handleInput();
           }

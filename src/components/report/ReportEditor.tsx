@@ -73,7 +73,11 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [showCasotecaModal, setShowCasotecaModal] = useState(false);
 
   const [allTemplates, setAllTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
+  const [currentUserSignature, setCurrentUserSignature] = useState<string | undefined>(undefined);
+  const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
+  const [draftRecovered, setDraftRecovered] = useState(false);
 
+  // Carregar templates e assinatura do especialista logado
   useEffect(() => {
     fetch('/api/templates')
       .then(r => r.json())
@@ -83,7 +87,67 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
         }
       })
       .catch(() => {});
+
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then(d => {
+        if (d.user?.signatureImage) {
+          setCurrentUserSignature(d.user.signatureImage);
+        }
+      })
+      .catch(() => {});
   }, []);
+
+  // 1. Recuperar rascunho anterior automaticamente caso o exame ainda não tenha laudo
+  useEffect(() => {
+    if (!existingReport && typeof window !== 'undefined') {
+      try {
+        const raw = localStorage.getItem(`vet_draft_${exam.id}`);
+        if (raw) {
+          const draft = JSON.parse(raw);
+          if (draft.reportContent) setReportContent(draft.reportContent);
+          if (draft.technique) setTechnique(draft.technique);
+          if (draft.recommendations) setRecommendations(draft.recommendations);
+          if (draft.vhsScore) setVhsScore(draft.vhsScore);
+          if (draft.norbergAngle) setNorbergAngle(draft.norbergAngle);
+          if (draft.selectedKeyImages) setSelectedKeyImages(draft.selectedKeyImages);
+          if (draft.savedAt) {
+            setLastAutoSaveTime(new Date(draft.savedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+          }
+          setDraftRecovered(true);
+        }
+      } catch (e) {
+        console.error('Erro ao restaurar rascunho:', e);
+      }
+    }
+  }, [exam.id, existingReport]);
+
+  // 2. Salvamento Automático periódico a cada alteração (debounced 1.5s)
+  useEffect(() => {
+    if (existingReport) return;
+
+    const timer = setTimeout(() => {
+      if (reportContent && reportContent.trim() && typeof window !== 'undefined') {
+        try {
+          const now = new Date();
+          localStorage.setItem(`vet_draft_${exam.id}`, JSON.stringify({
+            reportContent,
+            technique,
+            recommendations,
+            vhsScore,
+            norbergAngle,
+            selectedKeyImages,
+            savedAt: now.toISOString()
+          }));
+          setLastAutoSaveTime(now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }));
+        } catch (e) {
+          console.error('Erro ao salvar rascunho:', e);
+        }
+      }
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [reportContent, technique, recommendations, vhsScore, norbergAngle, selectedKeyImages, exam.id, existingReport]);
 
   // Filtrar templates por modalidade correspondente ou exibir agrupados
   const usgTemplates = allTemplates.filter(t => t.modality === 'ULTRASSOM');
@@ -143,7 +207,8 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
           recommendations,
           vhsScore: isUltrasound ? undefined : (vhsScore.trim() || undefined),
           norbergAngle: isUltrasound ? undefined : (norbergAngle.trim() || undefined),
-          keyImageIds: selectedKeyImages
+          keyImageIds: selectedKeyImages,
+          radiologistSignatureUrl: currentUserSignature
         })
       });
 
@@ -151,6 +216,12 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       if (!res.ok) {
         throw new Error(data.error || 'Falha ao emitir laudo');
       }
+
+      // Limpar rascunho após salvar com sucesso
+      try {
+        localStorage.removeItem(`vet_draft_${exam.id}`);
+        setLastAutoSaveTime(null);
+      } catch {}
 
       // Notificar o sistema em tempo real
       try {
@@ -271,8 +342,34 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
               <span>Inserir Modelo de {exam.region}</span>
             </button>
           )}
+
+          {lastAutoSaveTime && (
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 border border-teal-200/80 text-teal-800 rounded-xl text-xs font-semibold shadow-2xs shrink-0">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-pulse" />
+              <span>Rascunho salvo às {lastAutoSaveTime}</span>
+            </div>
+          )}
         </div>
       </div>
+
+      {draftRecovered && (
+        <div className="p-3.5 bg-teal-50 border border-teal-200 text-teal-900 rounded-2xl text-xs flex items-center justify-between shadow-2xs animate-in fade-in">
+          <div className="flex items-center gap-2.5">
+            <span className="text-base">💾</span>
+            <div>
+              <strong className="block text-slate-900">Rascunho em andamento restaurado automaticamente</strong>
+              <span className="text-[11px] text-teal-700">Seus textos e seleções foram recuperados da última edição.</span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setDraftRecovered(false)}
+            className="px-3 py-1 bg-white border border-teal-200 hover:bg-teal-100/50 text-teal-800 rounded-lg text-xs font-bold transition cursor-pointer"
+          >
+            Entendido
+          </button>
+        </div>
+      )}
 
       {errorMsg && (
         <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs flex items-center gap-2">
