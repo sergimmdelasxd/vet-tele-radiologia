@@ -926,11 +926,14 @@ export async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Prom
       .select()
       .single();
 
-    if (!error && data) {
+    if (error) {
+      console.error('Supabase createUser error details:', JSON.stringify(error));
+    } else if (data) {
       createdUser = mapUserFromDB(data);
+      console.log('Supabase user created successfully in cloud:', data.email);
     }
   } catch (err) {
-    console.error('Supabase createUser error:', err);
+    console.error('Supabase createUser exception:', err);
   }
 
   const db = readDatabase();
