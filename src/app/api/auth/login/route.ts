@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const user = findUserByEmail(email);
+    const user = await findUserByEmail(email);
     if (!user || !user.password) {
       return NextResponse.json(
         { error: 'Credenciais inválidas' },

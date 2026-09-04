@@ -18,7 +18,7 @@ export async function GET(request: Request) {
     // Se for clínica, filtra apenas os exames dela
     const clinicFilter = user.role === 'CLINIC' ? user.userId : undefined;
 
-    const exams = getAllExams({
+    const exams = await getAllExams({
       clinicId: clinicFilter,
       status,
       priority,
@@ -87,9 +87,9 @@ export async function POST(request: Request) {
         const cleanClinic = newClinicData.clinicName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'clinica';
         const generatedEmail = newClinicData.email?.trim() || `contato@${cleanClinic}-${Date.now().toString().slice(-4)}.com.br`;
         
-        let existingClinic = findUserByEmail(generatedEmail);
+        let existingClinic = await findUserByEmail(generatedEmail);
         if (!existingClinic) {
-          existingClinic = createUser({
+          existingClinic = await createUser({
             name: newClinicData.responsibleVet || newClinicData.clinicName,
             clinicName: newClinicData.clinicName,
             email: generatedEmail,
@@ -106,7 +106,7 @@ export async function POST(request: Request) {
         finalClinicPhone = existingClinic.phone || newClinicData.phone || '';
         finalRequestingVet = newClinicData.responsibleVet || requestingVet || 'Médico Veterinário';
       } else if (clinicId && clinicId !== 'new') {
-        const existingClinic = findUserById(clinicId);
+        const existingClinic = await findUserById(clinicId);
         if (existingClinic) {
           finalClinicId = existingClinic.id;
           finalClinicName = existingClinic.clinicName || existingClinic.name;
@@ -125,7 +125,7 @@ export async function POST(request: Request) {
       }
     }
 
-    const newExam = createExam({
+    const newExam = await createExam({
       clinicId: finalClinicId,
       clinicName: finalClinicName,
       requestingVet: finalRequestingVet,

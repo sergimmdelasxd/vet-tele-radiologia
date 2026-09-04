@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const stats = getStats();
+    const stats = await getStats();
     return NextResponse.json({ stats });
   } catch (error) {
     console.error('Stats error:', error);

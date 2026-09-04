@@ -13,7 +13,7 @@ export async function GET(
     }
 
     const { id } = await params;
-    const exam = getExamById(id);
+    const exam = await getExamById(id);
 
     if (!exam) {
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
@@ -44,7 +44,7 @@ export async function PATCH(
     const { id } = await params;
     const body = await request.json();
 
-    const existingExam = getExamById(id);
+    const existingExam = await getExamById(id);
     if (!existingExam) {
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
     }
@@ -54,7 +54,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Clínica não pode alterar status operacional do exame' }, { status: 403 });
     }
 
-    const updated = updateExam(id, body);
+    const updated = await updateExam(id, body);
     return NextResponse.json({ success: true, exam: updated });
   } catch (error) {
     console.error('Update exam error:', error);

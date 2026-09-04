@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getCurrentUserFromCookie } from '@/lib/auth';
-import { readDatabase, createUser, findUserByEmail } from '@/lib/db';
+import { getAllUsers, createUser, findUserByEmail } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 
 export async function GET() {
@@ -10,10 +10,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const db = readDatabase();
-    const clinics = db.users
-      .filter(u => u.role === 'CLINIC')
-      .map(({ password: _, ...clinic }) => clinic);
+    const users = await getAllUsers();
+    const clinics = users.filter(u => u.role === 'CLINIC');
 
     return NextResponse.json({ clinics });
   } catch (error) {
@@ -40,12 +38,12 @@ export async function POST(request: Request) {
     const cleanClinic = clinicName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'clinica';
     const finalEmail = email?.trim() || `contato@${cleanClinic}-${Date.now().toString().slice(-4)}.com.br`;
 
-    const existing = findUserByEmail(finalEmail);
+    const existing = await findUserByEmail(finalEmail);
     if (existing) {
       return NextResponse.json({ error: 'Já existe uma clínica cadastrada com este e-mail' }, { status: 400 });
     }
 
-    const newClinic = createUser({
+    const newClinic = await createUser({
       name: name || `Responsável (${clinicName})`,
       clinicName,
       email: finalEmail,

@@ -20,7 +20,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const exam = getExamById(id);
+    const exam = await getExamById(id);
     if (!exam) {
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
     }
@@ -43,7 +43,7 @@ export async function POST(
       );
     }
 
-    const updatedExam = saveReport(id, {
+    const updatedExam = await saveReport(id, {
       examId: id,
       radiologistId: user.userId,
       radiologistName: user.name,

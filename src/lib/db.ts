@@ -1,485 +1,403 @@
-import fs from 'fs';
-import path from 'path';
-import bcrypt from 'bcryptjs';
-import { User, Exam, DashboardStats, Report, ExamModality } from '@/types';
+import { supabase } from './supabase';
+import { User, Exam, DashboardStats, Report, ExamImage } from '@/types';
 
-const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
+// ==========================================
+// MAPPERS (Snake_case Supabase <-> CamelCase)
+// ==========================================
 
-interface DatabaseSchema {
-  users: User[];
-  exams: Exam[];
-}
-
-function ensureDataDirectory() {
-  const dir = path.dirname(DB_PATH);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
-  }
-}
-
-function seedDatabase(): DatabaseSchema {
-  const defaultPasswordHash = bcrypt.hashSync('123456', 10);
-  const adminPasswordHash = bcrypt.hashSync('admin123', 10);
-
-  const users: User[] = [
-    {
-      id: 'user-clinic-vetlife',
-      name: 'Dra. Mariana Souza (VetLife)',
-      email: 'clinica@vetlife.com.br',
-      password: defaultPasswordHash,
-      role: 'CLINIC',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      crmv: 'CRMV-SP 33.120',
-      cnpj: '12.345.678/0001-90',
-      phone: '(11) 98765-4321',
-      uf: 'SP',
-      createdAt: '2026-08-01T10:00:00Z'
-    },
-    {
-      id: 'user-clinic-petcare',
-      name: 'Dr. Lucas Silveira (PetCare)',
-      email: 'contato@petcare24h.com.br',
-      password: defaultPasswordHash,
-      role: 'CLINIC',
-      clinicName: 'Hospital Veterinário PetCare',
-      crmv: 'CRMV-RJ 28.940',
-      cnpj: '98.765.432/0001-11',
-      phone: '(21) 99888-7766',
-      uf: 'RJ',
-      createdAt: '2026-08-10T14:30:00Z'
-    },
-    {
-      id: 'user-rad-camila',
-      name: 'Dra. Camila Siqueira',
-      email: 'radiologista@vetrad.com.br',
-      password: defaultPasswordHash,
-      role: 'RADIOLOGIST',
-      crmv: 'CRMV-SP 38.412',
-      phone: '(11) 97111-2233',
-      uf: 'SP',
-      createdAt: '2026-07-15T08:00:00Z'
-    },
-    {
-      id: 'user-admin-ricardo',
-      name: 'Dr. Ricardo Valença',
-      email: 'admin@vetrad.com.br',
-      password: adminPasswordHash,
-      role: 'ADMIN',
-      crmv: 'CRMV-SP 21.050',
-      phone: '(11) 99999-0000',
-      uf: 'SP',
-      createdAt: '2026-06-01T09:00:00Z'
-    }
-  ];
-
-  const exams: Exam[] = [
-    {
-      id: 'VET-2026-101',
-      clinicId: 'user-clinic-vetlife',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
-      clinicPhone: '(11) 98765-4321',
-      modality: 'RADIOGRAFIA',
-      patientName: 'Thor',
-      species: 'Canino',
-      breed: 'Golden Retriever',
-      age: '4 anos',
-      weight: '32.5 kg',
-      gender: 'Macho',
-      isCastrated: true,
-      ownerName: 'Carlos Eduardo Mendes',
-      region: 'Tórax (3 projeções)',
-      projections: ['Laterolateral Direita (LL-D)', 'Ventrodorsal (VD)'],
-      clinicalHistory: 'Tosse seca há 5 dias, cansaço fácil após passeios leves e episódio único de engasgo.',
-      suspectedDiagnosis: 'Cardiopatia / Broncopatia alérgica / Corpo estranho esofágico',
-      priority: 'NORMAL',
-      status: 'REPORTED',
-      images: [
-        {
-          id: 'img-101-1',
-          url: '/xrays/canine-thorax-lateral.svg',
-          label: 'Tórax - Projeção Laterolateral Direita',
-          projection: 'LL-D',
-          uploadedAt: '2026-08-30T10:15:00Z'
-        },
-        {
-          id: 'img-101-2',
-          url: '/xrays/canine-thorax-vd.svg',
-          label: 'Tórax - Projeção Ventrodorsal',
-          projection: 'VD',
-          uploadedAt: '2026-08-30T10:16:00Z'
-        }
-      ],
-      report: {
-        id: 'rep-101',
-        examId: 'VET-2026-101',
-        radiologistId: 'user-rad-camila',
-        radiologistName: 'Dra. Camila Siqueira',
-        radiologistCrmv: 'CRMV-SP 38.412',
-        technique: 'Estudo radiográfico do tórax obtido em projeções ortogonais LL-D e VD, com boa técnica e contraste satisfatório.',
-        findings: 'Campos pulmonares apresentando radiopacidade preservada, sem evidências de infiltrados alveolares, brônquicos ou nodulares ativos.\nSilhueta cardíaca com dimensões e contornos anatômicos normais para o biótipo da raça. Traqueia torácica com trajeto e calibre normais.\nEspaço pleural livre de efusões ou pneumotórax. Cúpula diafragmática com integridade mantida.\nEstruturas ósseas da caixa torácica e vértebras sem alterações patológicas detectáveis.',
-        conclusion: 'Estudo radiográfico do tórax dentro dos padrões de normalidade radiográfica no momento do exame.',
-        recommendations: 'Correlação com ausculta minuciosa e pesquisa de causas respiratórias de vias aéreas superiores (colapso de traqueia cervical ou tosse dos canis).',
-        vhsScore: '9.6 v (Normal para a raça Golden: até 10.3 v)',
-        keyImageIds: ['img-101-1'],
-        reportedAt: '2026-08-30T11:45:00Z',
-        digitalSignatureHash: 'VET-SHA256-a78b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b'
-      },
-      createdAt: '2026-08-30T10:15:00Z',
-      updatedAt: '2026-08-30T11:45:00Z',
-      deadline: '2026-08-30T22:15:00Z'
-    },
-    {
-      id: 'VET-2026-102',
-      clinicId: 'user-clinic-vetlife',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
-      clinicPhone: '(11) 98765-4321',
-      modality: 'RADIOGRAFIA',
-      patientName: 'Bob',
-      species: 'Canino',
-      breed: 'Bulldog Francês',
-      age: '2 anos',
-      weight: '12.8 kg',
-      gender: 'Macho',
-      isCastrated: false,
-      ownerName: 'Juliana Paes Correia',
-      region: 'Membro Torácico Direito (Rádio e Ulna)',
-      projections: ['Mediolateral (ML)', 'Craniocaudal (CrCd)'],
-      clinicalHistory: 'Queda do sofá há 1 hora. Claudicação de grau IV em membro torácico direito, dor intensa à palpação e crepitação óssea.',
-      suspectedDiagnosis: 'Fratura óssea de rádio e ulna',
-      priority: 'URGENT',
-      status: 'PENDING',
-      images: [
-        {
-          id: 'img-102-1',
-          url: '/xrays/canine-limb-fracture.svg',
-          label: 'Membro Torácico Direito - Projeção Mediolateral',
-          projection: 'ML',
-          uploadedAt: '2026-09-01T22:00:00Z'
-        }
-      ],
-      createdAt: '2026-09-01T22:00:00Z',
-      updatedAt: '2026-09-01T22:00:00Z',
-      deadline: '2026-09-02T00:00:00Z' // Urgência: 2 horas SLA
-    },
-    {
-      id: 'VET-2026-103',
-      clinicId: 'user-clinic-petcare',
-      clinicName: 'Hospital Veterinário PetCare',
-      requestingVet: 'Dr. Lucas Silveira - CRMV-RJ 28.940',
-      clinicPhone: '(21) 99888-7766',
-      modality: 'ULTRASSOM',
-      ultrasoundType: 'Ultrassonografia Abdominal Total',
-      fastingHours: 'Jejum alimentar de 8 horas',
-      trichotomyDone: true,
-      patientName: 'Mel',
-      species: 'Felino',
-      breed: 'Persa',
-      age: '5 anos',
-      weight: '4.1 kg',
-      gender: 'Fêmea',
-      isCastrated: true,
-      ownerName: 'Fernanda Montenegro Lima',
-      region: 'Ultrassonografia Abdominal Total',
-      projections: ['Fígado', 'Vesícula Biliar', 'Baço', 'Rins', 'Bexiga'],
-      clinicalHistory: 'Poliúria, polidipsia e perda ponderal progressiva nos últimos 2 meses. Creatinina sérica 3.4 mg/dL.',
-      suspectedDiagnosis: 'Doença Renal Crônica (DRC) / Nefropatia / Cistos Renais',
-      priority: 'NORMAL',
-      status: 'REPORTED',
-      images: [
-        {
-          id: 'img-103-1',
-          url: '/ultrasound/usg-abdominal-liver-kidney.svg',
-          label: 'USG - Rim Direito e Parênquima Hepático',
-          projection: 'Rim D / Fígado',
-          uploadedAt: '2026-09-01T21:30:00Z'
-        }
-      ],
-      report: {
-        id: 'rep-103',
-        examId: 'VET-2026-103',
-        radiologistId: 'user-rad-camila',
-        radiologistName: 'Dra. Camila Siqueira',
-        radiologistCrmv: 'CRMV-SP 38.412',
-        technique: 'Ultrassonografia abdominal completa realizada com transdutor microconvexo de alta frequência (7.5 a 10.0 MHz).',
-        findings: 'FÍGADO: Dimensões anatômicas normais, bordos afilados, ecotextura homogênea fina e ecogenicidade fisiológica.\nRINS: Dimensões limítrofes inferiores (D: 3.2 cm, E: 3.1 cm), contornos discretamente irregulares. Córtex renal com ecogenicidade aumentada bilateralmente com atenuação da definição córtico-medular e sinal da linha medular discreto. Pelve renal preservada.\nBAÇO E BEXIGA: Normoecogênicos, sem evidências de lesões focais ou litíase.\nLÍQUIDO LIVRE: Ausência de efusões livres na cavidade peritoneal.',
-        conclusion: 'Achados ultrassonográficos renais compatíveis com Nefropatia Crônica (DRC) bilateral em estágio moderado a avançado.',
-        recommendations: 'Acompanhamento nefrológico contínuo, controle da pressão arterial sistêmica (PAS), estadiamento IRIS e urinálise com UPC.',
-        reportedAt: '2026-09-01T22:40:00Z',
-        digitalSignatureHash: 'VET-SHA256-d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5'
-      },
-      createdAt: '2026-09-01T21:30:00Z',
-      updatedAt: '2026-09-01T22:40:00Z',
-      deadline: '2026-09-02T09:30:00Z'
-    },
-    {
-      id: 'VET-2026-104',
-      clinicId: 'user-clinic-vetlife',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
-      clinicPhone: '(11) 98765-4321',
-      modality: 'ULTRASSOM',
-      ultrasoundType: 'Acompanhamento Obstétrico / Gestacional',
-      fastingHours: 'Não necessário',
-      trichotomyDone: true,
-      patientName: 'Luna',
-      species: 'Canino',
-      breed: 'Shih-tzu',
-      age: '3 anos',
-      weight: '5.8 kg',
-      gender: 'Fêmea',
-      isCastrated: false,
-      ownerName: 'Patrícia Abravanel Silva',
-      region: 'Ultrassom Gestacional Obstétrico',
-      projections: ['Útero Grávido', 'Câmaras Amnióticas', 'Doppler Fetal'],
-      clinicalHistory: 'Cobertura confirmada há aproximadamente 35 dias. Avaliação de prenhez, número aproximado de vesículas e viabilidade fetal.',
-      suspectedDiagnosis: 'Confirmação de gestação e viabilidade fetal',
-      priority: 'NORMAL',
-      status: 'PENDING',
-      images: [
-        {
-          id: 'img-104-1',
-          url: '/ultrasound/usg-gestational-fetus.svg',
-          label: 'USG Gestacional - Vesícula e Feto 1',
-          projection: 'Útero Gestacional',
-          uploadedAt: '2026-09-01T22:15:00Z'
-        }
-      ],
-      createdAt: '2026-09-01T22:15:00Z',
-      updatedAt: '2026-09-01T22:15:00Z',
-      deadline: '2026-09-02T10:15:00Z'
-    },
-    {
-      id: 'VET-2026-105',
-      clinicId: 'user-clinic-vetlife',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
-      clinicPhone: '(11) 98765-4321',
-      modality: 'ULTRASSOM',
-      ultrasoundType: 'Ultrassom Abdominal / Trato Urinário',
-      fastingHours: '6 horas',
-      trichotomyDone: true,
-      patientName: 'Spike',
-      species: 'Canino',
-      breed: 'Pug',
-      age: '6 anos',
-      weight: '9.2 kg',
-      gender: 'Macho',
-      isCastrated: true,
-      ownerName: 'Marcelo Rezende Lima',
-      region: 'Trato Urinário (Bexiga e Rins)',
-      projections: ['Bexiga Transversal', 'Bexiga Longitudinal', 'Rins'],
-      clinicalHistory: 'Disúria, estrangúria e hematúria franca há 2 dias. Animal faz força intensa para urinar com gotas frequentes.',
-      suspectedDiagnosis: 'Urolitíase vesical / Cistite hemorrágica',
-      priority: 'URGENT',
-      status: 'PENDING',
-      images: [
-        {
-          id: 'img-105-1',
-          url: '/ultrasound/usg-bladder-calculus.svg',
-          label: 'USG - Bexiga com Cálculo e Sombra Acústica',
-          projection: 'Bexiga Transversal',
-          uploadedAt: '2026-09-01T23:10:00Z'
-        }
-      ],
-      createdAt: '2026-09-01T23:10:00Z',
-      updatedAt: '2026-09-01T23:10:00Z',
-      deadline: '2026-09-02T01:10:00Z' // Urgência: 2 horas SLA
-    }
-  ];
-
-  const db: DatabaseSchema = { users, exams };
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
-  return db;
-}
-
-export function readDatabase(): DatabaseSchema {
-  ensureDataDirectory();
-  if (!fs.existsSync(DB_PATH)) {
-    return seedDatabase();
-  }
-
-  try {
-    const raw = fs.readFileSync(DB_PATH, 'utf-8');
-    const parsed = JSON.parse(raw);
-    // Se não tiver a propriedade modality nos exames, atualiza
-    if (!parsed.exams || parsed.exams.length === 0 || !parsed.exams[0].modality) {
-      return seedDatabase();
-    }
-    return parsed;
-  } catch {
-    return seedDatabase();
-  }
-}
-
-export function writeDatabase(data: DatabaseSchema): void {
-  ensureDataDirectory();
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
-}
-
-// User methods
-export function findUserByEmail(email: string): User | undefined {
-  const db = readDatabase();
-  return db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
-}
-
-export function findUserById(id: string): User | undefined {
-  const db = readDatabase();
-  return db.users.find(u => u.id === id);
-}
-
-export function getAllUsers(): User[] {
-  const db = readDatabase();
-  return db.users.map(({ password: _, ...user }) => user as User);
-}
-
-export function createUser(userData: Omit<User, 'id' | 'createdAt'>): User {
-  const db = readDatabase();
-  const newUser: User = {
-    ...userData,
-    id: `user-${Date.now()}`,
-    createdAt: new Date().toISOString()
+function mapUserFromDB(row: any): User {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    password: row.password,
+    role: row.role,
+    clinicName: row.clinic_name || undefined,
+    crmv: row.crmv || undefined,
+    cnpj: row.cnpj || undefined,
+    phone: row.phone || undefined,
+    uf: row.uf || undefined,
+    avatar: row.avatar || undefined,
+    createdAt: row.created_at
   };
-  db.users.push(newUser);
-  writeDatabase(db);
-  const { password: _, ...userWithoutPassword } = newUser;
+}
+
+function mapImageFromDB(row: any): ExamImage {
+  return {
+    id: row.id,
+    url: row.url,
+    label: row.label || '',
+    projection: row.projection || undefined,
+    thumbnailUrl: row.thumbnail_url || undefined,
+    uploadedAt: row.uploaded_at
+  };
+}
+
+function mapReportFromDB(row: any): Report {
+  return {
+    id: row.id,
+    examId: row.exam_id,
+    radiologistId: row.radiologist_id,
+    radiologistName: row.radiologist_name,
+    radiologistCrmv: row.radiologist_crmv,
+    technique: row.technique || '',
+    findings: row.findings || '',
+    conclusion: row.conclusion || '',
+    recommendations: row.recommendations || '',
+    vhsScore: row.vhs_score || undefined,
+    norbergAngle: row.norberg_angle || undefined,
+    ultrasoundOrgans: row.ultrasound_organs || [],
+    keyImageIds: row.key_image_ids || [],
+    reportedAt: row.reported_at,
+    digitalSignatureHash: row.digital_signature_hash
+  };
+}
+
+function mapExamFromDB(row: any): Exam {
+  const images = Array.isArray(row.exam_images) 
+    ? row.exam_images.map(mapImageFromDB)
+    : [];
+
+  let report: Report | undefined = undefined;
+  if (row.reports) {
+    if (Array.isArray(row.reports) && row.reports.length > 0) {
+      report = mapReportFromDB(row.reports[0]);
+    } else if (typeof row.reports === 'object' && row.reports.id) {
+      report = mapReportFromDB(row.reports);
+    }
+  }
+
+  return {
+    id: row.id,
+    clinicId: row.clinic_id,
+    clinicName: row.clinic_name,
+    requestingVet: row.requesting_vet,
+    clinicPhone: row.clinic_phone || undefined,
+    modality: row.modality,
+    patientName: row.patient_name,
+    species: row.species,
+    breed: row.breed || 'SRD',
+    age: row.age || 'Não informada',
+    weight: row.weight || '',
+    gender: row.gender || 'Macho',
+    isCastrated: Boolean(row.is_castrated),
+    ownerName: row.owner_name || 'Tutor não informado',
+    region: row.region,
+    projections: row.projections || [],
+    clinicalHistory: row.clinical_history || '',
+    suspectedDiagnosis: row.suspected_diagnosis || '',
+    priority: row.priority || 'NORMAL',
+    status: row.status || 'PENDING',
+    fastingHours: row.fasting_hours || undefined,
+    trichotomyDone: row.trichotomy_done !== null ? row.trichotomy_done : undefined,
+    ultrasoundType: row.ultrasound_type || undefined,
+    images,
+    report,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    deadline: row.deadline
+  };
+}
+
+// ==========================================
+// USER METHODS
+// ==========================================
+
+export async function findUserByEmail(email: string): Promise<User | undefined> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .ilike('email', email.trim())
+    .maybeSingle();
+
+  if (error || !data) return undefined;
+  return mapUserFromDB(data);
+}
+
+export async function findUserById(id: string): Promise<User | undefined> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return undefined;
+  return mapUserFromDB(data);
+}
+
+export async function getAllUsers(): Promise<User[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return data.map(mapUserFromDB).map(({ password: _, ...u }) => u as User);
+}
+
+export async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Promise<User> {
+  const id = `user-${Date.now()}`;
+  const now = new Date().toISOString();
+
+  const dbPayload = {
+    id,
+    name: userData.name,
+    email: userData.email.toLowerCase(),
+    password: userData.password,
+    role: userData.role,
+    clinic_name: userData.clinicName || null,
+    crmv: userData.crmv || null,
+    cnpj: userData.cnpj || null,
+    phone: userData.phone || null,
+    uf: userData.uf || 'SP',
+    avatar: userData.avatar || null,
+    created_at: now
+  };
+
+  const { data, error } = await supabase
+    .from('users')
+    .insert(dbPayload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Error creating user in Supabase:', error);
+    throw new Error(error.message);
+  }
+
+  const created = mapUserFromDB(data);
+  const { password: _, ...userWithoutPassword } = created;
   return userWithoutPassword as User;
 }
 
-// Exam methods
-export function getAllExams(filters?: {
+// ==========================================
+// EXAM METHODS
+// ==========================================
+
+export async function getAllExams(filters?: {
   clinicId?: string;
   status?: string;
   priority?: string;
   modality?: string;
-}): Exam[] {
-  const db = readDatabase();
-  let results = [...db.exams];
+}): Promise<Exam[]> {
+  let query = supabase
+    .from('exams')
+    .select('*, exam_images(*), reports(*)');
 
   if (filters?.clinicId) {
-    results = results.filter(e => e.clinicId === filters.clinicId);
+    query = query.eq('clinic_id', filters.clinicId);
   }
 
   if (filters?.status && filters.status !== 'ALL') {
-    results = results.filter(e => e.status === filters.status);
+    query = query.eq('status', filters.status);
   }
 
   if (filters?.priority && filters.priority !== 'ALL') {
-    results = results.filter(e => e.priority === filters.priority);
+    query = query.eq('priority', filters.priority);
   }
 
   if (filters?.modality && filters.modality !== 'ALL') {
-    results = results.filter(e => e.modality === filters.modality);
+    query = query.eq('modality', filters.modality);
   }
 
-  // Sort by priority URGENT first, then newest
-  return results.sort((a, b) => {
+  const { data, error } = await query;
+  if (error || !data) {
+    console.error('Error fetching exams from Supabase:', error);
+    return [];
+  }
+
+  const exams = data.map(mapExamFromDB);
+
+  // Ordena prioridade URGENT primeiro, depois mais recentes
+  return exams.sort((a, b) => {
     if (a.priority === 'URGENT' && b.priority !== 'URGENT') return -1;
     if (b.priority === 'URGENT' && a.priority !== 'URGENT') return 1;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 }
 
-export function getExamById(id: string): Exam | undefined {
-  const db = readDatabase();
-  return db.exams.find(e => e.id === id);
+export async function getExamById(id: string): Promise<Exam | undefined> {
+  const { data, error } = await supabase
+    .from('exams')
+    .select('*, exam_images(*), reports(*)')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (error || !data) return undefined;
+  return mapExamFromDB(data);
 }
 
-export function createExam(examData: Partial<Exam>): Exam {
-  const db = readDatabase();
-  const nextNum = db.exams.length + 101;
+export async function createExam(examData: Partial<Exam>): Promise<Exam> {
+  // Contar quantidade de exames para gerar ID
+  const { count } = await supabase.from('exams').select('*', { count: 'exact', head: true });
+  const nextNum = (count || 0) + 101;
   const examId = `VET-2026-${nextNum}`;
-  
+
   const now = new Date();
   const isUrgent = examData.priority === 'URGENT';
   const deadlineDate = new Date(now.getTime() + (isUrgent ? 2 * 3600 * 1000 : 12 * 3600 * 1000));
 
-  const newExam: Exam = {
+  const dbExam = {
     id: examId,
-    clinicId: examData.clinicId || 'unknown',
-    clinicName: examData.clinicName || 'Clínica Conveniada',
-    requestingVet: examData.requestingVet || 'Médico Veterinário',
-    clinicPhone: examData.clinicPhone || '',
+    clinic_id: examData.clinicId || 'unknown',
+    clinic_name: examData.clinicName || 'Clínica Conveniada',
+    requesting_vet: examData.requestingVet || 'Médico Veterinário',
+    clinic_phone: examData.clinicPhone || null,
     modality: examData.modality || 'RADIOGRAFIA',
-    patientName: examData.patientName || 'Paciente',
+    patient_name: examData.patientName || 'Paciente',
     species: examData.species || 'Canino',
     breed: examData.breed || 'SRD',
     age: examData.age || 'Não informada',
-    weight: examData.weight || 'Não informado',
+    weight: examData.weight || '',
     gender: examData.gender || 'Macho',
-    isCastrated: examData.isCastrated ?? false,
-    ownerName: examData.ownerName || 'Tutor Responsável',
+    is_castrated: examData.isCastrated ?? false,
+    owner_name: examData.ownerName || 'Tutor Responsável',
     region: examData.region || (examData.modality === 'ULTRASSOM' ? 'Ultrassonografia Abdominal Total' : 'Radiografia Geral'),
     projections: examData.projections || ['Ortogonal'],
-    clinicalHistory: examData.clinicalHistory || '',
-    suspectedDiagnosis: examData.suspectedDiagnosis || '',
+    clinical_history: examData.clinicalHistory || '',
+    suspected_diagnosis: examData.suspectedDiagnosis || null,
     priority: examData.priority || 'NORMAL',
     status: 'PENDING',
-    fastingHours: examData.fastingHours,
-    trichotomyDone: examData.trichotomyDone,
-    ultrasoundType: examData.ultrasoundType,
-    images: examData.images || [],
-    createdAt: now.toISOString(),
-    updatedAt: now.toISOString(),
+    fasting_hours: examData.fastingHours || null,
+    trichotomy_done: examData.trichotomyDone ?? null,
+    ultrasound_type: examData.ultrasoundType || null,
+    created_at: now.toISOString(),
+    updated_at: now.toISOString(),
     deadline: deadlineDate.toISOString()
   };
 
-  db.exams.unshift(newExam);
-  writeDatabase(db);
-  return newExam;
+  const { error: insertErr } = await supabase.from('exams').insert(dbExam);
+  if (insertErr) {
+    console.error('Error inserting exam in Supabase:', insertErr);
+    throw new Error(insertErr.message);
+  }
+
+  // Inserir imagens anexadas, se houver
+  const imagesToInsert = examData.images || [];
+  if (imagesToInsert.length > 0) {
+    const dbImages = imagesToInsert.map(img => ({
+      id: img.id || `img-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      exam_id: examId,
+      url: img.url,
+      label: img.label || null,
+      projection: img.projection || null,
+      thumbnail_url: img.thumbnailUrl || null,
+      uploaded_at: img.uploadedAt || now.toISOString()
+    }));
+
+    await supabase.from('exam_images').insert(dbImages);
+  }
+
+  const createdExam = await getExamById(examId);
+  if (!createdExam) throw new Error('Falha ao recuperar exame criado');
+  return createdExam;
 }
 
-export function updateExam(id: string, updates: Partial<Exam>): Exam | null {
-  const db = readDatabase();
-  const index = db.exams.findIndex(e => e.id === id);
-  if (index === -1) return null;
-
-  db.exams[index] = {
-    ...db.exams[index],
-    ...updates,
-    updatedAt: new Date().toISOString()
+export async function updateExam(id: string, updates: Partial<Exam>): Promise<Exam | null> {
+  const dbUpdates: any = {
+    updated_at: new Date().toISOString()
   };
 
-  writeDatabase(db);
-  return db.exams[index];
+  if (updates.status !== undefined) dbUpdates.status = updates.status;
+  if (updates.priority !== undefined) dbUpdates.priority = updates.priority;
+  if (updates.patientName !== undefined) dbUpdates.patient_name = updates.patientName;
+  if (updates.species !== undefined) dbUpdates.species = updates.species;
+  if (updates.breed !== undefined) dbUpdates.breed = updates.breed;
+  if (updates.age !== undefined) dbUpdates.age = updates.age;
+  if (updates.weight !== undefined) dbUpdates.weight = updates.weight;
+  if (updates.gender !== undefined) dbUpdates.gender = updates.gender;
+  if (updates.isCastrated !== undefined) dbUpdates.is_castrated = updates.isCastrated;
+  if (updates.clinicalHistory !== undefined) dbUpdates.clinical_history = updates.clinicalHistory;
+  if (updates.suspectedDiagnosis !== undefined) dbUpdates.suspected_diagnosis = updates.suspectedDiagnosis;
+  if (updates.region !== undefined) dbUpdates.region = updates.region;
+  if (updates.projections !== undefined) dbUpdates.projections = updates.projections;
+
+  const { error } = await supabase
+    .from('exams')
+    .update(dbUpdates)
+    .eq('id', id);
+
+  if (error) {
+    console.error('Error updating exam in Supabase:', error);
+    return null;
+  }
+
+  return (await getExamById(id)) || null;
 }
 
-export function saveReport(examId: string, reportData: Omit<Report, 'id' | 'digitalSignatureHash' | 'reportedAt'>): Exam | null {
-  const db = readDatabase();
-  const index = db.exams.findIndex(e => e.id === examId);
-  if (index === -1) return null;
-
+export async function saveReport(
+  examId: string, 
+  reportData: Omit<Report, 'id' | 'digitalSignatureHash' | 'reportedAt'>
+): Promise<Exam | null> {
   const now = new Date().toISOString();
   const hash = `VET-SIGN-${Date.now()}-${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+  const reportId = `rep-${Date.now()}`;
 
-  const fullReport: Report = {
-    ...reportData,
-    id: `rep-${Date.now()}`,
-    reportedAt: now,
-    digitalSignatureHash: hash
+  const dbReport = {
+    id: reportId,
+    exam_id: examId,
+    radiologist_id: reportData.radiologistId || null,
+    radiologist_name: reportData.radiologistName,
+    radiologist_crmv: reportData.radiologistCrmv,
+    technique: reportData.technique || null,
+    findings: reportData.findings,
+    conclusion: reportData.conclusion,
+    recommendations: reportData.recommendations || null,
+    vhs_score: reportData.vhsScore || null,
+    norberg_angle: reportData.norbergAngle || null,
+    ultrasound_organs: reportData.ultrasoundOrgans || [],
+    key_image_ids: reportData.keyImageIds || [],
+    reported_at: now,
+    digital_signature_hash: hash
   };
 
-  db.exams[index].report = fullReport;
-  db.exams[index].status = 'REPORTED';
-  db.exams[index].updatedAt = now;
+  const { error: repErr } = await supabase
+    .from('reports')
+    .upsert(dbReport);
 
-  writeDatabase(db);
-  return db.exams[index];
+  if (repErr) {
+    console.error('Error saving report in Supabase:', repErr);
+    return null;
+  }
+
+  // Atualiza status do exame para REPORTED
+  await supabase
+    .from('exams')
+    .update({ status: 'REPORTED', updated_at: now })
+    .eq('id', examId);
+
+  return (await getExamById(examId)) || null;
 }
 
-export function getStats(): DashboardStats {
-  const db = readDatabase();
-  const totalExams = db.exams.length;
-  const pendingExams = db.exams.filter(e => e.status === 'PENDING').length;
-  const inProgressExams = db.exams.filter(e => e.status === 'IN_PROGRESS').length;
-  const completedExams = db.exams.filter(e => e.status === 'REPORTED').length;
-  const urgentExams = db.exams.filter(e => e.priority === 'URGENT' && e.status !== 'REPORTED').length;
-  const radiographyCount = db.exams.filter(e => e.modality === 'RADIOGRAFIA').length;
-  const ultrasoundCount = db.exams.filter(e => e.modality === 'ULTRASSOM').length;
-  
-  const clinics = new Set(db.users.filter(u => u.role === 'CLINIC').map(u => u.id));
-  const radiologists = new Set(db.users.filter(u => u.role === 'RADIOLOGIST').map(u => u.id));
+export async function getStats(): Promise<DashboardStats> {
+  const { data: exams, error: exErr } = await supabase.from('exams').select('status, priority, modality');
+  const { data: users, error: usErr } = await supabase.from('users').select('id, role');
+
+  if (exErr || !exams || usErr || !users) {
+    return {
+      totalExams: 0,
+      pendingExams: 0,
+      inProgressExams: 0,
+      completedExams: 0,
+      urgentExams: 0,
+      radiographyCount: 0,
+      ultrasoundCount: 0,
+      averageTurnaroundMinutes: 48,
+      clinicsCount: 0,
+      radiologistsCount: 0
+    };
+  }
+
+  const totalExams = exams.length;
+  const pendingExams = exams.filter(e => e.status === 'PENDING').length;
+  const inProgressExams = exams.filter(e => e.status === 'IN_PROGRESS').length;
+  const completedExams = exams.filter(e => e.status === 'REPORTED').length;
+  const urgentExams = exams.filter(e => e.priority === 'URGENT' && e.status !== 'REPORTED').length;
+  const radiographyCount = exams.filter(e => e.modality === 'RADIOGRAFIA').length;
+  const ultrasoundCount = exams.filter(e => e.modality === 'ULTRASSOM').length;
+
+  const clinics = new Set(users.filter(u => u.role === 'CLINIC').map(u => u.id));
+  const radiologists = new Set(users.filter(u => u.role === 'RADIOLOGIST').map(u => u.id));
 
   return {
     totalExams,

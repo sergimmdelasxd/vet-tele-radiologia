@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const existingUser = findUserByEmail(email);
+    const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return NextResponse.json(
         { error: 'Este e-mail já está cadastrado em nosso sistema' },
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    const newUser = createUser({
+    const newUser = await createUser({
       name,
       email,
       password: hashedPassword,
