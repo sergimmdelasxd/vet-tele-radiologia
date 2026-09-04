@@ -34,7 +34,8 @@ import {
   RotateCcw,
   User as UserIcon,
   ChevronRight,
-  AlertTriangle
+  AlertTriangle,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { DicomXrayViewer } from '@/components/viewer/DicomXrayViewer';
@@ -43,6 +44,7 @@ import { ReportDocument } from '@/components/report/ReportDocument';
 import { NewExamModal } from '@/components/dashboard/NewExamModal';
 import { FinancialModal } from '@/components/dashboard/FinancialModal';
 import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
+import { MonthlyClosingModal } from '@/components/financial/MonthlyClosingModal';
 import { Exam, User, ExamStatus, ExamPriority, ExamModality } from '@/types';
 
 // Calculador dinâmico de SLA e contagem regressiva de urgências
@@ -118,6 +120,7 @@ export default function DashboardPage() {
   const [activeReportingExam, setActiveReportingExam] = useState<Exam | null>(null);
   const [activeDocumentExam, setActiveDocumentExam] = useState<Exam | null>(null);
   const [isFinancialModalOpen, setIsFinancialModalOpen] = useState(false);
+  const [isMonthlyClosingModalOpen, setIsMonthlyClosingModalOpen] = useState(false);
   // Proporção de tela entre Visualizador e Editor de Laudo ('35' | '50' | '60' | '75')
   const [editorSplitRatio, setEditorSplitRatio] = useState<'35' | '50' | '60' | '75'>('60');
 
@@ -419,6 +422,17 @@ export default function DashboardPage() {
                   </span>
                 </button>
               )}
+
+              {/* Fechamento Mensal / Relatório Contábil (Clínica e Admin) */}
+              <button
+                type="button"
+                onClick={() => setIsMonthlyClosingModalOpen(true)}
+                className="inline-flex items-center gap-2 px-3.5 sm:px-4 py-2.5 sm:py-3 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-900 font-bold text-xs sm:text-sm rounded-xl shadow-2xs transition-all active:scale-95 cursor-pointer"
+                title="Abrir Demonstrativo de Fechamento Mensal e Exportar Planilha / PDF"
+              >
+                <FileSpreadsheet className="w-4 h-4 text-indigo-600" />
+                <span>Fechamento Mensal</span>
+              </button>
 
               <button
                 onClick={() => setIsNewExamModalOpen(true)}
@@ -1625,6 +1639,14 @@ export default function DashboardPage() {
             setCurrentUser(updatedUser);
             loadData();
           }}
+        />
+      )}
+
+      {/* MODAL 6: Demonstrativo de Fechamento Mensal & Exportação */}
+      {isMonthlyClosingModalOpen && (
+        <MonthlyClosingModal
+          user={currentUser}
+          onClose={() => setIsMonthlyClosingModalOpen(false)}
         />
       )}
     </div>

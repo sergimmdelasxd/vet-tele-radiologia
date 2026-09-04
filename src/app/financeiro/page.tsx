@@ -26,9 +26,11 @@ import {
   Phone,
   Search,
   SlidersHorizontal,
-  X
+  X,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
+import { MonthlyClosingModal } from '@/components/financial/MonthlyClosingModal';
 import { 
   User as UserType, 
   PlatformFinancialAnalytics, 
@@ -42,6 +44,7 @@ export default function FinanceiroPage() {
   const [analytics, setAnalytics] = useState<PlatformFinancialAnalytics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isClosingModalOpen, setIsClosingModalOpen] = useState(false);
 
   // Filtros
   const [searchClinic, setSearchClinic] = useState('');
@@ -251,6 +254,15 @@ export default function FinanceiroPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setIsClosingModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md shadow-indigo-600/20 transition cursor-pointer"
+              title="Abrir Fechamento Mensal Consolidado com Seleção de Mês e Impressão PDF"
+            >
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Fechamento Mensal</span>
+            </button>
+
             <button
               onClick={handleExportCSV}
               className="inline-flex items-center gap-1.5 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold rounded-xl border border-slate-700 transition cursor-pointer"
@@ -821,6 +833,13 @@ export default function FinanceiroPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {isClosingModalOpen && (
+        <MonthlyClosingModal
+          user={currentUser}
+          onClose={() => setIsClosingModalOpen(false)}
+        />
       )}
 
     </div>

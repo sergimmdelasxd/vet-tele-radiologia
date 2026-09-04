@@ -15,9 +15,11 @@ import {
   Clock, 
   AlertCircle,
   FileText,
-  DollarSign
+  DollarSign,
+  FileSpreadsheet
 } from 'lucide-react';
 import { FinancialTransaction, User } from '@/types';
+import { MonthlyClosingModal } from '@/components/financial/MonthlyClosingModal';
 
 interface FinancialModalProps {
   isOpen: boolean;
@@ -36,6 +38,7 @@ export const FinancialModal: React.FC<FinancialModalProps> = ({
   const [balance, setBalance] = useState<number>(currentUser.balance ?? 0);
   const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showClosing, setShowClosing] = useState(false);
 
   // Estados de Recarga
   const [selectedPackage, setSelectedPackage] = useState<number>(300);
@@ -504,16 +507,35 @@ export const FinancialModal: React.FC<FinancialModalProps> = ({
         {/* Footer */}
         <div className="px-6 py-3.5 border-t border-slate-200 bg-slate-50 flex items-center justify-between text-xs text-slate-500">
           <div>Suporte Financeiro: financeiro@vettelerad.com.br</div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-semibold cursor-pointer transition"
-          >
-            Fechar
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowClosing(true)}
+              className="px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 rounded-xl font-bold cursor-pointer transition flex items-center gap-1.5 shadow-2xs"
+              title="Abrir Demonstrativo de Fechamento e Exportar Planilha / PDF"
+            >
+              <FileSpreadsheet className="w-3.5 h-3.5 text-indigo-600" />
+              <span>Fechamento Mensal (.CSV / PDF)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-1.5 bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl font-semibold cursor-pointer transition"
+            >
+              Fechar
+            </button>
+          </div>
         </div>
 
       </div>
+
+      {showClosing && (
+        <MonthlyClosingModal
+          user={currentUser}
+          onClose={() => setShowClosing(false)}
+        />
+      )}
     </div>
   );
 };
