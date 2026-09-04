@@ -22,7 +22,20 @@ import {
 } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 
-const DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
+const LOCAL_DB_PATH = path.join(process.cwd(), 'src', 'data', 'db.json');
+const TMP_DB_PATH = path.join('/tmp', 'vet_tele_db.json');
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __vet_db_cache__: DatabaseSchema | undefined;
+}
+
+export function getDbFilePath(): string {
+  if (process.env.VERCEL || (process.platform === 'linux' && process.cwd().startsWith('/var/task'))) {
+    return TMP_DB_PATH;
+  }
+  return LOCAL_DB_PATH;
+}
 
 export const PRICING_TABLE = {
   RADIOGRAFIA: {
@@ -47,9 +60,12 @@ interface DatabaseSchema {
 }
 
 function ensureDataDirectory() {
-  const dir = path.dirname(DB_PATH);
+  const target = getDbFilePath();
+  const dir = path.dirname(target);
   if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+    try {
+      fs.mkdirSync(dir, { recursive: true });
+    } catch {}
   }
 }
 
@@ -550,22 +566,64 @@ function seedDatabase(): DatabaseSchema {
     exams, 
     transactions: seedTransactions(), 
     appointments: seedAppointments(),
-    templates: [...REPORT_TEMPLATES]
+    templates: [...REPORT_TEMPLATES],
+    quickPhrases: [...DEFAULT_QUICK_PHRASES],
+    teachingCases: [...DEFAULT_TEACHING_CASES],
+    notifications: [...DEFAULT_NOTIFICATIONS]
   };
-  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2), 'utf-8');
+
+  global.__vet_db_cache__ = db;
+
+  try {
+    ensureDataDirectory();
+    fs.writeFileSync(getDbFilePath(), JSON.stringify(db, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('Could not write seed to disk, cached in memory:', err);
+  }
+
   return db;
 }
 
 export function readDatabase(): DatabaseSchema {
-  ensureDataDirectory();
-  if (!fs.existsSync(DB_PATH)) {
+  if (global.__vet_db_cache__) {
+    return global.__vet_db_cache__;
+  }
+
+  const filePath = getDbFilePath();
+
+  // Se estiver em ambiente serverless (Vercel) e o arquivo em /tmp ainda não existir:
+  if (filePath === TMP_DB_PATH && !fs.existsSync(TMP_DB_PATH)) {
+    try {
+      if (fs.existsSync(LOCAL_DB_PATH)) {
+        const rawInitial = fs.readFileSync(LOCAL_DB_PATH, 'utf-8');
+        try {
+          fs.writeFileSync(TMP_DB_PATH, rawInitial, 'utf-8');
+        } catch {}
+        const parsed: DatabaseSchema = JSON.parse(rawInitial);
+        global.__vet_db_cache__ = parsed;
+        return parsed;
+      }
+    } catch (err) {
+      console.warn('Erro ao inicializar db do /tmp:', err);
+    }
+  }
+
+  if (!fs.existsSync(filePath)) {
+    if (fs.existsSync(LOCAL_DB_PATH)) {
+      try {
+        const raw = fs.readFileSync(LOCAL_DB_PATH, 'utf-8');
+        const parsed: DatabaseSchema = JSON.parse(raw);
+        global.__vet_db_cache__ = parsed;
+        return parsed;
+      } catch {}
+    }
     return seedDatabase();
   }
 
   try {
-    const raw = fs.readFileSync(DB_PATH, 'utf-8');
+    const raw = fs.readFileSync(filePath, 'utf-8');
     const parsed: DatabaseSchema = JSON.parse(raw);
-    // Se não tiver a propriedade modality nos exames, atualiza
+
     if (!parsed.exams || parsed.exams.length === 0 || !parsed.exams[0].modality) {
       return seedDatabase();
     }
@@ -583,6 +641,21 @@ export function readDatabase(): DatabaseSchema {
 
     if (!parsed.templates || parsed.templates.length === 0) {
       parsed.templates = [...REPORT_TEMPLATES];
+      shouldSave = true;
+    }
+
+    if (!parsed.quickPhrases || parsed.quickPhrases.length === 0) {
+      parsed.quickPhrases = [...DEFAULT_QUICK_PHRASES];
+      shouldSave = true;
+    }
+
+    if (!parsed.teachingCases || parsed.teachingCases.length === 0) {
+      parsed.teachingCases = [...DEFAULT_TEACHING_CASES];
+      shouldSave = true;
+    }
+
+    if (!parsed.notifications || parsed.notifications.length === 0) {
+      parsed.notifications = [...DEFAULT_NOTIFICATIONS];
       shouldSave = true;
     }
 
@@ -624,6 +697,7 @@ export function readDatabase(): DatabaseSchema {
       writeDatabase(parsed);
     }
 
+    global.__vet_db_cache__ = parsed;
     return parsed;
   } catch {
     return seedDatabase();
@@ -631,8 +705,25 @@ export function readDatabase(): DatabaseSchema {
 }
 
 export function writeDatabase(data: DatabaseSchema): void {
-  ensureDataDirectory();
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+  // Atualiza cache em memória imediatamente
+  global.__vet_db_cache__ = data;
+
+  const targetPath = getDbFilePath();
+  try {
+    ensureDataDirectory();
+    fs.writeFileSync(targetPath, JSON.stringify(data, null, 2), 'utf-8');
+  } catch (err) {
+    // Se falhar no caminho padrão (ex: EROFS na Vercel), tenta salvar em /tmp
+    if (targetPath !== TMP_DB_PATH) {
+      try {
+        fs.writeFileSync(TMP_DB_PATH, JSON.stringify(data, null, 2), 'utf-8');
+      } catch (tmpErr) {
+        console.warn('Gravação em disco ignorada, dados mantidos em memória:', tmpErr);
+      }
+    } else {
+      console.warn('Gravação em /tmp ignorada, dados mantidos em memória:', err);
+    }
+  }
 }
 
 // User methods
