@@ -60,6 +60,7 @@ export interface Report {
   radiologistName: string;
   radiologistCrmv: string;
   radiologistSignatureUrl?: string; // Imagem da assinatura/carimbo do especialista
+  pdfUrl?: string; // URL do laudo oficial timbrado em formato PDF
   technique: string;
   findings: string;
   conclusion: string;

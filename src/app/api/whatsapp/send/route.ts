@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { phone, message, examId, customConfig } = body;
+    const { phone, message, examId, customConfig, mediaUrl, fileName } = body;
 
     if (!phone || !message) {
       return NextResponse.json(
@@ -35,7 +35,9 @@ export async function POST(request: Request) {
       phone,
       message,
       config,
-      userId: user.userId
+      userId: user.userId,
+      mediaUrl,
+      fileName
     });
 
     if (!result.success) {

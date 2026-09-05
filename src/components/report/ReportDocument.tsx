@@ -130,73 +130,83 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
     window.print();
   };
 
-  const handleDownloadPdf = async () => {
+  const generatePdfInstance = async (): Promise<jsPDF | null> => {
     const docEl = document.getElementById(`printable-report-${exam.id}`);
-    if (!docEl) return;
+    if (!docEl) return null;
 
+    const canvas = await html2canvas(docEl, {
+      scale: 2,
+      useCORS: true,
+      logging: false,
+      backgroundColor: '#ffffff',
+      scrollY: 0,
+      scrollX: 0,
+      x: 0,
+      y: 0,
+      windowWidth: 1024
+    });
+
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
+    const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
+    const margin = 8; // 8mm margem padrão médica
+    const usableWidth = pageWidth - (margin * 2); // 194mm
+    const usableHeight = pageHeight - (margin * 2); // 281mm
+
+    const contentAspectRatio = canvas.width / canvas.height;
+    let renderWidth = usableWidth;
+    let renderHeight = renderWidth / contentAspectRatio;
+
+    // Se o laudo couber ou estiver ligeiramente acima (até 30%), ajusta a escala para caber exatamente em 1 PÁGINA A4 ÚNICA
+    if (renderHeight <= usableHeight * 1.30) {
+      if (renderHeight > usableHeight) {
+        renderHeight = usableHeight;
+        renderWidth = renderHeight * contentAspectRatio;
+      }
+      const xOffset = margin + (usableWidth - renderWidth) / 2;
+      const yOffset = margin;
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+      pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'FAST');
+    } else {
+      // Se for um laudo longo com muitas fotos/cortes anexados, fatia em páginas limpas sem duplicar o laudo
+      const pageCanvasHeight = Math.floor(canvas.width * (usableHeight / usableWidth));
+      let sourceY = 0;
+
+      while (sourceY < canvas.height) {
+        if (sourceY > 0) pdf.addPage();
+
+        const sliceHeight = Math.min(pageCanvasHeight, canvas.height - sourceY);
+        const pageCanvas = document.createElement('canvas');
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        const ctx = pageCanvas.getContext('2d');
+        if (ctx) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+          ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+          const sliceData = pageCanvas.toDataURL('image/jpeg', 0.95);
+          const sliceRenderHeight = (sliceHeight * usableWidth) / canvas.width;
+          pdf.addImage(sliceData, 'JPEG', margin, margin, usableWidth, sliceRenderHeight, undefined, 'FAST');
+        }
+        sourceY += pageCanvasHeight;
+      }
+    }
+
+    return pdf;
+  };
+
+  const handleDownloadPdf = async () => {
     setIsGeneratingPdf(true);
     try {
-      const canvas = await html2canvas(docEl, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        scrollY: 0,
-        scrollX: 0,
-        x: 0,
-        y: 0,
-        windowWidth: 1024
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const pageWidth = pdf.internal.pageSize.getWidth(); // 210mm
-      const pageHeight = pdf.internal.pageSize.getHeight(); // 297mm
-      const margin = 8; // 8mm margem padrão médica
-      const usableWidth = pageWidth - (margin * 2); // 194mm
-      const usableHeight = pageHeight - (margin * 2); // 281mm
-
-      const contentAspectRatio = canvas.width / canvas.height;
-      let renderWidth = usableWidth;
-      let renderHeight = renderWidth / contentAspectRatio;
-
-      // Se o laudo couber ou estiver ligeiramente acima (até 30%), ajusta a escala para caber exatamente em 1 PÁGINA A4 ÚNICA
-      if (renderHeight <= usableHeight * 1.30) {
-        if (renderHeight > usableHeight) {
-          renderHeight = usableHeight;
-          renderWidth = renderHeight * contentAspectRatio;
-        }
-        const xOffset = margin + (usableWidth - renderWidth) / 2;
-        const yOffset = margin;
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-        pdf.addImage(imgData, 'JPEG', xOffset, yOffset, renderWidth, renderHeight, undefined, 'FAST');
-      } else {
-        // Se for um laudo longo com muitas fotos/cortes anexados, fatia em páginas limpas sem duplicar o laudo
-        const pageCanvasHeight = Math.floor(canvas.width * (usableHeight / usableWidth));
-        let sourceY = 0;
-
-        while (sourceY < canvas.height) {
-          if (sourceY > 0) pdf.addPage();
-
-          const sliceHeight = Math.min(pageCanvasHeight, canvas.height - sourceY);
-          const pageCanvas = document.createElement('canvas');
-          pageCanvas.width = canvas.width;
-          pageCanvas.height = sliceHeight;
-          const ctx = pageCanvas.getContext('2d');
-          if (ctx) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
-            ctx.drawImage(canvas, 0, sourceY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
-            const sliceData = pageCanvas.toDataURL('image/jpeg', 0.95);
-            const sliceRenderHeight = (sliceHeight * usableWidth) / canvas.width;
-            pdf.addImage(sliceData, 'JPEG', margin, margin, usableWidth, sliceRenderHeight, undefined, 'FAST');
-          }
-          sourceY += pageCanvasHeight;
-        }
+      const pdf = await generatePdfInstance();
+      if (!pdf) {
+        window.print();
+        return;
       }
 
       const cleanPatient = exam.patientName.replace(/[^a-zA-Z0-9]/g, '_');
@@ -206,6 +216,35 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
       window.print();
     } finally {
       setIsGeneratingPdf(false);
+    }
+  };
+
+  // Gera e faz upload do arquivo PDF oficial para envio direto em anexo no WhatsApp
+  const handleUploadPdfBlob = async (): Promise<string | null> => {
+    try {
+      const pdf = await generatePdfInstance();
+      if (!pdf) return null;
+      const blob = pdf.output('blob');
+      const cleanPatient = exam.patientName.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `Laudo_${exam.id}_${cleanPatient}.pdf`;
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+
+      const formData = new FormData();
+      formData.append('files', file);
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+      if (data.files && data.files[0]?.url) {
+        return data.files[0].url;
+      }
+      return null;
+    } catch (e) {
+      console.error('Erro ao gerar/subir PDF para envio:', e);
+      return null;
     }
   };
 
@@ -219,10 +258,27 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
     setTimeout(() => setCopiedLink(false), 3000);
   };
 
+  const isSendingToTutor = !!exam.ownerPhone && destPhone.replace(/\D/g, '') === exam.ownerPhone.replace(/\D/g, '');
+  const isReportFinalized = exam.status === 'REPORTED' && !isDraftMode;
+  const isBlockedForTutor = isSendingToTutor && !isReportFinalized;
+
   const getFormattedMessage = () => {
     const modalityName = isUltrasound ? 'ULTRASSOM' : 'RAIO-X';
-    // Remove tags HTML para o texto do WhatsApp ficar limpo
     const rawText = (report.conclusion || report.findings || '').replace(/<[^>]*>?/gm, ' ').replace(/\s+/g, ' ').trim();
+
+    if (isSendingToTutor) {
+      return `🐾 *LAUDO VETERINÁRIO EM PDF — VetTeleRad*
+📄 *Protocolo:* ${exam.id}
+🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
+👤 *Tutor(a):* ${exam.ownerName}
+🏥 *Clínica Solicitante:* ${exam.clinicName}
+🩺 *Médico Veterinário:* ${exam.requestingVet}
+👨‍⚕️ *Especialista:* ${report.radiologistName} (${report.radiologistCrmv})
+
+📎 *O laudo oficial timbrado em PDF com imagens em alta resolução já está disponível:*
+🔗 ${getPublicUrl()}`;
+    }
+
     return `🐾 *LAUDO ${modalityName} DISPONÍVEL — VetTeleRad*
 📄 *Protocolo:* ${exam.id}
 🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
@@ -238,11 +294,18 @@ ${getPublicUrl()}`;
   };
 
   const handleSendWhatsApp = () => {
+    const rawDigits = destPhone.replace(/\D/g, '');
+    const isTargetTutor = !!exam.ownerPhone && rawDigits === exam.ownerPhone.replace(/\D/g, '');
+
+    if (isTargetTutor && !isReportFinalized) {
+      setApiSendError('Para enviar ao tutor, o laudo já deve estar finalizado e emitido em PDF (sem marca d\'água de rascunho).');
+      return;
+    }
+
     const text = encodeURIComponent(getFormattedMessage());
-    const digitsOnly = destPhone.replace(/\D/g, '');
     let targetUrl = `https://wa.me/?text=${text}`;
-    if (digitsOnly.length >= 10) {
-      const fullPhone = digitsOnly.startsWith('55') ? digitsOnly : `55${digitsOnly}`;
+    if (rawDigits.length >= 10) {
+      const fullPhone = rawDigits.startsWith('55') ? rawDigits : `55${rawDigits}`;
       targetUrl = `https://wa.me/${fullPhone}?text=${text}`;
     }
     window.open(targetUrl, '_blank');
@@ -255,18 +318,39 @@ ${getPublicUrl()}`;
       setApiSendError('Informe um número de telefone com DDD válido (mínimo 10 dígitos).');
       return;
     }
+
+    const isTargetTutor = !!exam.ownerPhone && rawDigits === exam.ownerPhone.replace(/\D/g, '');
+    if (isTargetTutor && !isReportFinalized) {
+      setApiSendError('Para enviar ao tutor, o laudo já deve estar finalizado e emitido em PDF (sem marca d\'água de rascunho).');
+      return;
+    }
+
     setIsSendingViaApi(true);
     setApiSendError(null);
     setApiSendSuccess(false);
 
     try {
+      // Quando finalizado, gera o arquivo PDF timbrado e anexa diretamente no envio do WhatsApp
+      let mediaUrl: string | undefined = undefined;
+      const cleanPatient = exam.patientName.replace(/[^a-zA-Z0-9]/g, '_');
+      const fileName = `Laudo_${exam.id}_${cleanPatient}.pdf`;
+
+      if (isReportFinalized) {
+        const uploadedUrl = await handleUploadPdfBlob();
+        if (uploadedUrl) {
+          mediaUrl = uploadedUrl;
+        }
+      }
+
       const res = await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           phone: rawDigits,
           message: getFormattedMessage(),
-          examId: exam.id
+          examId: exam.id,
+          mediaUrl,
+          fileName
         })
       });
 
@@ -782,6 +866,16 @@ ${getPublicUrl()}`;
               </span>
             </div>
 
+            {isBlockedForTutor && (
+              <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-start gap-2.5 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <strong className="block text-slate-900 font-bold mb-0.5">Laudo ainda não emitido em PDF</strong>
+                  <span>Para enviar diretamente ao tutor, o laudo precisa estar concluído e emitido em PDF (sem marca d&apos;água de rascunho). Selecione a Clínica para aviso interno ou conclua o laudo antes de disparar ao tutor.</span>
+                </div>
+              </div>
+            )}
+
             <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80 text-[11px] text-slate-600 max-h-36 overflow-y-auto whitespace-pre-line font-mono leading-relaxed">
               {getFormattedMessage()}
             </div>
@@ -820,14 +914,14 @@ ${getPublicUrl()}`;
                 <button
                   type="button"
                   onClick={handleSendViaApi}
-                  disabled={isSendingViaApi || apiSendSuccess}
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition active:scale-95 cursor-pointer disabled:opacity-60"
-                  title="Enviar mensagem automática pelo robô conectado da API"
+                  disabled={isSendingViaApi || apiSendSuccess || isBlockedForTutor}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition active:scale-95 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
+                  title={isBlockedForTutor ? "Finalize o laudo em PDF para enviar ao tutor" : "Enviar mensagem automática pelo robô conectado da API"}
                 >
                   {isSendingViaApi ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Disparando...</span>
+                      <span>Disparando com PDF...</span>
                     </>
                   ) : (
                     <>
@@ -841,8 +935,9 @@ ${getPublicUrl()}`;
               <button
                 type="button"
                 onClick={handleSendWhatsApp}
-                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition cursor-pointer"
-                title="Abrir no WhatsApp Web ou no aplicativo"
+                disabled={isBlockedForTutor}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                title={isBlockedForTutor ? "Finalize o laudo em PDF para enviar ao tutor" : "Abrir no WhatsApp Web ou no aplicativo"}
               >
                 <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
                 <span>{hasWhatsAppApi ? 'WhatsApp Web' : 'Abrir WhatsApp'}</span>

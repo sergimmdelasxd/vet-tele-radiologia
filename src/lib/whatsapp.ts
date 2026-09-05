@@ -67,6 +67,8 @@ export interface SendWhatsAppParams {
   message: string;
   config?: WhatsAppConfig;
   userId?: string;
+  mediaUrl?: string;
+  fileName?: string;
 }
 
 export interface SendWhatsAppResult {
@@ -77,13 +79,15 @@ export interface SendWhatsAppResult {
 }
 
 /**
- * Envia uma mensagem via WhatsApp API (Z-API, Evolution API ou Webhook)
+ * Envia uma mensagem ou documento PDF via WhatsApp API (Z-API, Evolution API ou Webhook)
  */
 export async function sendWhatsAppMessage({
   phone,
   message,
   config,
-  userId
+  userId,
+  mediaUrl,
+  fileName
 }: SendWhatsAppParams): Promise<SendWhatsAppResult> {
   const activeConfig = config || (await resolveWhatsAppConfig(userId));
 
@@ -109,13 +113,11 @@ export async function sendWhatsAppMessage({
 
   try {
     if (activeConfig.provider === 'Z_API') {
-      // Endpoint oficial Z-API: {apiUrl}/instances/{instanceId}/token/{token}/send-text
       const baseUrl = rawBaseUrl || 'https://api.z-api.io';
       if (!instance || !token) {
         return { success: false, error: 'ID da Instância e Token são obrigatórios para a Z-API.' };
       }
 
-      const url = `${baseUrl}/instances/${instance}/token/${token}/send-text`;
       const headers: Record<string, string> = {
         'Content-Type': 'application/json'
       };
@@ -123,6 +125,34 @@ export async function sendWhatsAppMessage({
         headers['Client-Token'] = clientToken;
       }
 
+      // Se houver mediaUrl (como laudo em PDF), envia como documento anexado
+      if (mediaUrl) {
+        const docUrl = `${baseUrl}/instances/${instance}/token/${token}/send-document/pdf`;
+        const res = await fetch(docUrl, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            phone: formattedPhone,
+            document: mediaUrl,
+            fileName: fileName || 'Laudo_Veterinario.pdf',
+            caption: message
+          }),
+          signal: AbortSignal.timeout(20000)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          return {
+            success: true,
+            messageId: data.zaapId || data.messageId || data.id,
+            details: data
+          };
+        }
+        // Se falhar o envio de documento, faz fallback para envio de texto comum
+      }
+
+      // Envio de texto normal
+      const url = `${baseUrl}/instances/${instance}/token/${token}/send-text`;
       const res = await fetch(url, {
         method: 'POST',
         headers,
@@ -149,17 +179,44 @@ export async function sendWhatsAppMessage({
     } 
     
     if (activeConfig.provider === 'EVOLUTION_API') {
-      // Endpoint oficial Evolution API v1 / v2: {apiUrl}/message/sendText/{instanceName}
       if (!rawBaseUrl || !instance || !token) {
         return { success: false, error: 'URL da API, Nome da Instância e API Key são obrigatórios para a Evolution API.' };
       }
 
-      const url = `${rawBaseUrl}/message/sendText/${instance}`;
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
         'apikey': token
       };
 
+      // Se houver mediaUrl (laudo em PDF), envia como documento
+      if (mediaUrl) {
+        const mediaEndpoint = `${rawBaseUrl}/message/sendMedia/${instance}`;
+        const res = await fetch(mediaEndpoint, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            number: formattedPhone,
+            media: mediaUrl,
+            mediatype: 'document',
+            mimetype: 'application/pdf',
+            fileName: fileName || 'Laudo_Veterinario.pdf',
+            caption: message
+          }),
+          signal: AbortSignal.timeout(20000)
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+          return {
+            success: true,
+            messageId: data.key?.id || data.id,
+            details: data
+          };
+        }
+        // Se falhar envio de mídia, tenta texto normal
+      }
+
+      const url = `${rawBaseUrl}/message/sendText/${instance}`;
       const res = await fetch(url, {
         method: 'POST',
         headers,
@@ -203,6 +260,8 @@ export async function sendWhatsAppMessage({
         body: JSON.stringify({
           phone: formattedPhone,
           message: message,
+          mediaUrl: mediaUrl || null,
+          fileName: fileName || null,
           sentAt: new Date().toISOString()
         }),
         signal: AbortSignal.timeout(15000)
