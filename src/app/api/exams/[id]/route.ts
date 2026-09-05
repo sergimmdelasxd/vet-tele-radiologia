@@ -63,6 +63,14 @@ export async function PATCH(
       return NextResponse.json({ error: 'Clínica não pode alterar status operacional do exame' }, { status: 403 });
     }
 
+    // Bloqueia alteração de logotipo quando o laudo já foi emitido (REPORTED)
+    if (existingExam.status === 'REPORTED' && body.clinicLogo !== undefined && user.role !== 'ADMIN') {
+      return NextResponse.json(
+        { error: 'Não é permitido alterar o logotipo de um laudo oficial já emitido e assinado.' },
+        { status: 403 }
+      );
+    }
+
     const updated = await updateExam(id, body);
     return NextResponse.json({ success: true, exam: updated });
   } catch (error) {

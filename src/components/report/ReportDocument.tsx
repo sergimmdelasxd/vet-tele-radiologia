@@ -446,28 +446,32 @@ ${getPublicUrl()}`;
             <span>{copiedLink ? 'Link Copiado!' : 'Copiar Link'}</span>
           </button>
 
-          {/* Botão Anexar / Alterar Logo da Clínica */}
-          <input
-            ref={logoInputRef}
-            type="file"
-            accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
-            className="hidden"
-            onChange={handleUploadClinicLogo}
-          />
-          <button
-            type="button"
-            onClick={() => logoInputRef.current?.click()}
-            disabled={isUploadingLogo}
-            className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition cursor-pointer disabled:opacity-50"
-            title="Anexar ou alterar o logotipo oficial da clínica neste laudo"
-          >
-            {isUploadingLogo ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
-            ) : (
-              <Building2 className="w-3.5 h-3.5 text-teal-600" />
-            )}
-            <span>{currentClinicLogo ? 'Alterar Logo' : '+ Logo'}</span>
-          </button>
+          {/* Botão Anexar / Alterar Logo da Clínica (Permitido apenas durante rascunho) */}
+          {isDraftMode && (
+            <>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/png, image/jpeg, image/jpg, image/svg+xml, image/webp"
+                className="hidden"
+                onChange={handleUploadClinicLogo}
+              />
+              <button
+                type="button"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={isUploadingLogo}
+                className="inline-flex items-center gap-1.5 px-3 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold border border-slate-200/90 shadow-2xs transition cursor-pointer disabled:opacity-50"
+                title="Anexar ou alterar o logotipo oficial da clínica neste rascunho"
+              >
+                {isUploadingLogo ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-teal-600" />
+                ) : (
+                  <Building2 className="w-3.5 h-3.5 text-teal-600" />
+                )}
+                <span>{currentClinicLogo ? 'Alterar Logo' : '+ Logo'}</span>
+              </button>
+            </>
+          )}
 
           {/* Botão WhatsApp */}
           <button
@@ -594,13 +598,15 @@ ${getPublicUrl()}`;
                       Solicitante: {exam.requestingVet}
                     </span>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-0.5"
-                  >
-                    Alterar logotipo
-                  </button>
+                  {isDraftMode && (
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-0.5"
+                    >
+                      Alterar logotipo
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -622,13 +628,15 @@ ${getPublicUrl()}`;
                       Tel: {exam.clinicPhone}
                     </p>
                   )}
-                  <button
-                    type="button"
-                    onClick={() => logoInputRef.current?.click()}
-                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-1"
-                  >
-                    + Anexar logotipo da clínica
-                  </button>
+                  {isDraftMode && (
+                    <button
+                      type="button"
+                      onClick={() => logoInputRef.current?.click()}
+                      className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-1"
+                    >
+                      + Anexar logotipo da clínica
+                    </button>
+                  )}
                 </div>
               </div>
             )}
