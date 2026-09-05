@@ -56,6 +56,19 @@
       "createdAt": "2026-06-01T09:00:00Z"
     },
     {
+      "id": "user-admin-sergiodiagvet",
+      "name": "Dr. Sergio",
+      "email": "sergiodiagvet@gmail.com",
+      "password": "$2b$10$8iwEy6.bw4YBIVnEmXKvoes9hwqeRPDkzEtbyfFzLKdkfJwf4FIbC",
+      "role": "ADMIN",
+      "crmv": "CRMV-SP",
+      "uf": "SP",
+      "specialty": "Médico Veterinário Telerradiologista / Central Admin",
+      "plan": "ILIMITADO",
+      "balance": 9999,
+      "createdAt": "2026-09-04T23:30:00Z"
+    },
+    {
       "name": "Dr. Felipe Santos (CRMV-SP 55.444)",
       "clinicName": "Hospital Veterin�rio S�o Bento 24h",
       "email": "contato@saobento.com.br",
