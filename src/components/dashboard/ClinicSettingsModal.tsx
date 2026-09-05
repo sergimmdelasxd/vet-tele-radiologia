@@ -21,7 +21,9 @@ import {
   CheckCircle2,
   AlertCircle,
   Key,
-  Globe
+  Globe,
+  Mail,
+  Server
 } from 'lucide-react';
 import { User, WhatsAppProvider } from '@/types';
 
@@ -63,6 +65,23 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
   const [whatsappTestSuccess, setWhatsappTestSuccess] = useState<string | null>(null);
   const [whatsappTestError, setWhatsappTestError] = useState<string | null>(null);
 
+  // Configurações de E-mail / SMTP & Confirmação de Cadastro
+  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [requireEmailVerification, setRequireEmailVerification] = useState(true);
+  const [smtpHost, setSmtpHost] = useState('');
+  const [smtpPort, setSmtpPort] = useState<number>(587);
+  const [smtpSecure, setSmtpSecure] = useState(false);
+  const [smtpUser, setSmtpUser] = useState('');
+  const [smtpPass, setSmtpPass] = useState('');
+  const [fromName, setFromName] = useState('VetTeleRad — Telerradiologia Veterinária');
+  const [fromEmail, setFromEmail] = useState('');
+
+  // Teste de envio de e-mail
+  const [isTestingEmail, setIsTestingEmail] = useState(false);
+  const [emailTestRecipient, setEmailTestRecipient] = useState(user.email || '');
+  const [emailTestSuccess, setEmailTestSuccess] = useState<string | null>(null);
+  const [emailTestError, setEmailTestError] = useState<string | null>(null);
+
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingSignature, setIsUploadingSignature] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -75,6 +94,22 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
 
   useEffect(() => {
     setMounted(true);
+    fetch('/api/email/config')
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.config) {
+          setEmailEnabled(Boolean(data.config.enabled));
+          setRequireEmailVerification(data.config.requireEmailVerification ?? true);
+          setSmtpHost(data.config.smtpHost || '');
+          setSmtpPort(data.config.smtpPort || 587);
+          setSmtpSecure(Boolean(data.config.smtpSecure));
+          setSmtpUser(data.config.smtpUser || '');
+          setSmtpPass(data.config.smtpPass || '');
+          setFromName(data.config.fromName || 'VetTeleRad — Telerradiologia Veterinária');
+          setFromEmail(data.config.fromEmail || '');
+        }
+      })
+      .catch(err => console.error('Erro ao carregar configurações de e-mail:', err));
   }, []);
 
   if (!isOpen || !mounted) return null;
@@ -202,6 +237,49 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
     }
   };
 
+  const handleTestEmail = async () => {
+    if (!emailTestRecipient || !emailTestRecipient.includes('@')) {
+      setEmailTestError('Informe um e-mail válido para testar o envio.');
+      return;
+    }
+
+    setIsTestingEmail(true);
+    setEmailTestSuccess(null);
+    setEmailTestError(null);
+
+    try {
+      const res = await fetch('/api/email/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: emailTestRecipient.trim(),
+          config: {
+            enabled: emailEnabled,
+            requireEmailVerification,
+            smtpHost,
+            smtpPort,
+            smtpSecure,
+            smtpUser,
+            smtpPass,
+            fromName,
+            fromEmail
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao disparar e-mail de teste.');
+      }
+
+      setEmailTestSuccess(data.message || 'E-mail de teste disparado com sucesso!');
+    } catch (err: any) {
+      setEmailTestError(err.message || 'Erro ao enviar e-mail de teste.');
+    } finally {
+      setIsTestingEmail(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
@@ -245,6 +323,24 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
           })
         }).catch(() => {});
       }
+
+      fetch('/api/email/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          config: {
+            enabled: emailEnabled,
+            requireEmailVerification,
+            smtpHost,
+            smtpPort,
+            smtpSecure,
+            smtpUser,
+            smtpPass,
+            fromName,
+            fromEmail
+          }
+        })
+      }).catch(err => console.error('Erro ao salvar email config:', err));
 
       const data = await res.json();
       if (!res.ok) {
@@ -823,6 +919,198 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
               </div>
             </div>
           </div>
+
+          {/* SEÇÃO 4: CONFIGURAÇÕES DE E-MAIL, CONFIRMAÇÃO DE CADASTRO E RECUPERAÇÃO DE SENHA */}
+          <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                    <Mail className="w-3.5 h-3.5 text-cyan-600" />
+                    <span>Configurações de E-mail (Confirmação &amp; Senha)</span>
+                    {emailEnabled ? (
+                      <span className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-800 text-[10px] font-bold">
+                        SMTP Ativo
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                        Modo Simulado (Dev)
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-[11px] text-slate-500 mt-0.5">
+                    Envio de e-mails para ativação de novas clínicas cadastradas e links de redefinição (&quot;Esqueci minha senha&quot;).
+                  </p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={emailEnabled}
+                    onChange={e => setEmailEnabled(e.target.checked)}
+                    className="sr-only peer"
+                  />
+                  <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                </label>
+              </div>
+
+              {/* Opções de Verificação */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="block font-bold text-slate-800 text-xs">
+                      Exigir confirmação de e-mail para novas clínicas
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Quando ativo, novos usuários precisam clicar no link recebido por e-mail antes de acessar o portal.
+                    </span>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={requireEmailVerification}
+                      onChange={e => setRequireEmailVerification(e.target.checked)}
+                      className="sr-only peer"
+                    />
+                    <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-teal-600"></div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Formulário SMTP se ativo */}
+              {emailEnabled ? (
+                <div className="p-4 rounded-2xl bg-cyan-50/40 border border-cyan-200/80 space-y-3.5 animate-in fade-in">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="sm:col-span-2">
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Servidor SMTP (Host) *
+                      </label>
+                      <input
+                        type="text"
+                        value={smtpHost}
+                        onChange={e => setSmtpHost(e.target.value)}
+                        placeholder="Ex: smtp.gmail.com ou smtp.resend.com"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Porta SMTP *
+                      </label>
+                      <input
+                        type="number"
+                        value={smtpPort}
+                        onChange={e => setSmtpPort(Number(e.target.value))}
+                        placeholder="587 ou 465"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Usuário / E-mail de Envio *
+                      </label>
+                      <input
+                        type="text"
+                        value={smtpUser}
+                        onChange={e => setSmtpUser(e.target.value)}
+                        placeholder="seuemail@gmail.com"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Senha do App / Chave SMTP *
+                      </label>
+                      <input
+                        type="password"
+                        value={smtpPass}
+                        onChange={e => setSmtpPass(e.target.value)}
+                        placeholder="••••••••••••••••"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Nome do Remetente
+                      </label>
+                      <input
+                        type="text"
+                        value={fromName}
+                        onChange={e => setFromName(e.target.value)}
+                        placeholder="VetTeleRad — Telerradiologia"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        E-mail do Remetente (Opcional)
+                      </label>
+                      <input
+                        type="email"
+                        value={fromEmail}
+                        onChange={e => setFromEmail(e.target.value)}
+                        placeholder="central@vettelerad.com.br"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 transition shadow-2xs"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Teste de Envio SMTP */}
+                  <div className="pt-2 border-t border-cyan-200/60 flex flex-col sm:flex-row items-center gap-2">
+                    <input
+                      type="email"
+                      value={emailTestRecipient}
+                      onChange={e => setEmailTestRecipient(e.target.value)}
+                      placeholder="Email de teste (ex: seu@email.com)"
+                      className="w-full sm:flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-cyan-500 shadow-2xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTestEmail}
+                      disabled={isTestingEmail}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-cyan-700 hover:bg-cyan-800 text-white rounded-xl text-xs font-bold transition disabled:opacity-50 cursor-pointer shrink-0"
+                    >
+                      {isTestingEmail ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Testando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Testar Disparo SMTP</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {emailTestSuccess && (
+                    <div className="p-2.5 rounded-xl bg-emerald-100 border border-emerald-300 text-emerald-800 text-xs font-medium flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span>{emailTestSuccess}</span>
+                    </div>
+                  )}
+
+                  {emailTestError && (
+                    <div className="p-2.5 rounded-xl bg-rose-100 border border-rose-300 text-rose-800 text-xs font-medium flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>{emailTestError}</span>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-600 text-[11px] leading-relaxed">
+                  💡 <strong>Modo de Simulação Seguro:</strong> Quando o envio real SMTP não estiver ativado, os e-mails de confirmação e de redefinição de senha são gerados com tokens protegidos e exibidos no terminal do servidor para agilizar os testes.
+                </div>
+              )}
+            </div>
 
           {/* Botões do Rodapé */}
           <div className="flex items-center justify-end gap-2.5 pt-4 border-t border-slate-100">

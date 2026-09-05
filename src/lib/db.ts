@@ -644,6 +644,10 @@ export function readDatabase(): DatabaseSchema {
     }
 
     for (const u of parsed.users) {
+      if (u.emailVerified === undefined) {
+        u.emailVerified = true;
+        shouldSave = true;
+      }
       if (u.role === 'CLINIC') {
         if (u.balance === undefined || u.balance === null) {
           u.balance = 200.00;
@@ -726,6 +730,11 @@ function mapUserFromDB(row: any): User {
     balance: Number(row.balance || 0),
     plan: row.plan || 'AVULSO',
     customPricing: row.custom_pricing || undefined,
+    emailVerified: row.email_verified !== undefined ? Boolean(row.email_verified) : true,
+    verificationToken: row.verification_token || undefined,
+    verificationExpires: row.verification_expires || undefined,
+    resetPasswordToken: row.reset_password_token || undefined,
+    resetPasswordExpires: row.reset_password_expires || undefined,
     createdAt: row.created_at
   };
 }
@@ -852,6 +861,46 @@ export async function findUserById(id: string): Promise<User | undefined> {
   return db.users.find(u => u.id === id);
 }
 
+export async function findUserByVerificationToken(token: string): Promise<User | undefined> {
+  if (!token || !token.trim()) return undefined;
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('verification_token', token.trim())
+      .maybeSingle();
+
+    if (!error && data) {
+      return mapUserFromDB(data);
+    }
+  } catch (err) {
+    console.error('Supabase findUserByVerificationToken error:', err);
+  }
+
+  const db = readDatabase();
+  return db.users.find(u => u.verificationToken && u.verificationToken === token.trim());
+}
+
+export async function findUserByResetToken(token: string): Promise<User | undefined> {
+  if (!token || !token.trim()) return undefined;
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('reset_password_token', token.trim())
+      .maybeSingle();
+
+    if (!error && data) {
+      return mapUserFromDB(data);
+    }
+  } catch (err) {
+    console.error('Supabase findUserByResetToken error:', err);
+  }
+
+  const db = readDatabase();
+  return db.users.find(u => u.resetPasswordToken === token.trim());
+}
+
 export async function getAllUsers(): Promise<User[]> {
   try {
     const { data, error } = await supabase
@@ -893,6 +942,11 @@ export async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Prom
       signature_image: userData.signatureImage || null,
       balance: userData.balance || 0,
       plan: userData.plan || 'AVULSO',
+      email_verified: userData.emailVerified !== undefined ? userData.emailVerified : false,
+      verification_token: userData.verificationToken || null,
+      verification_expires: userData.verificationExpires || null,
+      reset_password_token: userData.resetPasswordToken || null,
+      reset_password_expires: userData.resetPasswordExpires || null,
       created_at: now
     };
 
@@ -919,6 +973,11 @@ export async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Prom
     balance: userData.balance || 0,
     plan: userData.plan || 'AVULSO',
     clinicLogo: userData.clinicLogo || '',
+    emailVerified: userData.emailVerified !== undefined ? userData.emailVerified : false,
+    verificationToken: userData.verificationToken,
+    verificationExpires: userData.verificationExpires,
+    resetPasswordToken: userData.resetPasswordToken,
+    resetPasswordExpires: userData.resetPasswordExpires,
     createdAt: now
   };
   db.users.push(newUser);
@@ -932,6 +991,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
   try {
     const dbUpdates: any = {};
     if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.password !== undefined) dbUpdates.password = updates.password;
     if (updates.clinicName !== undefined) dbUpdates.clinic_name = updates.clinicName;
     if (updates.crmv !== undefined) dbUpdates.crmv = updates.crmv;
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
@@ -944,8 +1004,16 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
     if (updates.plan !== undefined) dbUpdates.plan = updates.plan;
     if (updates.customPricing !== undefined) dbUpdates.custom_pricing = updates.customPricing;
+    if (updates.emailVerified !== undefined) dbUpdates.email_verified = updates.emailVerified;
+    if (updates.verificationToken !== undefined) dbUpdates.verification_token = updates.verificationToken || null;
+    if (updates.verificationExpires !== undefined) dbUpdates.verification_expires = updates.verificationExpires || null;
+    if (updates.resetPasswordToken !== undefined) dbUpdates.reset_password_token = updates.resetPasswordToken || null;
+    if (updates.resetPasswordExpires !== undefined) dbUpdates.reset_password_expires = updates.resetPasswordExpires || null;
 
-    await supabase.from('users').update(dbUpdates).eq('id', id);
+    const { error: updateError } = await supabase.from('users').update(dbUpdates).eq('id', id);
+    if (updateError) {
+      console.error('Supabase updateUser error details:', updateError);
+    }
   } catch (err) {
     console.error('Supabase updateUser error:', err);
   }
@@ -958,6 +1026,18 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     ...db.users[index],
     ...updates
   };
+  if (updates.resetPasswordToken === '' || updates.resetPasswordToken === null) {
+    delete db.users[index].resetPasswordToken;
+  }
+  if (updates.resetPasswordExpires === '' || updates.resetPasswordExpires === null) {
+    delete db.users[index].resetPasswordExpires;
+  }
+  if (updates.verificationToken === '' || updates.verificationToken === null) {
+    delete db.users[index].verificationToken;
+  }
+  if (updates.verificationExpires === '' || updates.verificationExpires === null) {
+    delete db.users[index].verificationExpires;
+  }
   writeDatabase(db);
   const { password: _, ...userWithoutPassword } = db.users[index];
   return userWithoutPassword as User;
@@ -2417,27 +2497,34 @@ export function createAuditLog(data: Omit<AuditLog, 'id' | 'createdAt'>): AuditL
 export async function getSystemSetting<T = any>(key: string): Promise<T | null> {
   try {
     const { data, error } = await supabase.from('system_settings').select('value').eq('key', key).maybeSingle();
-    if (error || !data) return null;
-    return data.value as T;
+    if (!error && data) return data.value as T;
   } catch (err) {
     console.error('getSystemSetting error:', err);
-    return null;
   }
+
+  const db = readDatabase();
+  const settings = (db as any).systemSettings || {};
+  return settings[key] !== undefined ? (settings[key] as T) : null;
 }
 
 export async function setSystemSetting(key: string, value: any): Promise<boolean> {
+  let supabaseOk = false;
   try {
     const { error } = await supabase.from('system_settings').upsert({
       key,
       value,
       updated_at: new Date().toISOString()
     });
-    if (error) throw error;
-    return true;
+    if (!error) supabaseOk = true;
   } catch (err) {
     console.error('setSystemSetting error:', err);
-    return false;
   }
+
+  const db = readDatabase();
+  if (!(db as any).systemSettings) (db as any).systemSettings = {};
+  (db as any).systemSettings[key] = value;
+  writeDatabase(db);
+  return supabaseOk || true;
 }
 
 

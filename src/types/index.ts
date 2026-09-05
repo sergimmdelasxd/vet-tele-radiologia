@@ -13,6 +13,18 @@ export interface WhatsAppConfig {
   clientToken?: string;
 }
 
+export interface EmailConfig {
+  enabled: boolean;
+  requireEmailVerification: boolean; // Se true, o usuário só acessa após confirmar o e-mail
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpSecure?: boolean;
+  smtpUser?: string;
+  smtpPass?: string;
+  fromName?: string;
+  fromEmail?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -32,6 +44,11 @@ export interface User {
   balance?: number; // Saldo em conta para laudos (em R$)
   plan?: ClinicPlan; // Plano da clínica parceira
   customPricing?: ClinicCustomPricing; // Tabela de preços customizada por laudo
+  emailVerified?: boolean;
+  verificationToken?: string;
+  verificationExpires?: string;
+  resetPasswordToken?: string;
+  resetPasswordExpires?: string;
   createdAt: string;
 }
 
@@ -336,7 +353,10 @@ export type AuditAction =
   | 'SHARE_WHATSAPP'
   | 'EXPORT_CLOSING'
   | 'UPDATE_SETTINGS'
-  | 'EXPORT_LGPD_DATA';
+  | 'EXPORT_LGPD_DATA'
+  | 'PASSWORD_RESET'
+  | 'VERIFY_EMAIL'
+  | 'FORGOT_PASSWORD';
 
 export type AuditResourceType = 'EXAM' | 'REPORT' | 'USER' | 'FINANCIAL' | 'AUTH' | 'SYSTEM';
 

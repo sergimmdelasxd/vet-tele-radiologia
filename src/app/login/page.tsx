@@ -17,9 +17,32 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [showResend, setShowResend] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
+
+  const handleResend = async () => {
+    if (!email) return;
+    setIsResending(true);
+    try {
+      const res = await fetch('/api/auth/resend-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      setResendSuccess(data.message || 'Link de confirmação reenviado!');
+    } catch {
+      setResendSuccess('Falha ao reenviar e-mail.');
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleLogin = async (loginEmail?: string, loginPass?: string) => {
     setErrorMsg(null);
+    setShowResend(false);
+    setResendSuccess(null);
     setIsLoading(true);
 
     const targetEmail = loginEmail || email;
@@ -34,6 +57,9 @@ export default function LoginPage() {
 
       const data = await res.json();
       if (!res.ok) {
+        if (data.requireVerification) {
+          setShowResend(true);
+        }
         throw new Error(data.error || 'Credenciais inválidas');
       }
 
@@ -74,9 +100,30 @@ export default function LoginPage() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10 px-4">
         <div className="bg-slate-900 border border-slate-800 py-8 px-6 sm:px-8 rounded-2xl shadow-2xl space-y-6">
           {errorMsg && (
-            <div className="p-3 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0" />
-              <span>{errorMsg}</span>
+            <div className="p-3 bg-rose-950/60 border border-rose-800 text-rose-300 rounded-xl text-xs space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMsg}</span>
+              </div>
+              {showResend && (
+                <div className="pt-2 border-t border-rose-900/60 flex items-center justify-between">
+                  <span className="text-[11px] text-rose-300/80">Não recebeu o e-mail?</span>
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={isResending}
+                    className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 hover:underline cursor-pointer disabled:opacity-50"
+                  >
+                    {isResending ? 'Reenviando...' : 'Reenviar Confirmação'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {resendSuccess && (
+            <div className="p-3 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-xs">
+              {resendSuccess}
             </div>
           )}
 
@@ -107,9 +154,17 @@ export default function LoginPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 mb-1">
-                Senha de Acesso
-              </label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-xs font-semibold text-slate-300">
+                  Senha de Acesso
+                </label>
+                <Link
+                  href="/esqueci-senha"
+                  className="text-[11px] text-cyan-400 hover:text-cyan-300 transition hover:underline font-medium"
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
                   <Lock className="w-4 h-4" />

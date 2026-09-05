@@ -31,6 +31,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const { resolveEmailConfig } = await import('@/lib/email');
+    const emailConfig = await resolveEmailConfig();
+    if (emailConfig.requireEmailVerification && user.emailVerified === false) {
+      return NextResponse.json(
+        { 
+          error: 'E-mail não confirmado. Por favor, acesse o link enviado para a sua caixa de entrada para ativar a sua conta.',
+          requireVerification: true,
+          email: user.email
+        },
+        { status: 403 }
+      );
+    }
+
     const token = signToken(user);
     const { password: _, ...userWithoutPassword } = user;
 

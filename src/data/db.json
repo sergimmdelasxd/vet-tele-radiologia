@@ -4,14 +4,17 @@
       "id": "user-admin-sergiodiagvet",
       "name": "Dr. Sergio",
       "email": "sergiodiagvet@gmail.com",
-      "password": "$2b$10$8iwEy6.bw4YBIVnEmXKvoes9hwqeRPDkzEtbyfFzLKdkfJwf4FIbC",
+      "password": "$2b$10$8y4NEGet4Hn74YAXBaoX.OW/SPqn06gzFSywGTC95zohy83toEMMe",
       "role": "ADMIN",
       "crmv": "CRMV-SP",
       "uf": "SP",
       "specialty": "Médico Veterinário Telerradiologista / Central Admin",
       "plan": "ILIMITADO",
       "balance": 9999,
-      "createdAt": "2026-09-04T23:30:00Z"
+      "createdAt": "2026-09-04T23:30:00Z",
+      "emailVerified": true,
+      "resetPasswordToken": "",
+      "resetPasswordExpires": ""
     },
     {
       "name": "Dr. Felipe Santos (CRMV-SP 55.444)",
@@ -26,7 +29,8 @@
       "id": "user-1788319113363",
       "createdAt": "2026-09-02T03:18:33.363Z",
       "balance": 200,
-      "plan": "AVULSO"
+      "plan": "AVULSO",
+      "emailVerified": true
     },
     {
       "name": "Sérgio Haroldo Heim Junior",
@@ -41,7 +45,8 @@
       "id": "user-1788372782919",
       "createdAt": "2026-09-02T18:13:02.919Z",
       "balance": 4324534531631,
-      "plan": "AVULSO"
+      "plan": "AVULSO",
+      "emailVerified": true
     }
   ],
   "exams": [
@@ -1315,6 +1320,407 @@
       "findings": "SÍTIO CAUDODORSAL (CD) BILATERAL:\n- Linha pleural regular com sinal de deslizamento (Lung Sliding) ativo e preservado.\n- Predomínio de Linhas A fisiológicas (linhas hiperecogênicas equidistantes horizontais).\n- Ausência de Linhas B patológicas (> 3 por campo acústico intercostal).\n\nSÍTIO PERIHILAR (PH) BILATERAL:\n- Deslizamento pleural evidente. Ausência de padrão interstício-alveolar ou sinais de edema pulmonar cardiogênico.\n\nSÍTIO MÉDIO (MD) BILATERAL:\n- Parênquima subpleural com aeração normal. Sem áreas de consolidação ou sinal de hepatização pulmonar.\n\nSÍTIO CRANIAL (CR) BILATERAL:\n- Deslizamento pleural mantido. Ausência de broncogramas aéreos dinâmicos ou lesões nodulares periféricas.\n\nSINAIS ADICIONAIS:\n- Ausência de linhas de fragmentação pleural, pneumotórax ou efusão pleural associada.",
       "conclusion": "Protocolo VetBlue com predomínio de Perfil A pulmonar fisiológico bilateralmente, sem evidências ecográficas de síndrome interstício-alveolar (edema/contusão) ou consolidação no momento.",
       "recommendations": "Correlação direta com padrão de respiração, ausculta pulmonar e gasometria. Repetir o VetBlue caso haja instalação de taquipneia, tosse aguda ou cianose."
+    }
+  ],
+  "quickPhrases": [
+    {
+      "id": "macro-torax-normal",
+      "shortcut": "/torax-normal",
+      "title": "Tórax Normal (RX)",
+      "category": "Tórax & Coração",
+      "content": "<p>Silhueta cardíaca com dimensões e conformação anatômica habituais. Campos pulmonares com radiopacidade e trama broncovascular preservadas. Traqueia torácica retilínea e cúpula diafragmática íntegra e de contornos regulares.</p>",
+      "createdAt": "2026-09-01T08:00:00.000Z"
+    },
+    {
+      "id": "macro-cardio-vhs",
+      "shortcut": "/cardiomegalia",
+      "title": "Cardiomegalia / VHS Elevado",
+      "category": "Tórax & Coração",
+      "content": "<p>Aumento global da silhueta cardíaca com elevação dorsal da traqueia torácica e perda do espaço retroesternal. Vertebral Heart Score (VHS) aumentado para a conformação torácica da espécie.</p>",
+      "createdAt": "2026-09-01T08:05:00.000Z"
+    },
+    {
+      "id": "macro-broncopneumonia",
+      "shortcut": "/broncopneumonia",
+      "title": "Padrão Broncoalveolar / Infiltrado",
+      "category": "Tórax & Coração",
+      "content": "<p>Opacificação em campos pulmonares com predomínio cranioventral, evidenciando padrão alveolar com broncogramas aéreos associado a reforço peribrônquico difuso, sugerindo processo inflamatório/infeccioso ativo.</p>",
+      "createdAt": "2026-09-01T08:10:00.000Z"
+    },
+    {
+      "id": "macro-pneumotorax",
+      "shortcut": "/pneumotorax",
+      "title": "Pneumotórax / Efusão Pleural",
+      "category": "Tórax & Coração",
+      "content": "<p>Elevação dorsal da silhueta cardíaca em relação ao esterno com presença de ar livre no espaço pleural (pneumotórax), associado a colabamento parcial de lobos pulmonares caudais.</p>",
+      "createdAt": "2026-09-01T08:15:00.000Z"
+    },
+    {
+      "id": "macro-abd-normal",
+      "shortcut": "/abdome-normal",
+      "title": "Abdômen Normal (RX)",
+      "category": "Abdômen & Órgãos",
+      "content": "<p>Órgãos abdominais com dimensões e posicionamento habituais. Distribuição gasosa fisiológica em alças intestinais, com contraste seroso e detalhamento peritoneal preservados. Ausência de corpos estranhos radiopacos ou massas obstrutivas.</p>",
+      "createdAt": "2026-09-01T08:20:00.000Z"
+    },
+    {
+      "id": "macro-usg-normal",
+      "shortcut": "/usg-normal",
+      "title": "Ultrassom Abdominal Normal",
+      "category": "Abdômen & Órgãos",
+      "content": "<p>Fígado com dimensões preservadas, bordos afilados e ecotextura homogênea. Vesícula biliar repleta com conteúdo anecogênico e paredes finas. Baço, rins, trato gastrintestinal e vesícula urinária sem alterações ecográficas dignas de nota.</p>",
+      "createdAt": "2026-09-01T08:25:00.000Z"
+    },
+    {
+      "id": "macro-cistite",
+      "shortcut": "/cistite",
+      "title": "Sedimento Urinário / Cistite (USG)",
+      "category": "Abdômen & Órgãos",
+      "content": "<p>Vesícula urinária moderadamente repleta, apresentando discreto espessamento parietal irregular difuso com ecogenicidade de mucosa alterada e moderada quantidade de sedimento ecogênico em suspensão (sedimento urinário/cistite).</p>",
+      "createdAt": "2026-09-01T08:30:00.000Z"
+    },
+    {
+      "id": "macro-displasia",
+      "shortcut": "/displasia",
+      "title": "Displasia Coxofemoral Avançada",
+      "category": "Ortopedia & Coluna",
+      "content": "<p>Incongruência articular coxofemoral bilateral acentuada com arrasamento de cavidades acetabulares, subluxação e remodelamento das cabeças femorais associado a osteófitos marginais (doença articular degenerativa avançada / displasia).</p>",
+      "createdAt": "2026-09-01T08:35:00.000Z"
+    },
+    {
+      "id": "macro-espondilose",
+      "shortcut": "/espondilose",
+      "title": "Espondilose Deformante Ventrolateral",
+      "category": "Ortopedia & Coluna",
+      "content": "<p>Presença de osteófitos ventromarginais formando pontes ósseas contíguas entre corpos vertebrais lombares (espondilose anquilosante deformante), sem sinais de lise óssea ativa ou desalinhamento do canal vertebral.</p>",
+      "createdAt": "2026-09-01T08:40:00.000Z"
+    },
+    {
+      "id": "macro-sem-fratura",
+      "shortcut": "/sem-fratura",
+      "title": "Sem Fraturas / Estruturas Íntegras",
+      "category": "Ortopedia & Coluna",
+      "content": "<p>Estruturas ósseas e articulares avaliadas íntegras, sem evidência de soluções de continuidade (fraturas), fissuras, luxações ou reações periosteais atípicas.</p>",
+      "createdAt": "2026-09-01T08:45:00.000Z"
+    }
+  ],
+  "teachingCases": [
+    {
+      "id": "case-gdv-1",
+      "title": "Torção Gástrica (GDV) com \"Sinal do C-Invertido\" / Dobra de Popeye",
+      "species": "Canino",
+      "breed": "Dogue Alemão",
+      "age": "6 anos",
+      "category": "Abdômen & Órgãos",
+      "modality": "RADIOGRAFIA",
+      "difficulty": "Intermediário",
+      "summary": "Dilatação vólvulo-gástrica aguda confirmada em projeção laterolateral direita.",
+      "clinicalHistory": "Paciente deu entrada com distensão abdominal aguda, tentativas improdutivas de vômito, sialorreia e taquicardia após refeição copiosa e exercício.",
+      "findings": "Estômago acentuadamente distendido por conteúdo gasoso e líquido. Em decúbito lateral direito, observa-se compartimentalização gasosa com o piloro deslocado dorsocranialmente à esquerda, separado do fundo gástrico por uma banda de tecido mole (Sinal do C-Invertido ou Braço do Popeye). Baço deslocado com esplenomegalia congestiva associada.",
+      "diagnosis": "Dilatação Vólvulo-Gástrica (DVG/GDV) aguda com torção de 180° no sentido horário.",
+      "keyPoints": [
+        "A projeção Laterolateral Direita é a técnica ouro obrigatória para diferenciar dilatação simples de torção gástrica.",
+        "O compartimento pilórico preenchido por gás posicionado dorsocranialmente confirma a rotação anatômica.",
+        "Emergência cirúrgica imediata com descompressão gástrica percutânea ou por sonda orogástrica."
+      ],
+      "differentialDiagnosis": [
+        "Dilatação Gástrica Aguda sem Vólvulo",
+        "Obstrução Mecânica por Corpo Estranho Pilórico"
+      ],
+      "images": [
+        {
+          "id": "img-gdv-1",
+          "url": "https://images.unsplash.com/photo-1516382799247-87df95d790b7?auto=format&fit=crop&q=80&w=1200",
+          "label": "LL Direita: Compartimentalização e Sinal do C-Invertido"
+        }
+      ],
+      "createdBy": "Dra. Camila Nogueira (CRMV-SP 38.192)",
+      "createdAt": "2026-08-15T14:30:00.000Z",
+      "viewsCount": 142
+    },
+    {
+      "id": "case-ppdh-2",
+      "title": "Hérnia Peritoneopericárdica Diafragmática (PPDH) Congênita",
+      "species": "Felino",
+      "breed": "Persa",
+      "age": "2 anos",
+      "category": "Tórax & Coração",
+      "modality": "RADIOGRAFIA",
+      "difficulty": "Caso Raro",
+      "summary": "Presença de alças intestinais e gordura intra-abdominal no interior da cavidade pericárdica.",
+      "clinicalHistory": "Encaminhado para avaliação radiológica de rotina pré-castração eletiva. Paciente assintomático com sopro sistólico brando.",
+      "findings": "Aumento severo da silhueta cardíaca com perda dos contornos regulares da cúpula diafragmática ventral. Identificam-se estruturas radiopacas heterogêneas e gás intraluminal tubular no interior do saco pericárdico, em contiguidade com o abdômen cranial. Alinhamento esternal e cúpula diafragmática dorsal preservados.",
+      "diagnosis": "Hérnia Diafragmática Peritoneopericárdica (PPDH) congênita com encarceramento parcial de alça intestinal e omento.",
+      "keyPoints": [
+        "Anomalia do desenvolvimento embrionário da porção ventral do diafragma e saco pericárdico.",
+        "Comum em felinos, em especial Persas e Siberianos, frequentemente detectada incidentalmente.",
+        "A ultrassonografia e radiografia contrastada com bário podem auxiliar na confirmação da presença de alças gástricas ou intestinais."
+      ],
+      "differentialDiagnosis": [
+        "Cardiomegalia Severa / Cardiomiopatia Hipertrófica",
+        "Efusão Pericárdica Maciça",
+        "Hérnia Diafragmática Traumática"
+      ],
+      "images": [
+        {
+          "id": "img-ppdh-1",
+          "url": "https://images.unsplash.com/photo-1574158622682-e40e69881006?auto=format&fit=crop&q=80&w=1200",
+          "label": "Projeção Torácica Laterolateral: Gás intestinal em saco pericárdico"
+        }
+      ],
+      "createdBy": "Dr. Roberto Mendonça (CRMV-SP 41.205)",
+      "createdAt": "2026-08-20T10:15:00.000Z",
+      "viewsCount": 98
+    },
+    {
+      "id": "case-osa-3",
+      "title": "Osteossarcoma Apendicular (\"Longe do Cotovelo, Perto do Joelho\")",
+      "species": "Canino",
+      "breed": "Rottweiler",
+      "age": "8 anos",
+      "category": "Ortopedia & Coluna",
+      "modality": "RADIOGRAFIA",
+      "difficulty": "Básico / Ensino",
+      "summary": "Lesão óssea agressiva clássica com padrão misto e Triângulo de Codman.",
+      "clinicalHistory": "Claudicação de membro pélvico esquerdo progressiva há 3 semanas com aumento de volume doloroso em tíbia proximal.",
+      "findings": "Reação periosteal agressiva mista (lítica e proliferativa) em metáfise proximal da tíbia esquerda. Presença de elevação periosteal triangular patognomônica (Triângulo de Codman) associada a padrão apolillado de lise cortical e áreas de reação periosteal em \"raios de sol\" (sunburst). A articulação femorotibiopatelar encontra-se preservada, sem invasão óssea articular contraposta.",
+      "diagnosis": "Neoplasia óssea primária agressiva altamente sugestiva de Osteossarcoma Apendicular.",
+      "keyPoints": [
+        "Neoplasias ósseas primárias (como osteossarcoma) clássicamente \"não cruzam a linha articular\".",
+        "Distribuição típica em metáfises de ossos longos: longe do cotovelo (úmero proximal e rádio distal) e perto do joelho (fêmur distal e tíbia proximal).",
+        "Obrigatória radiografia de tórax em 3 projeções (LL Direita, LL Esquerda e VD) para estadiamento de metástases pulmonares."
+      ],
+      "differentialDiagnosis": [
+        "Osteomielite Fúngica ou Bacteriana",
+        "Fibrossarcoma Ósseo",
+        "Condrossarcoma"
+      ],
+      "images": [
+        {
+          "id": "img-osa-1",
+          "url": "https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&q=80&w=1200",
+          "label": "Tíbia Esquerda ML e AP: Padrão apolillado e Triângulo de Codman"
+        }
+      ],
+      "createdBy": "Dra. Beatriz Albuquerque (CRMV-RJ 22.840)",
+      "createdAt": "2026-08-25T16:00:00.000Z",
+      "viewsCount": 215
+    },
+    {
+      "id": "case-calculus-4",
+      "title": "Calculose Uretral Obstrutiva no Arco Isquiático com Bexiga de Esforço",
+      "species": "Canino",
+      "breed": "Schnauzer Miniatura",
+      "age": "5 anos",
+      "category": "Abdômen & Órgãos",
+      "modality": "RADIOGRAFIA",
+      "difficulty": "Intermediário",
+      "summary": "Múltiplos urólitos radiopacos com impactação obstrutiva caudal.",
+      "clinicalHistory": "Estrangúria, hematúria e anúria nas últimas 14 horas com distensão abdominal dolorosa.",
+      "findings": "Vesícula urinária severamente repleta ocupando quase a totalidade da cavidade abdominal média e caudal. Notam-se numerosas estruturas com radiopacidade mineral no interior do lúmen vesical, além de duas concreções radiopacas alojadas no trajeto da uretra membranosa ao nível do arco isquiático, causando obstrução mecânica completa.",
+      "diagnosis": "Urolitíase Vesical e Uretral Obstrutiva por cálculos radiopacos (suspeita de Oxalato de Cálcio ou Estruvita).",
+      "keyPoints": [
+        "Ao radiografar suspeita de obstrução urinária em machos, a radiografia NUNCA deve cortar a flexura isquiática ou a base peniana.",
+        "A projeção com membros pélvicos tracionados cranialmente ou projeção específica perineal evita a sobreposição dos fêmures sobre a uretra isquiática."
+      ],
+      "differentialDiagnosis": [
+        "Estenose Uretral",
+        "Neoplasia Vesicouretral (Carcinoma de Células Transicionais)"
+      ],
+      "images": [
+        {
+          "id": "img-calc-1",
+          "url": "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&q=80&w=1200",
+          "label": "Pelve e Uretra Caudal: Cálculos radiopacos retidos no arco isquiático"
+        }
+      ],
+      "createdBy": "Dr. Roberto Mendonça (CRMV-SP 41.205)",
+      "createdAt": "2026-09-01T11:20:00.000Z",
+      "viewsCount": 167
+    }
+  ],
+  "notifications": [
+    {
+      "id": "notif-1",
+      "type": "NEW_URGENT_EXAM",
+      "title": "⚠️ Exame de Urgência Recebido (SLA: 2h)",
+      "message": "Thor (Boxer / Canino) submetido pela Clínica VetLife 24h para Radiografia de Tórax.",
+      "targetRole": "RADIOLOGIST",
+      "link": "/dashboard",
+      "read": false,
+      "createdAt": "2026-09-05T19:06:01.996Z"
+    },
+    {
+      "id": "notif-2",
+      "type": "REPORT_READY",
+      "title": "✅ Laudo Assinado & Liberado",
+      "message": "O laudo do exame VET-2026-109 (Luna / Felino) foi concluído e assinado digitalmente.",
+      "targetRole": "CLINIC",
+      "link": "/laudo/VET-2026-109",
+      "read": false,
+      "createdAt": "2026-09-05T18:43:02.000Z"
+    },
+    {
+      "id": "notif-3",
+      "type": "PAYMENT_CREDITED",
+      "title": "💳 Recarga Pix Confirmada",
+      "message": "Crédito de R$ 300,00 aprovado instantaneamente via PIX e adicionado ao seu saldo.",
+      "targetRole": "CLINIC",
+      "link": "/dashboard",
+      "read": true,
+      "createdAt": "2026-09-05T17:18:02.000Z"
+    },
+    {
+      "id": "notif-4",
+      "type": "SLA_WARNING",
+      "title": "⏱️ Atenção ao SLA de Urgência",
+      "message": "Exame VET-2026-108 possui menos de 45 minutos para conclusão da análise.",
+      "targetRole": "RADIOLOGIST",
+      "link": "/dashboard",
+      "read": false,
+      "createdAt": "2026-09-05T18:58:02.000Z"
+    }
+  ],
+  "auditLogs": [
+    {
+      "id": "audit-1788636250314-aocu26",
+      "userId": "user-1788636163568",
+      "userName": "Dra. Gabriela Teste",
+      "userRole": "CLINIC",
+      "userEmail": "teste.confirmacao@amigofiel.com.br",
+      "action": "LOGIN",
+      "resourceType": "AUTH",
+      "resourceId": "user-1788636163568",
+      "details": "Autenticação bem-sucedida do usuário Dra. Gabriela Teste (CLINIC) via credenciais seguras.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; pt-BR) WindowsPowerShell/5.1.26100.9168",
+      "createdAt": "2026-09-05T19:24:10.314Z"
+    },
+    {
+      "id": "audit-1788636230484-8j9hwq",
+      "userId": "user-1788636163568",
+      "userName": "Dra. Gabriela Teste",
+      "userRole": "CLINIC",
+      "userEmail": "teste.confirmacao@amigofiel.com.br",
+      "action": "VERIFY_EMAIL",
+      "resourceType": "USER",
+      "resourceId": "user-1788636163568",
+      "details": "E-mail teste.confirmacao@amigofiel.com.br confirmado com sucesso via token de verificação.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; pt-BR) WindowsPowerShell/5.1.26100.9168",
+      "createdAt": "2026-09-05T19:23:50.484Z"
+    },
+    {
+      "id": "audit-1788635962225-31ghux",
+      "userId": "user-admin-sergiodiagvet",
+      "userName": "Sérgio Haroldo Heim Junior",
+      "userRole": "ADMIN",
+      "userEmail": "sergiodiagvet@gmail.com",
+      "action": "PASSWORD_RESET",
+      "resourceType": "AUTH",
+      "resourceId": "user-admin-sergiodiagvet",
+      "details": "Senha do usuário sergiodiagvet@gmail.com alterada com sucesso via token de recuperação.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; pt-BR) WindowsPowerShell/5.1.26100.9168",
+      "createdAt": "2026-09-05T19:19:22.225Z"
+    },
+    {
+      "id": "audit-1788635949656-dertzv",
+      "userId": "user-admin-sergiodiagvet",
+      "userName": "Sérgio Haroldo Heim Junior",
+      "userRole": "ADMIN",
+      "userEmail": "sergiodiagvet@gmail.com",
+      "action": "PASSWORD_RESET",
+      "resourceType": "AUTH",
+      "resourceId": "user-admin-sergiodiagvet",
+      "details": "Senha do usuário sergiodiagvet@gmail.com alterada com sucesso via token de recuperação.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; pt-BR) WindowsPowerShell/5.1.26100.9168",
+      "createdAt": "2026-09-05T19:19:09.656Z"
+    },
+    {
+      "id": "audit-1788635883962-s9o1fu",
+      "userId": "user-admin-sergiodiagvet",
+      "userName": "Sérgio Haroldo Heim Junior",
+      "userRole": "ADMIN",
+      "userEmail": "sergiodiagvet@gmail.com",
+      "action": "FORGOT_PASSWORD",
+      "resourceType": "AUTH",
+      "resourceId": "user-admin-sergiodiagvet",
+      "details": "Solicitação de redefinição de senha gerada para sergiodiagvet@gmail.com.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT; Windows NT 10.0; pt-BR) WindowsPowerShell/5.1.26100.9168",
+      "createdAt": "2026-09-05T19:18:03.962Z"
+    },
+    {
+      "id": "log-audit-1",
+      "userId": "user-admin-sergiodiagvet",
+      "userName": "Dr. Sergio",
+      "userRole": "RADIOLOGIST",
+      "userEmail": "sergiodiagvet@gmail.com",
+      "action": "CREATE_REPORT",
+      "resourceType": "REPORT",
+      "resourceId": "rep-101",
+      "details": "Emissão e assinatura digital do laudo radiográfico do paciente Thor (VET-2026-101) com Hash SHA-256 e validação de CRMV-SP 38.412.",
+      "ipAddress": "177.136.241.12",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0",
+      "createdAt": "2026-09-05T18:33:02.000Z"
+    },
+    {
+      "id": "log-audit-2",
+      "userId": "user-1788553175449",
+      "userName": "Dra. Mariana Souza (VetLife)",
+      "userRole": "CLINIC",
+      "userEmail": "sergioharoldo8@gmail.com",
+      "action": "DOWNLOAD_REPORT",
+      "resourceType": "REPORT",
+      "resourceId": "rep-101",
+      "details": "Download seguro do laudo timbrado em PDF de alta resolução com carimbo criptográfico.",
+      "ipAddress": "189.120.45.88",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/127.0.0.0",
+      "createdAt": "2026-09-05T18:48:02.000Z"
+    },
+    {
+      "id": "log-audit-3",
+      "userId": "user-1788553175449",
+      "userName": "Dra. Mariana Souza (VetLife)",
+      "userRole": "CLINIC",
+      "userEmail": "sergioharoldo8@gmail.com",
+      "action": "CREATE_EXAM",
+      "resourceType": "EXAM",
+      "resourceId": "VET-2026-102",
+      "details": "Cadastro e upload de exame radiográfico ortopédico de emergência (Bob / Bulldog Francês) com triagem de fratura e consentimento do tutor registrado.",
+      "ipAddress": "189.120.45.88",
+      "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+      "createdAt": "2026-09-05T17:18:02.000Z"
+    },
+    {
+      "id": "log-audit-4",
+      "userId": "user-admin-sergiodiagvet",
+      "userName": "Dr. Ricardo Valença",
+      "userRole": "ADMIN",
+      "userEmail": "sergiodiagvet@gmail.com",
+      "action": "LOGIN",
+      "resourceType": "AUTH",
+      "resourceId": "auth-session",
+      "details": "Autenticação bem-sucedida no Painel Central Administrativo com token seguro JWT e criptografia TLS 1.3.",
+      "ipAddress": "201.86.110.5",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/128.0.0.0",
+      "createdAt": "2026-09-05T15:18:02.000Z"
+    },
+    {
+      "id": "log-audit-5",
+      "userId": "user-1788553175449",
+      "userName": "Dr. Lucas Silveira (PetCare)",
+      "userRole": "CLINIC",
+      "userEmail": "sergioharoldo8@gmail.com",
+      "action": "VIEW_EXAM",
+      "resourceType": "EXAM",
+      "resourceId": "VET-2026-103",
+      "details": "Visualização de dados clínicos e imagens ultrassonográficas do paciente Mel (Nefropatia Crônica) em conformidade com sigilo profissional.",
+      "ipAddress": "179.184.22.90",
+      "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X)",
+      "createdAt": "2026-09-05T14:18:02.000Z"
     }
   ]
 }

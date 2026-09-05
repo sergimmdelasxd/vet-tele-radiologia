@@ -3,6 +3,9 @@ import bcrypt from 'bcryptjs';
 import { findUserByEmail, createUser } from '@/lib/db';
 import { signToken, COOKIE_NAME } from '@/lib/auth';
 
+import crypto from 'crypto';
+import { resolveEmailConfig, sendVerificationEmail } from '@/lib/email';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -30,6 +33,11 @@ export async function POST(request: Request) {
       );
     }
 
+    const emailConfig = await resolveEmailConfig();
+    const requireVerification = emailConfig.requireEmailVerification ?? true;
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+
     const hashedPassword = bcrypt.hashSync(password, 10);
 
     const newUser = await createUser({
@@ -41,13 +49,41 @@ export async function POST(request: Request) {
       crmv: crmv || '',
       phone: phone || '',
       cnpj: cnpj || '',
-      uf: uf || 'SP'
+      uf: uf || 'SP',
+      emailVerified: !requireVerification,
+      verificationToken: requireVerification ? verificationToken : undefined,
+      verificationExpires: requireVerification ? verificationExpires : undefined
     });
+
+    // Detecta URL base da aplicação para o link de confirmação
+    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    // Dispara e-mail de confirmação
+    try {
+      await sendVerificationEmail(
+        { name: newUser.name, email: newUser.email, clinicName: newUser.clinicName },
+        verificationToken,
+        origin
+      );
+    } catch (mailErr) {
+      console.error('Falha ao enviar e-mail de confirmação:', mailErr);
+    }
+
+    // Se exige verificação, não loga direto e orienta o usuário a confirmar
+    if (requireVerification) {
+      return NextResponse.json({
+        success: true,
+        requireVerification: true,
+        email: newUser.email,
+        message: 'Cadastro realizado com sucesso! Enviamos um e-mail com o link para ativação da sua conta.'
+      });
+    }
 
     const token = signToken(newUser);
 
     const response = NextResponse.json({
       success: true,
+      requireVerification: false,
       user: newUser,
       token
     });
