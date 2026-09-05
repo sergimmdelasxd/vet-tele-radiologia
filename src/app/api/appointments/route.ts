@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       date,
       time,
       durationMinutes: durationMinutes || 30,
-      clinicId: clinicId || (user.role === 'CLINIC' ? user.userId : 'user-clinic-vetlife'),
+      clinicId: clinicId || user.userId,
       clinicName: clinicName || (user.role === 'CLINIC' ? (user.clinicName || user.name) : 'Clínica Parceira'),
       requestingVet: requestingVet || user.name,
       specialistId: specialistId || (user.role === 'RADIOLOGIST' ? user.userId : undefined),

@@ -8,11 +8,7 @@ import {
   Lock, 
   Mail, 
   ArrowRight, 
-  AlertCircle, 
-  Building2, 
-  Stethoscope, 
-  ShieldCheck, 
-  Sparkles 
+  AlertCircle 
 } from 'lucide-react';
 
 export default function LoginPage() {
@@ -49,12 +45,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleQuick = (quickEmail: string, quickPass: string) => {
-    setEmail(quickEmail);
-    setPassword(quickPass);
-    handleLogin(quickEmail, quickPass);
   };
 
   return (
@@ -153,67 +143,6 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Quick Demo Credentials */}
-          <div className="pt-4 border-t border-slate-800">
-            <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Acessar com Credenciais Demo:</span>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => handleQuick('clinica@vetlife.com.br', '123456')}
-                className="w-full p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 rounded-xl flex items-center justify-between text-xs transition"
-              >
-                <div className="flex items-center gap-2 text-left">
-                  <Building2 className="w-4 h-4 text-emerald-400" />
-                  <div>
-                    <div className="font-semibold text-slate-200">Clínica VetLife (Terceiro)</div>
-                    <div className="text-[10px] text-slate-400">clinica@vetlife.com.br</div>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-emerald-950 text-emerald-300 font-bold px-2 py-0.5 rounded">
-                  Entrar
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuick('radiologista@vetrad.com.br', '123456')}
-                className="w-full p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-cyan-500/50 rounded-xl flex items-center justify-between text-xs transition"
-              >
-                <div className="flex items-center gap-2 text-left">
-                  <Stethoscope className="w-4 h-4 text-cyan-400" />
-                  <div>
-                    <div className="font-semibold text-slate-200">Dra. Camila (Radiologista)</div>
-                    <div className="text-[10px] text-slate-400">radiologista@vetrad.com.br</div>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-cyan-950 text-cyan-300 font-bold px-2 py-0.5 rounded">
-                  Entrar
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuick('admin@vetrad.com.br', 'admin123')}
-                className="w-full p-2 bg-slate-950 hover:bg-slate-800 border border-slate-800 hover:border-purple-500/50 rounded-xl flex items-center justify-between text-xs transition"
-              >
-                <div className="flex items-center gap-2 text-left">
-                  <ShieldCheck className="w-4 h-4 text-purple-400" />
-                  <div>
-                    <div className="font-semibold text-slate-200">Dr. Ricardo (Central Admin)</div>
-                    <div className="text-[10px] text-slate-400">admin@vetrad.com.br</div>
-                  </div>
-                </div>
-                <span className="text-[10px] bg-purple-950 text-purple-300 font-bold px-2 py-0.5 rounded">
-                  Entrar
-                </span>
-              </button>
-            </div>
-          </div>
 
           {/* Cadastro de Terceiros */}
           <div className="text-center pt-2 text-xs text-slate-400">

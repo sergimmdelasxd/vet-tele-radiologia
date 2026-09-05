@@ -55,21 +55,6 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
     }
   };
 
-  const switchUser = async (email: string) => {
-    try {
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password: email === 'admin@vetrad.com.br' ? 'admin123' : '123456' })
-      });
-      if (res.ok) {
-        window.location.reload();
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   const isLight = pathname === '/' || pathname === '/dashboard' || pathname === '/templates' || pathname === '/agenda' || pathname === '/financeiro' || pathname === '/frases-rapidas' || pathname === '/casoteca' || pathname === '/auditoria' || pathname === '/termos' || pathname === '/privacidade';
 
   return (
@@ -432,50 +417,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
                         </Link>
                       </div>
 
-                      {/* SEÇÃO 3: TROCAR PERFIL DE TESTE (DEMO) */}
-                      <div className="pt-1 border-t border-slate-800/80 space-y-1">
-                        <div className="px-2.5 pt-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
-                          <span>Alternar Perfil Demo</span>
-                          <Sparkles className="w-3 h-3 text-amber-400" />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-1">
-                          <button
-                            type="button"
-                            onClick={() => switchUser('clinica@vetlife.com.br')}
-                            className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                              user.email === 'clinica@vetlife.com.br' ? 'bg-emerald-500/10 text-emerald-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                            }`}
-                          >
-                            <span>Clínica VetLife</span>
-                            <span className="text-[10px] bg-emerald-950 text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-500/20">Clínica</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => switchUser('radiologista@vetrad.com.br')}
-                            className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                              user.email === 'radiologista@vetrad.com.br' ? 'bg-cyan-500/10 text-cyan-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                            }`}
-                          >
-                            <span>Dra. Camila</span>
-                            <span className="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-500/20">Radiologista</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => switchUser('admin@vetrad.com.br')}
-                            className={`w-full text-left px-2.5 py-1.5 rounded-lg text-xs flex items-center justify-between transition cursor-pointer ${
-                              user.email === 'admin@vetrad.com.br' ? 'bg-purple-500/10 text-purple-300 font-bold' : 'text-slate-300 hover:bg-slate-800'
-                            }`}
-                          >
-                            <span>Dr. Ricardo</span>
-                            <span className="text-[10px] bg-purple-950 text-purple-300 px-1.5 py-0.5 rounded border border-purple-500/20">Admin</span>
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* SEÇÃO 4: SAIR */}
+                      {/* SEÇÃO: SAIR */}
                       <div className="pt-1 border-t border-slate-800/80">
                         <button
                           type="button"

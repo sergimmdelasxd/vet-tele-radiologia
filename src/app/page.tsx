@@ -62,22 +62,6 @@ export default function HomePage() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  const handleQuickLogin = async (email: string, roleName: string) => {
-    try {
-      const password = email === 'admin@vetrad.com.br' ? 'admin123' : '123456';
-      const res = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
-      });
-      if (res.ok) {
-        router.push('/dashboard');
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
   // Cálculos de Economia
   const calculationResults = useMemo(() => {
     const teleCost = (calcXrays * 45) + (calcUltrasounds * 60);
@@ -203,41 +187,6 @@ export default function HomePage() {
                 <Building2 className="w-4 h-4 text-teal-600" />
                 <span>{currentUser ? "Ir para o Painel de Exames" : "Acessar Portal do Parceiro"}</span>
               </Link>
-            </div>
-
-            {/* Quick Demo Access (1-Click Test Drive) */}
-            <div className="pt-8 border-t border-slate-200/80 max-w-xl mx-auto">
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3">
-                ⚡ Teste Imediato (Acesso Demo em 1 clique)
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                <button
-                  onClick={() => handleQuickLogin('clinica@vetlife.com.br', 'Clínica Parceira')}
-                  className="p-3 bg-white hover:bg-emerald-50/50 border border-emerald-200/80 rounded-2xl text-left transition group flex flex-col shadow-xs cursor-pointer"
-                >
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded-md w-fit uppercase">Clínica</span>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 mt-1">Clínica VetLife</span>
-                  <span className="text-[10px] text-slate-500">Solicitar exames &amp; laudos</span>
-                </button>
-
-                <button
-                  onClick={() => handleQuickLogin('radiologista@vetrad.com.br', 'Radiologista')}
-                  className="p-3 bg-white hover:bg-sky-50/50 border border-sky-200/80 rounded-2xl text-left transition group flex flex-col shadow-xs cursor-pointer"
-                >
-                  <span className="text-[10px] font-bold text-sky-700 bg-sky-100/70 px-2 py-0.5 rounded-md w-fit uppercase">Especialista</span>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-sky-700 mt-1">Dra. Camila (CRMV)</span>
-                  <span className="text-[10px] text-slate-500">Worklist &amp; emitir laudos</span>
-                </button>
-
-                <button
-                  onClick={() => handleQuickLogin('admin@vetrad.com.br', 'Admin')}
-                  className="p-3 bg-white hover:bg-purple-50/50 border border-purple-200/80 rounded-2xl text-left transition group flex flex-col shadow-xs cursor-pointer"
-                >
-                  <span className="text-[10px] font-bold text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md w-fit uppercase">Central</span>
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-purple-700 mt-1">Dr. Ricardo (Admin)</span>
-                  <span className="text-[10px] text-slate-500">Visão global &amp; métricas</span>
-                </button>
-              </div>
             </div>
           </div>
         </div>

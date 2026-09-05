@@ -80,7 +80,7 @@ function seedTransactions(): FinancialTransaction[] {
   return [
     {
       id: 'tx-seed-1',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       type: 'CREDIT_PURCHASE',
       amount: 500.00,
@@ -91,7 +91,7 @@ function seedTransactions(): FinancialTransaction[] {
     },
     {
       id: 'tx-seed-2',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       examId: 'VET-2026-101',
       type: 'EXAM_DEBIT',
@@ -103,7 +103,7 @@ function seedTransactions(): FinancialTransaction[] {
     },
     {
       id: 'tx-seed-3',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       type: 'EXAM_DEBIT',
       amount: 75.00,
@@ -114,7 +114,7 @@ function seedTransactions(): FinancialTransaction[] {
     },
     {
       id: 'tx-seed-4',
-      clinicId: 'user-clinic-petcare',
+      clinicId: 'user-1788553175449',
       clinicName: 'Hospital Veterinário PetCare',
       type: 'CREDIT_PURCHASE',
       amount: 300.00,
@@ -125,7 +125,7 @@ function seedTransactions(): FinancialTransaction[] {
     },
     {
       id: 'tx-seed-5',
-      clinicId: 'user-clinic-petcare',
+      clinicId: 'user-1788553175449',
       clinicName: 'Hospital Veterinário PetCare',
       type: 'EXAM_DEBIT',
       amount: 100.00,
@@ -144,11 +144,11 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-02',
       time: '08:30',
       durationMinutes: 30,
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza',
-      specialistId: 'user-rad-camila',
-      specialistName: 'Dra. Camila Siqueira',
+      specialistId: 'user-admin-sergiodiagvet',
+      specialistName: 'Dr. Sergio',
       patientName: 'Rex',
       species: 'Canino',
       breed: 'Pastor Alemão',
@@ -169,11 +169,11 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-02',
       time: '10:00',
       durationMinutes: 40,
-      clinicId: 'user-clinic-petcare',
+      clinicId: 'user-1788553175449',
       clinicName: 'Hospital Veterinário PetCare',
       requestingVet: 'Dr. Lucas Silveira',
-      specialistId: 'user-rad-camila',
-      specialistName: 'Dra. Camila Siqueira',
+      specialistId: 'user-admin-sergiodiagvet',
+      specialistName: 'Dr. Sergio',
       patientName: 'Nina',
       species: 'Felino',
       breed: 'Siamês',
@@ -194,10 +194,10 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-02',
       time: '11:30',
       durationMinutes: 30,
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza',
-      specialistId: 'user-admin-ricardo',
+      specialistId: 'user-admin-sergiodiagvet',
       specialistName: 'Dr. Ricardo Valença',
       patientName: 'Bob',
       species: 'Canino',
@@ -219,11 +219,11 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-02',
       time: '14:00',
       durationMinutes: 30,
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza',
-      specialistId: 'user-rad-camila',
-      specialistName: 'Dra. Camila Siqueira',
+      specialistId: 'user-admin-sergiodiagvet',
+      specialistName: 'Dr. Sergio',
       patientName: 'Luke',
       species: 'Canino',
       breed: 'Golden Retriever',
@@ -244,11 +244,11 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-02',
       time: '16:00',
       durationMinutes: 40,
-      clinicId: 'user-clinic-petcare',
+      clinicId: 'user-1788553175449',
       clinicName: 'Hospital Veterinário PetCare',
       requestingVet: 'Dr. Lucas Silveira',
-      specialistId: 'user-rad-camila',
-      specialistName: 'Dra. Camila Siqueira',
+      specialistId: 'user-admin-sergiodiagvet',
+      specialistName: 'Dr. Sergio',
       patientName: 'Mel',
       species: 'Felino',
       breed: 'Persa',
@@ -269,11 +269,11 @@ function seedAppointments(): Appointment[] {
       date: '2026-09-03',
       time: '09:00',
       durationMinutes: 30,
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza',
-      specialistId: 'user-rad-camila',
-      specialistName: 'Dra. Camila Siqueira',
+      specialistId: 'user-admin-sergiodiagvet',
+      specialistName: 'Dr. Sergio',
       patientName: 'Toby',
       species: 'Canino',
       breed: 'Beagle',
@@ -293,68 +293,39 @@ function seedAppointments(): Appointment[] {
 }
 
 function seedDatabase(): DatabaseSchema {
-  const defaultPasswordHash = bcrypt.hashSync('123456', 10);
-  const adminPasswordHash = bcrypt.hashSync('admin123', 10);
+  const adminPasswordHash = bcrypt.hashSync('Sese2604!', 10);
+  const clinicPasswordHash = bcrypt.hashSync('123456', 10);
 
   const users: User[] = [
     {
-      id: 'user-clinic-vetlife',
-      name: 'Dra. Mariana Souza (VetLife)',
-      email: 'clinica@vetlife.com.br',
-      password: defaultPasswordHash,
-      role: 'CLINIC',
-      clinicName: 'Clínica Veterinária VetLife 24h',
-      crmv: 'CRMV-SP 33.120',
-      cnpj: '12.345.678/0001-90',
-      phone: '(11) 98765-4321',
-      uf: 'SP',
-      balance: 380.00,
-      plan: 'PRO',
-      createdAt: '2026-08-01T10:00:00Z'
-    },
-    {
-      id: 'user-clinic-petcare',
-      name: 'Dr. Lucas Silveira (PetCare)',
-      email: 'contato@petcare24h.com.br',
-      password: defaultPasswordHash,
-      role: 'CLINIC',
-      clinicName: 'Hospital Veterinário PetCare',
-      crmv: 'CRMV-RJ 28.940',
-      cnpj: '98.765.432/0001-11',
-      phone: '(21) 99888-7766',
-      uf: 'RJ',
-      balance: 200.00,
-      plan: 'HOSPITAL',
-      createdAt: '2026-08-10T14:30:00Z'
-    },
-    {
-      id: 'user-rad-camila',
-      name: 'Dra. Camila Siqueira',
-      email: 'radiologista@vetrad.com.br',
-      password: defaultPasswordHash,
-      role: 'RADIOLOGIST',
-      crmv: 'CRMV-SP 38.412',
-      phone: '(11) 97111-2233',
-      uf: 'SP',
-      createdAt: '2026-07-15T08:00:00Z'
-    },
-    {
-      id: 'user-admin-ricardo',
-      name: 'Dr. Ricardo Valença',
-      email: 'admin@vetrad.com.br',
+      id: 'user-admin-sergiodiagvet',
+      name: 'Dr. Sergio',
+      email: 'sergiodiagvet@gmail.com',
       password: adminPasswordHash,
       role: 'ADMIN',
-      crmv: 'CRMV-SP 21.050',
       phone: '(11) 99999-0000',
       uf: 'SP',
       createdAt: '2026-06-01T09:00:00Z'
+    },
+    {
+      id: 'user-1788553175449',
+      name: 'Sergio',
+      email: 'sergioharoldo8@gmail.com',
+      password: clinicPasswordHash,
+      role: 'CLINIC',
+      clinicName: 'vetesrgio',
+      phone: '(11) 99999-9999',
+      uf: 'SP',
+      balance: 500.00,
+      plan: 'PRO',
+      createdAt: '2026-08-01T10:00:00Z'
     }
   ];
 
   const exams: Exam[] = [
     {
       id: 'VET-2026-101',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
       clinicPhone: '(11) 98765-4321',
@@ -392,8 +363,8 @@ function seedDatabase(): DatabaseSchema {
       report: {
         id: 'rep-101',
         examId: 'VET-2026-101',
-        radiologistId: 'user-rad-camila',
-        radiologistName: 'Dra. Camila Siqueira',
+        radiologistId: 'user-admin-sergiodiagvet',
+        radiologistName: 'Dr. Sergio',
         radiologistCrmv: 'CRMV-SP 38.412',
         technique: 'Estudo radiográfico do tórax obtido em projeções ortogonais LL-D e VD, com boa técnica e contraste satisfatório.',
         findings: 'Campos pulmonares apresentando radiopacidade preservada, sem evidências de infiltrados alveolares, brônquicos ou nodulares ativos.\nSilhueta cardíaca com dimensões e contornos anatômicos normais para o biótipo da raça. Traqueia torácica com trajeto e calibre normais.\nEspaço pleural livre de efusões ou pneumotórax. Cúpula diafragmática com integridade mantida.\nEstruturas ósseas da caixa torácica e vértebras sem alterações patológicas detectáveis.',
@@ -410,7 +381,7 @@ function seedDatabase(): DatabaseSchema {
     },
     {
       id: 'VET-2026-102',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
       clinicPhone: '(11) 98765-4321',
@@ -444,7 +415,7 @@ function seedDatabase(): DatabaseSchema {
     },
     {
       id: 'VET-2026-103',
-      clinicId: 'user-clinic-petcare',
+      clinicId: 'user-1788553175449',
       clinicName: 'Hospital Veterinário PetCare',
       requestingVet: 'Dr. Lucas Silveira - CRMV-RJ 28.940',
       clinicPhone: '(21) 99888-7766',
@@ -478,8 +449,8 @@ function seedDatabase(): DatabaseSchema {
       report: {
         id: 'rep-103',
         examId: 'VET-2026-103',
-        radiologistId: 'user-rad-camila',
-        radiologistName: 'Dra. Camila Siqueira',
+        radiologistId: 'user-admin-sergiodiagvet',
+        radiologistName: 'Dr. Sergio',
         radiologistCrmv: 'CRMV-SP 38.412',
         technique: 'Ultrassonografia abdominal completa realizada com transdutor microconvexo de alta frequência (7.5 a 10.0 MHz).',
         findings: 'FÍGADO: Dimensões anatômicas normais, bordos afilados, ecotextura homogênea fina e ecogenicidade fisiológica.\nRINS: Dimensões limítrofes inferiores (D: 3.2 cm, E: 3.1 cm), contornos discretamente irregulares. Córtex renal com ecogenicidade aumentada bilateralmente com atenuação da definição córtico-medular e sinal da linha medular discreto. Pelve renal preservada.\nBAÇO E BEXIGA: Normoecogênicos, sem evidências de lesões focais ou litíase.\nLÍQUIDO LIVRE: Ausência de efusões livres na cavidade peritoneal.',
@@ -494,7 +465,7 @@ function seedDatabase(): DatabaseSchema {
     },
     {
       id: 'VET-2026-104',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
       clinicPhone: '(11) 98765-4321',
@@ -531,7 +502,7 @@ function seedDatabase(): DatabaseSchema {
     },
     {
       id: 'VET-2026-105',
-      clinicId: 'user-clinic-vetlife',
+      clinicId: 'user-1788553175449',
       clinicName: 'Clínica Veterinária VetLife 24h',
       requestingVet: 'Dra. Mariana Souza - CRMV-SP 33.120',
       clinicPhone: '(11) 98765-4321',
@@ -675,21 +646,12 @@ export function readDatabase(): DatabaseSchema {
     for (const u of parsed.users) {
       if (u.role === 'CLINIC') {
         if (u.balance === undefined || u.balance === null) {
-          u.balance = u.id === 'user-clinic-vetlife' ? 380.00 : 200.00;
+          u.balance = 200.00;
           shouldSave = true;
         }
         if (!u.plan) {
-          u.plan = u.id === 'user-clinic-petcare' ? 'HOSPITAL' : (u.id === 'user-clinic-vetlife' ? 'PRO' : 'AVULSO');
+          u.plan = 'AVULSO';
           shouldSave = true;
-        }
-        if (!u.clinicLogo) {
-          if (u.id === 'user-clinic-vetlife') {
-            u.clinicLogo = '/logos/vetlife-logo.svg';
-            shouldSave = true;
-          } else if (u.id === 'user-clinic-petcare') {
-            u.clinicLogo = '/logos/petcare-logo.svg';
-            shouldSave = true;
-          }
         }
       }
     }
@@ -2322,10 +2284,10 @@ export function deleteNotification(id: string): boolean {
 export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   {
     id: 'log-audit-1',
-    userId: 'user-rad-camila',
-    userName: 'Dra. Camila Siqueira',
+    userId: 'user-admin-sergiodiagvet',
+    userName: 'Dr. Sergio',
     userRole: 'RADIOLOGIST',
-    userEmail: 'radiologista@vetrad.com.br',
+    userEmail: 'sergiodiagvet@gmail.com',
     action: 'CREATE_REPORT',
     resourceType: 'REPORT',
     resourceId: 'rep-101',
@@ -2336,10 +2298,10 @@ export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-audit-2',
-    userId: 'user-clinic-vetlife',
+    userId: 'user-1788553175449',
     userName: 'Dra. Mariana Souza (VetLife)',
     userRole: 'CLINIC',
-    userEmail: 'clinica@vetlife.com.br',
+    userEmail: 'sergioharoldo8@gmail.com',
     action: 'DOWNLOAD_REPORT',
     resourceType: 'REPORT',
     resourceId: 'rep-101',
@@ -2350,10 +2312,10 @@ export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-audit-3',
-    userId: 'user-clinic-vetlife',
+    userId: 'user-1788553175449',
     userName: 'Dra. Mariana Souza (VetLife)',
     userRole: 'CLINIC',
-    userEmail: 'clinica@vetlife.com.br',
+    userEmail: 'sergioharoldo8@gmail.com',
     action: 'CREATE_EXAM',
     resourceType: 'EXAM',
     resourceId: 'VET-2026-102',
@@ -2364,10 +2326,10 @@ export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-audit-4',
-    userId: 'user-admin-ricardo',
+    userId: 'user-admin-sergiodiagvet',
     userName: 'Dr. Ricardo Valença',
     userRole: 'ADMIN',
-    userEmail: 'admin@vetrad.com.br',
+    userEmail: 'sergiodiagvet@gmail.com',
     action: 'LOGIN',
     resourceType: 'AUTH',
     resourceId: 'auth-session',
@@ -2378,10 +2340,10 @@ export const DEFAULT_AUDIT_LOGS: AuditLog[] = [
   },
   {
     id: 'log-audit-5',
-    userId: 'user-clinic-petcare',
+    userId: 'user-1788553175449',
     userName: 'Dr. Lucas Silveira (PetCare)',
     userRole: 'CLINIC',
-    userEmail: 'contato@petcare24h.com.br',
+    userEmail: 'sergioharoldo8@gmail.com',
     action: 'VIEW_EXAM',
     resourceType: 'EXAM',
     resourceId: 'VET-2026-103',
