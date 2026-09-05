@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { findUserByEmail, updateUser } from '@/lib/db';
-import { sendPasswordResetEmail } from '@/lib/email';
+import { sendPasswordResetEmail, getBaseUrl } from '@/lib/email';
 import { recordAuditTrail } from '@/lib/audit';
 
 export async function POST(request: Request) {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
         resetPasswordExpires: resetExpires
       });
 
-      const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+      const origin = getBaseUrl(request);
 
       try {
         await sendPasswordResetEmail(

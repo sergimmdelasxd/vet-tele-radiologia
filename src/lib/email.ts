@@ -38,6 +38,38 @@ export function addSimulatedEmail(email: Omit<SimulatedEmail, 'id' | 'sentAt'>) 
   return entry;
 }
 
+export function getBaseUrl(request?: Request): string {
+  if (request) {
+    const origin = request.headers.get('origin');
+    if (origin && !origin.includes('localhost')) {
+      return origin;
+    }
+
+    const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+    const proto = request.headers.get('x-forwarded-proto') || (host?.includes('localhost') ? 'http' : 'https');
+    if (host && !host.includes('localhost')) {
+      return `${proto}://${host}`;
+    }
+
+    if (origin) return origin;
+    if (host) return `${proto}://${host}`;
+  }
+
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL.replace(/\/$/, '');
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+
+  return 'http://localhost:3000';
+}
+
 export async function resolveEmailConfig(): Promise<EmailConfig> {
   const globalConfig = await getSystemSetting<EmailConfig>('email_config');
 

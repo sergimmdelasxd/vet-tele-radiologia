@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { findUserByEmail, updateUser } from '@/lib/db';
-import { sendVerificationEmail } from '@/lib/email';
+import { sendVerificationEmail, getBaseUrl } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       verificationExpires
     });
 
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const origin = getBaseUrl(request);
     await sendVerificationEmail(
       { name: user.name, email: user.email, clinicName: user.clinicName },
       verificationToken,

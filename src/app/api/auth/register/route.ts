@@ -2,9 +2,8 @@ import { NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { findUserByEmail, createUser } from '@/lib/db';
 import { signToken, COOKIE_NAME } from '@/lib/auth';
-
 import crypto from 'crypto';
-import { resolveEmailConfig, sendVerificationEmail } from '@/lib/email';
+import { resolveEmailConfig, sendVerificationEmail, getBaseUrl } from '@/lib/email';
 
 export async function POST(request: Request) {
   try {
@@ -56,7 +55,7 @@ export async function POST(request: Request) {
     });
 
     // Detecta URL base da aplicação para o link de confirmação
-    const origin = request.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const origin = getBaseUrl(request);
 
     // Dispara e-mail de confirmação
     try {

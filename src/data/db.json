@@ -1583,6 +1583,20 @@
   ],
   "auditLogs": [
     {
+      "id": "audit-1788638148479-r1ff06",
+      "userId": "user-1788636519515",
+      "userName": "teste",
+      "userRole": "CLINIC",
+      "userEmail": "sergioheimjr@gmail.com",
+      "action": "FORGOT_PASSWORD",
+      "resourceType": "AUTH",
+      "resourceId": "user-1788636519515",
+      "details": "Solicitação de redefinição de senha gerada para sergioheimjr@gmail.com.",
+      "ipAddress": "::1",
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36 Edg/152.0.0.0",
+      "createdAt": "2026-09-05T19:55:48.479Z"
+    },
+    {
       "id": "audit-1788636250314-aocu26",
       "userId": "user-1788636163568",
       "userName": "Dra. Gabriela Teste",
