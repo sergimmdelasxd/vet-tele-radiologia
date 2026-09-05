@@ -33,8 +33,12 @@ export async function POST(request: Request) {
         // Verifica credenciais SMTP
         await transporter.verify();
 
+        const senderEmail = (config.smtpHost?.includes('gmail') || !config.fromEmail)
+          ? config.smtpUser
+          : config.fromEmail;
+
         const info = await transporter.sendMail({
-          from: `"${config.fromName || 'VetTeleRad'}" <${config.fromEmail || config.smtpUser}>`,
+          from: `"${config.fromName || 'VetTeleRad'}" <${senderEmail}>`,
           to,
           subject: 'Teste de Envio de E-mail — VetTeleRad Telerradiologia',
           html: `

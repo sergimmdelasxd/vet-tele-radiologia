@@ -136,8 +136,13 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
         }
       });
 
+      // No Gmail, o remetente precisa ser o próprio e-mail autenticado (smtpUser) para evitar que caia no Spam ou seja rejeitado por DMARC/SPF
+      const senderEmail = (config.smtpHost.includes('gmail') || !config.fromEmail)
+        ? config.smtpUser
+        : config.fromEmail;
+
       const info = await transporter.sendMail({
-        from: `"${config.fromName || 'VetTeleRad'}" <${config.fromEmail || config.smtpUser}>`,
+        from: `"${config.fromName || 'VetTeleRad'}" <${senderEmail}>`,
         to: options.to,
         subject: options.subject,
         html: options.html,
