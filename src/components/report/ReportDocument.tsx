@@ -70,6 +70,24 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
   const [logoSuccessToast, setLogoSuccessToast] = useState(false);
   const logoInputRef = React.useRef<HTMLInputElement>(null);
 
+  // Assinatura e Carimbo do Veterinário Responsável
+  const [effectiveSignatureUrl, setEffectiveSignatureUrl] = useState(report?.radiologistSignatureUrl || '');
+
+  useEffect(() => {
+    if (report?.radiologistSignatureUrl) {
+      setEffectiveSignatureUrl(report.radiologistSignatureUrl);
+    } else {
+      fetch('/api/auth/me')
+        .then(r => r.json())
+        .then(d => {
+          if (d.user?.signatureImage) {
+            setEffectiveSignatureUrl(d.user.signatureImage);
+          }
+        })
+        .catch(() => {});
+    }
+  }, [report?.radiologistSignatureUrl]);
+
   useEffect(() => {
     if (exam.clinicLogo) {
       setCurrentClinicLogo(exam.clinicLogo);
@@ -778,21 +796,72 @@ ${getPublicUrl()}`;
             </div>
           )}
 
-          {/* Recomendações (Exibidas se preenchidas e não repetidas no texto principal) */}
+          {/* Recomendações e Considerações Finais */}
           {report.recommendations && !report.findings.includes(report.recommendations) && (
-            <div className="bg-slate-50/60 border border-slate-200/80 p-4 rounded-xl">
-              <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-2">
-                3. Recomendações e Considerações Finais
+            <div className="bg-slate-50/70 border border-slate-200/90 p-4 rounded-2xl page-break-avoid">
+              <h2 className="text-xs font-bold text-teal-800 uppercase tracking-wider border-b border-slate-200/80 pb-1.5 mb-2 flex items-center gap-1.5">
+                <Activity className="w-3.5 h-3.5 text-teal-600" />
+                <span>3. Recomendações e Considerações Finais</span>
               </h2>
-              <p className="text-slate-700">{report.recommendations}</p>
+              <p className="text-slate-800 leading-relaxed whitespace-pre-line text-xs sm:text-sm font-normal">
+                {report.recommendations}
+              </p>
             </div>
           )}
 
-          {/* Imagens Anexas */}
+          {/* Assinatura, Carimbo e Autenticação Oficial do Veterinário Responsável (SEMPRE APÓS AS RECOMENDAÇÕES) */}
+          <div className="mt-6 pt-5 print:mt-4 print:pt-3 border-t-2 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6 page-break-avoid">
+            {/* Autenticação Digital e QR Code */}
+            <div className="flex items-center gap-3">
+              <div className="w-14 h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-700 shadow-2xs">
+                <QrCode className="w-9 h-9" />
+              </div>
+              <div className="text-[10px] text-slate-500 space-y-0.5">
+                <div className="font-bold text-slate-800 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
+                  <span>Autenticidade Verificada</span>
+                </div>
+                <div>Emitido em: {new Date(report.reportedAt).toLocaleString('pt-BR')}</div>
+                <div className="font-mono text-[9px] text-slate-400 max-w-[220px] truncate">
+                  Hash: {report.digitalSignatureHash}
+                </div>
+              </div>
+            </div>
+
+            {/* Carimbo / Assinatura do Médico Veterinário Responsável */}
+            <div className="text-center sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-6">
+              {effectiveSignatureUrl ? (
+                <div className="mb-2 flex justify-center sm:justify-end">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={effectiveSignatureUrl}
+                    alt={`Assinatura e Carimbo de ${report.radiologistName}`}
+                    crossOrigin="anonymous"
+                    className="h-20 sm:h-24 max-h-28 max-w-[280px] object-contain drop-shadow-xs"
+                  />
+                </div>
+              ) : (
+                <div className="font-serif italic text-xl sm:text-2xl text-slate-800 font-semibold mb-1">
+                  {report.radiologistName}
+                </div>
+              )}
+              <div className="text-sm font-black text-slate-900 leading-tight">
+                {report.radiologistName}
+              </div>
+              <div className="text-xs sm:text-sm text-teal-700 font-mono font-bold mt-0.5">
+                {report.radiologistCrmv}
+              </div>
+              <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-800 border border-teal-200/80 rounded-md text-[11px] uppercase font-bold tracking-wider mt-1.5 shadow-2xs">
+                {report.radiologistSpecialty || (isUltrasound ? 'Médico(a) Veterinário(a) Ultrassonografista' : 'Médico(a) Veterinário(a) Telerradiologista')}
+              </div>
+            </div>
+          </div>
+
+          {/* Anexo de Imagens e Cortes de Referência (SE HOUVER IMAGENS, SÃO EXIBIDAS APÓS A ASSINATURA) */}
           {keyImages.length > 0 && (
-            <div className="pt-2 print:page-break-before-auto">
+            <div className="mt-8 pt-6 border-t-2 border-dashed border-slate-200 print:break-before-page page-break-avoid">
               <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider border-b border-slate-200 pb-1 mb-3">
-                {isUltrasound ? 'Cortes Ecográficos Selecionados de Referência' : 'Imagens Radiográficas de Referência'}
+                {isUltrasound ? 'Anexo: Cortes Ecográficos Selecionados de Referência' : 'Anexo: Imagens Radiográficas de Referência'}
               </h2>
               <div className="grid grid-cols-2 gap-4">
                 {keyImages.map((img, idx) => (
@@ -812,54 +881,6 @@ ${getPublicUrl()}`;
               </div>
             </div>
           )}
-        </div>
-
-        {/* Rodapé e Carimbo */}
-        <div className="mt-6 pt-4 print:mt-4 print:pt-3 border-t-2 border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
-          {/* Autenticação Digital e QR Code */}
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-center text-slate-700 shadow-2xs">
-              <QrCode className="w-9 h-9" />
-            </div>
-            <div className="text-[10px] text-slate-500 space-y-0.5">
-              <div className="font-bold text-slate-800 flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-teal-600" />
-                <span>Autenticidade Verificada</span>
-              </div>
-              <div>Emitido em: {new Date(report.reportedAt).toLocaleString('pt-BR')}</div>
-              <div className="font-mono text-[9px] text-slate-400 max-w-[220px] truncate">
-                Hash: {report.digitalSignatureHash}
-              </div>
-            </div>
-          </div>
-
-          {/* Carimbo / Assinatura do Especialista */}
-          <div className="text-center sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-6">
-            {report.radiologistSignatureUrl ? (
-              <div className="mb-2 flex justify-center sm:justify-end">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={report.radiologistSignatureUrl}
-                  alt={`Assinatura e Carimbo de ${report.radiologistName}`}
-                  crossOrigin="anonymous"
-                  className="h-20 sm:h-24 max-h-28 max-w-[280px] object-contain drop-shadow-xs"
-                />
-              </div>
-            ) : (
-              <div className="font-serif italic text-xl sm:text-2xl text-slate-800 font-semibold mb-1">
-                {report.radiologistName}
-              </div>
-            )}
-            <div className="text-sm font-black text-slate-900 leading-tight">
-              {report.radiologistName}
-            </div>
-            <div className="text-xs sm:text-sm text-teal-700 font-mono font-bold mt-0.5">
-              {report.radiologistCrmv}
-            </div>
-            <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-800 border border-teal-200/80 rounded-md text-[11px] uppercase font-bold tracking-wider mt-1.5 shadow-2xs">
-              {report.radiologistSpecialty || (isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista')}
-            </div>
-          </div>
         </div>
       </div>
     </div>
