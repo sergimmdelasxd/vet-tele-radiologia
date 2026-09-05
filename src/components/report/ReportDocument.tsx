@@ -835,27 +835,28 @@ ${getPublicUrl()}`;
 
           {/* Carimbo / Assinatura do Especialista */}
           <div className="text-center sm:text-right border-t sm:border-t-0 sm:border-l border-slate-200 pt-4 sm:pt-0 sm:pl-6">
-            {report.radiologistSignatureUrl && (
+            {report.radiologistSignatureUrl ? (
               <div className="mb-2 flex justify-center sm:justify-end">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={report.radiologistSignatureUrl}
                   alt={`Assinatura e Carimbo de ${report.radiologistName}`}
                   crossOrigin="anonymous"
-                  className="h-16 max-h-20 max-w-[220px] object-contain drop-shadow-xs"
+                  className="h-20 sm:h-24 max-h-28 max-w-[280px] object-contain drop-shadow-xs"
                 />
               </div>
+            ) : (
+              <div className="font-serif italic text-xl sm:text-2xl text-slate-800 font-semibold mb-1">
+                {report.radiologistName}
+              </div>
             )}
-            <div className="font-serif italic text-lg text-slate-800 font-semibold mb-1">
+            <div className="text-sm font-black text-slate-900 leading-tight">
               {report.radiologistName}
             </div>
-            <div className="text-xs font-bold text-slate-900">
-              {report.radiologistName}
-            </div>
-            <div className="text-xs text-teal-700 font-mono font-bold">
+            <div className="text-xs sm:text-sm text-teal-700 font-mono font-bold mt-0.5">
               {report.radiologistCrmv}
             </div>
-            <div className="inline-block px-2 py-0.5 bg-teal-50 text-teal-800 border border-teal-200/80 rounded text-[10px] uppercase font-bold tracking-wider mt-1">
+            <div className="inline-block px-2.5 py-1 bg-teal-50 text-teal-800 border border-teal-200/80 rounded-md text-[11px] uppercase font-bold tracking-wider mt-1.5 shadow-2xs">
               {report.radiologistSpecialty || (isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista')}
             </div>
           </div>
