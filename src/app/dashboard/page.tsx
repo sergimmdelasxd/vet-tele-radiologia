@@ -1444,6 +1444,7 @@ export default function DashboardPage() {
         defaultVetName={currentUser.name}
         defaultClinicLogo={currentUser.clinicLogo}
         userRole={currentUser.role}
+        currentClinicPricing={currentUser.customPricing}
       />
 
       {/* MODAL 2: Visualizador Radiográfico / Ecográfico PACS */}

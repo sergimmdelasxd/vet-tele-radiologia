@@ -31,6 +31,7 @@ import {
 } from 'lucide-react';
 import { Navbar } from '@/components/Navbar';
 import { MonthlyClosingModal } from '@/components/financial/MonthlyClosingModal';
+import { ClinicPricingModal } from '@/components/dashboard/ClinicPricingModal';
 import { 
   User as UserType, 
   PlatformFinancialAnalytics, 
@@ -59,6 +60,8 @@ export default function FinanceiroPage() {
   const [adjustAmount, setAdjustAmount] = useState<string>('100');
   const [adjustReason, setAdjustReason] = useState('Bônus promocional de fidelidade');
   const [isSubmittingAdjust, setIsSubmittingAdjust] = useState(false);
+
+  const [pricingClinic, setPricingClinic] = useState<ClinicFinancialSummary | null>(null);
 
   const loadData = async () => {
     try {
@@ -565,11 +568,25 @@ export default function FinanceiroPage() {
 
                       {/* Plano */}
                       <td className="py-4 px-4 whitespace-nowrap">
-                        {getPlanBadge(clinic.plan)}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {getPlanBadge(clinic.plan)}
+                          {clinic.customPricing && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/25 text-[9px] font-bold">
+                              <Sparkles className="w-2.5 h-2.5 text-amber-400" />
+                              Personalizado
+                            </span>
+                          )}
+                        </div>
                         <div className="text-[10px] text-slate-500 mt-1">
-                          {clinic.plan === 'PRO' && 'RX: R$ 38 | USG: R$ 52'}
-                          {clinic.plan === 'HOSPITAL' && 'RX: R$ 32 | USG: R$ 44'}
-                          {clinic.plan === 'AVULSO' && 'RX: R$ 45 | USG: R$ 60'}
+                          {clinic.customPricing ? (
+                            <span>Base RX: R$ {clinic.customPricing.radiographyBase || 45} | USG: R$ {clinic.customPricing.ultrasoundAbdominal || 60}</span>
+                          ) : (
+                            <>
+                              {clinic.plan === 'PRO' && 'RX: R$ 38 | USG: R$ 52'}
+                              {clinic.plan === 'HOSPITAL' && 'RX: R$ 32 | USG: R$ 44'}
+                              {clinic.plan === 'AVULSO' && 'RX: R$ 45 | USG: R$ 60'}
+                            </>
+                          )}
                         </div>
                       </td>
 
@@ -630,6 +647,17 @@ export default function FinanceiroPage() {
                       <td className="py-4 px-5 text-right whitespace-nowrap">
                         <div className="flex items-center justify-end gap-2">
                           
+                          {/* Botão Preços de Laudo */}
+                          <button
+                            type="button"
+                            onClick={() => setPricingClinic(clinic)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-amber-950/40 hover:bg-amber-900/60 text-amber-300 rounded-lg text-[11px] font-bold border border-amber-500/30 transition cursor-pointer"
+                            title="Configurar valores cobrados por laudo (Raio-X, Regiões, USG Abdominal, AFAST, TFAST, Vet BLUE)"
+                          >
+                            <DollarSign className="w-3 h-3 text-amber-400" />
+                            <span>Preços de Laudo</span>
+                          </button>
+
                           {/* Botão Alterar Plano */}
                           <button
                             type="button"
@@ -839,6 +867,15 @@ export default function FinanceiroPage() {
         <MonthlyClosingModal
           user={currentUser}
           onClose={() => setIsClosingModalOpen(false)}
+        />
+      )}
+
+      {pricingClinic && (
+        <ClinicPricingModal
+          isOpen={!!pricingClinic}
+          onClose={() => setPricingClinic(null)}
+          clinic={pricingClinic}
+          onSaved={loadData}
         />
       )}
 

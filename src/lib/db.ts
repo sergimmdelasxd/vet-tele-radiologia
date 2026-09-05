@@ -16,6 +16,7 @@ import {
   ClinicPlan, 
   ClinicFinancialSummary, 
   PlatformFinancialAnalytics,
+  ClinicCustomPricing,
   ReportTemplate,
   QuickPhrase,
   TeachingCase,
@@ -49,6 +50,9 @@ export const PRICING_TABLE = {
     URGENT: 85.00
   }
 };
+
+import { DEFAULT_CLINIC_PRICING, calculateExamPrice } from './pricing';
+export { DEFAULT_CLINIC_PRICING };
 
 interface DatabaseSchema {
   users: User[];
@@ -759,6 +763,7 @@ function mapUserFromDB(row: any): User {
     whatsappConfig: row.whatsapp_config || undefined,
     balance: Number(row.balance || 0),
     plan: row.plan || 'AVULSO',
+    customPricing: row.custom_pricing || undefined,
     createdAt: row.created_at
   };
 }
@@ -976,6 +981,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     if (updates.whatsappConfig !== undefined) dbUpdates.whatsapp_config = updates.whatsappConfig;
     if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
     if (updates.plan !== undefined) dbUpdates.plan = updates.plan;
+    if (updates.customPricing !== undefined) dbUpdates.custom_pricing = updates.customPricing;
 
     await supabase.from('users').update(dbUpdates).eq('id', id);
   } catch (err) {
@@ -1344,9 +1350,23 @@ export async function getStats(): Promise<DashboardStats> {
 }
 
 // Financial Methods
-export function getExamPrice(modality: ExamModality, priority: ExamPriority): number {
-  const base = modality === 'ULTRASSOM' ? PRICING_TABLE.ULTRASSOM : PRICING_TABLE.RADIOGRAFIA;
-  return priority === 'URGENT' ? base.URGENT : base.NORMAL;
+export function getExamPrice(
+  modality: ExamModality, 
+  priority: ExamPriority,
+  clinicOrId?: User | string | null,
+  regionOrProtocol?: string
+): number {
+  let clinic: User | null = null;
+  if (clinicOrId) {
+    if (typeof clinicOrId === 'string') {
+      const db = readDatabase();
+      clinic = db.users.find(u => u.id === clinicOrId) || null;
+    } else {
+      clinic = clinicOrId;
+    }
+  }
+
+  return calculateExamPrice(modality, priority, clinic?.customPricing, regionOrProtocol);
 }
 
 export function getFinancialTransactions(clinicId?: string): FinancialTransaction[] {
@@ -1397,11 +1417,12 @@ export function debitExamCost(
   clinicId: string,
   examId: string,
   modality: ExamModality,
-  priority: ExamPriority
+  priority: ExamPriority,
+  regionOrProtocol?: string
 ): { user?: User; transaction?: FinancialTransaction; price: number } {
   const db = readDatabase();
   const user = db.users.find(u => u.id === clinicId);
-  const cost = getExamPrice(modality, priority);
+  const cost = getExamPrice(modality, priority, user, regionOrProtocol);
 
   if (!user) {
     return { price: cost };
@@ -1417,7 +1438,7 @@ export function debitExamCost(
     examId,
     type: 'EXAM_DEBIT',
     amount: cost,
-    description: `Laudo ${modality === 'ULTRASSOM' ? 'Ultrassom' : 'Raio-X'} (${priority === 'URGENT' ? 'Plantão Urgência' : 'Rotina'}) — Exame ${examId}`,
+    description: `Laudo ${modality === 'ULTRASSOM' ? 'Ultrassom' : 'Raio-X'} (${regionOrProtocol || 'Estudo padrão'}) [${priority === 'URGENT' ? 'Urgência' : 'Rotina'}] — Exame ${examId}`,
     paymentMethod: 'SALDO',
     status: 'COMPLETED',
     createdAt: new Date().toISOString()
@@ -1428,6 +1449,10 @@ export function debitExamCost(
   writeDatabase(db);
 
   return { user, transaction, price: cost };
+}
+
+export async function updateClinicPricing(clinicId: string, customPricing: ClinicCustomPricing): Promise<User | null> {
+  return await updateUser(clinicId, { customPricing });
 }
 
 // Appointment Methods (Agenda & Rotina)
@@ -1626,6 +1651,7 @@ export function getPlatformFinancialAnalytics(): PlatformFinancialAnalytics {
       uf: c.uf || 'SP',
       plan: c.plan || 'AVULSO',
       balance: c.balance ?? 0,
+      customPricing: c.customPricing,
       totalExams: clinicExams.length,
       radiographyCount: radCount,
       ultrasoundCount: usgCount,

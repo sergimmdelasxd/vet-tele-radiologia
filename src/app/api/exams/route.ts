@@ -164,9 +164,10 @@ export async function POST(request: Request) {
       images: Array.isArray(images) ? images : []
     });
 
-    // Registra débito automático do custo do laudo na conta da clínica
+    // Registra débito automático do custo do laudo na conta da clínica conforme tabela e região
     try {
-      debitExamCost(finalClinicId, newExam.id, newExam.modality, newExam.priority);
+      const regionOrProto = newExam.modality === 'ULTRASSOM' ? (newExam.ultrasoundType || newExam.region) : newExam.region;
+      debitExamCost(finalClinicId, newExam.id, newExam.modality, newExam.priority, regionOrProto);
     } catch (debitErr) {
       console.warn('Erro não bloqueante ao registrar débito:', debitErr);
     }

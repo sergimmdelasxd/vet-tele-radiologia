@@ -3,7 +3,8 @@ import { getCurrentUserFromCookie } from '@/lib/auth';
 import { 
   getPlatformFinancialAnalytics, 
   updateClinicPlan, 
-  adjustClinicBalance 
+  adjustClinicBalance,
+  updateClinicPricing
 } from '@/lib/db';
 
 export async function GET() {
@@ -69,6 +70,20 @@ export async function PATCH(request: Request) {
 
       const result = adjustClinicBalance(clinicId, amount, reason || 'Ajuste manual');
       return NextResponse.json({ success: true, ...result });
+    }
+
+    if (action === 'update-pricing') {
+      const { customPricing } = body;
+      if (!clinicId || !customPricing) {
+        return NextResponse.json({ error: 'Clínica e tabela de preços são obrigatórios' }, { status: 400 });
+      }
+
+      const updatedUser = await updateClinicPricing(clinicId, customPricing);
+      if (!updatedUser) {
+        return NextResponse.json({ error: 'Clínica não encontrada' }, { status: 404 });
+      }
+
+      return NextResponse.json({ success: true, user: updatedUser });
     }
 
     return NextResponse.json({ error: 'Ação não suportada' }, { status: 400 });

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   X, 
   UploadCloud, 
@@ -18,8 +18,9 @@ import {
   Baby,
   Building2
 } from 'lucide-react';
-import { Exam, ExamImage, ExamModality, ExamPriority, Species, UserRole } from '@/types';
+import { Exam, ExamImage, ExamModality, ExamPriority, Species, UserRole, ClinicCustomPricing } from '@/types';
 import { RegionSelector } from '@/components/common/RegionSelector';
+import { calculateExamPrice } from '@/lib/pricing';
 
 interface NewExamModalProps {
   isOpen: boolean;
@@ -29,6 +30,7 @@ interface NewExamModalProps {
   defaultVetName?: string;
   defaultClinicLogo?: string;
   userRole?: UserRole;
+  currentClinicPricing?: ClinicCustomPricing;
 }
 
 export const NewExamModal: React.FC<NewExamModalProps> = ({
@@ -38,7 +40,8 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   defaultClinicName = '',
   defaultVetName = '',
   defaultClinicLogo = '',
-  userRole = 'CLINIC'
+  userRole = 'CLINIC',
+  currentClinicPricing
 }) => {
   // Modalidade: Radiografia ou Ultrassonografia
   const [modality, setModality] = useState<ExamModality>('RADIOGRAFIA');
@@ -89,7 +92,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   const [priority, setPriority] = useState<ExamPriority>('NORMAL');
 
   // Gestão de Clínica Solicitante (para Radiologistas e Admins)
-  const [clinicsList, setClinicsList] = useState<Array<{ id: string; clinicName?: string; name: string; phone?: string; uf?: string; clinicLogo?: string }>>([]);
+  const [clinicsList, setClinicsList] = useState<Array<{ id: string; clinicName?: string; name: string; phone?: string; uf?: string; clinicLogo?: string; customPricing?: ClinicCustomPricing }>>([]);
   const [clinicMode, setClinicMode] = useState<'SELECT' | 'NEW'>('SELECT');
   const [selectedClinicId, setSelectedClinicId] = useState<string>('');
   const [newClinicName, setNewClinicName] = useState('');
@@ -154,9 +157,19 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   const [isDragging, setIsDragging] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const currentExamPrice = modality === 'ULTRASSOM'
-    ? (priority === 'URGENT' ? 85.00 : 60.00)
-    : (priority === 'URGENT' ? 65.00 : 45.00);
+  // Preço calculado dinamicamente com base na clínica e região/protocolo
+  const activeCustomPricing = useMemo(() => {
+    if (userRole === 'RADIOLOGIST' || userRole === 'ADMIN') {
+      const selected = clinicsList.find(c => c.id === selectedClinicId);
+      return selected?.customPricing || currentClinicPricing;
+    }
+    return currentClinicPricing;
+  }, [userRole, selectedClinicId, clinicsList, currentClinicPricing]);
+
+  const currentExamPrice = useMemo(() => {
+    const regionOrProto = modality === 'ULTRASSOM' ? ultrasoundType : region;
+    return calculateExamPrice(modality, priority, activeCustomPricing, regionOrProto);
+  }, [modality, priority, activeCustomPricing, ultrasoundType, region]);
 
   if (!isOpen) return null;
 

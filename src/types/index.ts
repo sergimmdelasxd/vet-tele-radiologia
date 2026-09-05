@@ -31,6 +31,7 @@ export interface User {
   whatsappConfig?: WhatsAppConfig; // Configurações da API de WhatsApp para disparos
   balance?: number; // Saldo em conta para laudos (em R$)
   plan?: ClinicPlan; // Plano da clínica parceira
+  customPricing?: ClinicCustomPricing; // Tabela de preços customizada por laudo
   createdAt: string;
 }
 
@@ -209,6 +210,23 @@ export interface Appointment {
   updatedAt: string;
 }
 
+// Tabela de Preços Personalizada por Clínica
+export interface ClinicCustomPricing {
+  // Raio-X
+  radiographyBase: number; // Preço base geral de Raio-X
+  radiographyRegions?: Record<string, number>; // Preços específicos por região (Ex: Tórax, Abdômen, Coluna, Pelve, etc.)
+
+  // Ultrassonografia
+  ultrasoundAbdominal: number; // Ultrassom Abdominal Total
+  ultrasoundAfast: number; // Protocolo AFAST
+  ultrasoundTfast: number; // Protocolo TFAST
+  ultrasoundVetBlue: number; // Protocolo Vet BLUE
+  ultrasoundOther?: number; // Outros protocolos (Gestacional, Cervical, etc.)
+
+  // Taxa de Urgência
+  urgentFee: number; // Valor adicional cobrado para laudos de emergência/urgência
+}
+
 // Analytics Financeiro para Gestão
 export interface ClinicFinancialSummary {
   clinicId: string;
@@ -219,6 +237,7 @@ export interface ClinicFinancialSummary {
   uf?: string;
   plan: ClinicPlan;
   balance: number;
+  customPricing?: ClinicCustomPricing;
   totalExams: number;
   radiographyCount: number;
   ultrasoundCount: number;
