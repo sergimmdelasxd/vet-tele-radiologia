@@ -755,6 +755,7 @@ function mapUserFromDB(row: any): User {
     avatar: row.avatar || undefined,
     clinicLogo: row.clinic_logo || undefined,
     signatureImage: row.signature_image || undefined,
+    whatsappConfig: row.whatsapp_config || undefined,
     balance: Number(row.balance || 0),
     plan: row.plan || 'AVULSO',
     createdAt: row.created_at
@@ -965,6 +966,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     if (updates.cnpj !== undefined) dbUpdates.cnpj = updates.cnpj;
     if (updates.clinicLogo !== undefined) dbUpdates.clinic_logo = updates.clinicLogo;
     if (updates.signatureImage !== undefined) dbUpdates.signature_image = updates.signatureImage;
+    if (updates.whatsappConfig !== undefined) dbUpdates.whatsapp_config = updates.whatsappConfig;
     if (updates.balance !== undefined) dbUpdates.balance = updates.balance;
     if (updates.plan !== undefined) dbUpdates.plan = updates.plan;
 
@@ -2368,6 +2370,32 @@ export function createAuditLog(data: Omit<AuditLog, 'id' | 'createdAt'>): AuditL
 
   writeDatabase(db);
   return newLog;
+}
+
+export async function getSystemSetting<T = any>(key: string): Promise<T | null> {
+  try {
+    const { data, error } = await supabase.from('system_settings').select('value').eq('key', key).maybeSingle();
+    if (error || !data) return null;
+    return data.value as T;
+  } catch (err) {
+    console.error('getSystemSetting error:', err);
+    return null;
+  }
+}
+
+export async function setSystemSetting(key: string, value: any): Promise<boolean> {
+  try {
+    const { error } = await supabase.from('system_settings').upsert({
+      key,
+      value,
+      updated_at: new Date().toISOString()
+    });
+    if (error) throw error;
+    return true;
+  } catch (err) {
+    console.error('setSystemSetting error:', err);
+    return false;
+  }
 }
 
 

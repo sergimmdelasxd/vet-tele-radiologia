@@ -2,6 +2,17 @@ export type UserRole = 'CLINIC' | 'RADIOLOGIST' | 'ADMIN';
 
 export type ClinicPlan = 'AVULSO' | 'PRO' | 'HOSPITAL';
 
+export type WhatsAppProvider = 'Z_API' | 'EVOLUTION_API' | 'CUSTOM_WEBHOOK';
+
+export interface WhatsAppConfig {
+  enabled: boolean;
+  provider: WhatsAppProvider;
+  apiUrl?: string;
+  instanceId?: string;
+  token?: string;
+  clientToken?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -16,6 +27,7 @@ export interface User {
   avatar?: string;
   clinicLogo?: string; // URL da logo da clínica para exibição no laudo
   signatureImage?: string; // URL da assinatura e carimbo digitalizado do especialista
+  whatsappConfig?: WhatsAppConfig; // Configurações da API de WhatsApp para disparos
   balance?: number; // Saldo em conta para laudos (em R$)
   plan?: ClinicPlan; // Plano da clínica parceira
   createdAt: string;
@@ -298,6 +310,7 @@ export type AuditAction =
   | 'EDIT_REPORT' 
   | 'DOWNLOAD_REPORT' 
   | 'PRINT_REPORT'
+  | 'SHARE_WHATSAPP'
   | 'EXPORT_CLOSING'
   | 'UPDATE_SETTINGS'
   | 'EXPORT_LGPD_DATA';

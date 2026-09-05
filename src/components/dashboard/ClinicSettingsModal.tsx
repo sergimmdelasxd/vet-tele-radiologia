@@ -14,9 +14,15 @@ import {
   Phone,
   UserCheck,
   MapPin,
-  FileBadge
+  FileBadge,
+  MessageSquare,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  Key,
+  Globe
 } from 'lucide-react';
-import { User } from '@/types';
+import { User, WhatsAppProvider } from '@/types';
 
 interface ClinicSettingsModalProps {
   isOpen: boolean;
@@ -39,6 +45,21 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
   const [crmv, setCrmv] = useState(user.crmv || '');
   const [cnpj, setCnpj] = useState(user.cnpj || '');
   const [uf, setUf] = useState(user.uf || 'SP');
+
+  // Integração WhatsApp API
+  const [whatsappEnabled, setWhatsappEnabled] = useState(user.whatsappConfig?.enabled ?? false);
+  const [whatsappProvider, setWhatsappProvider] = useState<WhatsAppProvider>(user.whatsappConfig?.provider || 'Z_API');
+  const [whatsappApiUrl, setWhatsappApiUrl] = useState(user.whatsappConfig?.apiUrl || 'https://api.z-api.io');
+  const [whatsappInstanceId, setWhatsappInstanceId] = useState(user.whatsappConfig?.instanceId || '');
+  const [whatsappToken, setWhatsappToken] = useState(user.whatsappConfig?.token || '');
+  const [whatsappClientToken, setWhatsappClientToken] = useState(user.whatsappConfig?.clientToken || '');
+  const [saveAsGlobalWhatsapp, setSaveAsGlobalWhatsapp] = useState(false);
+
+  // Teste de envio WhatsApp
+  const [isTestingWhatsapp, setIsTestingWhatsapp] = useState(false);
+  const [whatsappTestPhone, setWhatsappTestPhone] = useState(user.phone || '');
+  const [whatsappTestSuccess, setWhatsappTestSuccess] = useState<string | null>(null);
+  const [whatsappTestError, setWhatsappTestError] = useState<string | null>(null);
 
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingSignature, setIsUploadingSignature] = useState(false);
@@ -133,11 +154,61 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
     setSignatureImage('');
   };
 
+  const handleTestWhatsApp = async () => {
+    const rawDigits = whatsappTestPhone.replace(/\D/g, '');
+    if (!rawDigits || rawDigits.length < 10) {
+      setWhatsappTestError('Informe um número de WhatsApp válido com DDD (mínimo 10 dígitos) para testar.');
+      return;
+    }
+
+    setIsTestingWhatsapp(true);
+    setWhatsappTestSuccess(null);
+    setWhatsappTestError(null);
+
+    try {
+      const res = await fetch('/api/whatsapp/test', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: rawDigits,
+          config: {
+            enabled: true,
+            provider: whatsappProvider,
+            apiUrl: whatsappApiUrl.trim(),
+            instanceId: whatsappInstanceId.trim(),
+            token: whatsappToken.trim(),
+            clientToken: whatsappClientToken.trim()
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao testar conexão com a API do WhatsApp.');
+      }
+
+      setWhatsappTestSuccess('Mensagem de teste disparada com sucesso! Verifique seu WhatsApp.');
+    } catch (err: any) {
+      setWhatsappTestError(err.message || 'Erro ao enviar teste para o WhatsApp.');
+    } finally {
+      setIsTestingWhatsapp(false);
+    }
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSaving(true);
     setErrorMessage(null);
     setSuccessMessage(null);
+
+    const whatsappPayload = {
+      enabled: whatsappEnabled,
+      provider: whatsappProvider,
+      apiUrl: whatsappApiUrl.trim(),
+      instanceId: whatsappInstanceId.trim(),
+      token: whatsappToken.trim(),
+      clientToken: whatsappClientToken.trim()
+    };
 
     try {
       const res = await fetch('/api/auth/me', {
@@ -151,9 +222,21 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
           name,
           crmv,
           cnpj,
-          uf
+          uf,
+          whatsappConfig: whatsappPayload
         })
       });
+
+      if (saveAsGlobalWhatsapp && (user.role === 'ADMIN' || user.role === 'RADIOLOGIST')) {
+        fetch('/api/whatsapp/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            config: whatsappPayload,
+            isGlobal: true
+          })
+        }).catch(() => {});
+      }
 
       const data = await res.json();
       if (!res.ok) {
@@ -415,6 +498,226 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
               )}
             </div>
           )}
+
+          {/* SEÇÃO 3: INTEGRAÇÃO WHATSAPP API (Z-API, EVOLUTION API & WEBHOOK) */}
+          <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Robô de Disparo WhatsApp API</span>
+                  {whatsappEnabled && (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      Ativo
+                    </span>
+                  )}
+                </h3>
+                <p className="text-[11px] text-slate-500 mt-0.5">
+                  Dispare laudos e mensagens diretamente pelo WhatsApp com 1 clique usando Z-API ou Evolution API.
+                </p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={whatsappEnabled}
+                  onChange={e => setWhatsappEnabled(e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+              </label>
+            </div>
+
+            {whatsappEnabled && (
+              <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-200/90 space-y-3.5 animate-in fade-in">
+                {/* Escolha do Provedor */}
+                <div>
+                  <label className="block text-slate-700 font-bold mb-1.5 text-[11px]">
+                    Provedor da API de WhatsApp
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWhatsappProvider('Z_API');
+                        if (!whatsappApiUrl || whatsappApiUrl.includes('localhost') || whatsappApiUrl.includes('evolution')) {
+                          setWhatsappApiUrl('https://api.z-api.io');
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                        whatsappProvider === 'Z_API'
+                          ? 'bg-white border-emerald-500 text-emerald-900 shadow-xs font-bold'
+                          : 'bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="block text-xs">Z-API</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Mais popular no Brasil</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setWhatsappProvider('EVOLUTION_API');
+                        if (whatsappApiUrl === 'https://api.z-api.io') {
+                          setWhatsappApiUrl('');
+                        }
+                      }}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                        whatsappProvider === 'EVOLUTION_API'
+                          ? 'bg-white border-emerald-500 text-emerald-900 shadow-xs font-bold'
+                          : 'bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="block text-xs">Evolution API</span>
+                      <span className="text-[10px] text-slate-400 font-normal">Open Source / Servidor</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setWhatsappProvider('CUSTOM_WEBHOOK')}
+                      className={`p-2.5 rounded-xl border text-center transition cursor-pointer ${
+                        whatsappProvider === 'CUSTOM_WEBHOOK'
+                          ? 'bg-white border-emerald-500 text-emerald-900 shadow-xs font-bold'
+                          : 'bg-white/60 border-slate-200 text-slate-600 hover:border-slate-300'
+                      }`}
+                    >
+                      <span className="block text-xs">Webhook Custom</span>
+                      <span className="text-[10px] text-slate-400 font-normal">N8N / Make / Zapier</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Campos da API */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                      {whatsappProvider === 'CUSTOM_WEBHOOK' ? 'URL do Webhook *' : 'URL Base da API *'}
+                    </label>
+                    <input
+                      type="url"
+                      required
+                      value={whatsappApiUrl}
+                      onChange={e => setWhatsappApiUrl(e.target.value)}
+                      placeholder={
+                        whatsappProvider === 'Z_API'
+                          ? 'https://api.z-api.io'
+                          : whatsappProvider === 'EVOLUTION_API'
+                          ? 'https://evolution.seuservidor.com'
+                          : 'https://webhook.site/...'
+                      }
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-500 transition shadow-2xs font-mono"
+                    />
+                  </div>
+
+                  {whatsappProvider !== 'CUSTOM_WEBHOOK' && (
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        {whatsappProvider === 'Z_API' ? 'ID da Instância (Instance ID) *' : 'Nome da Instância (Instance Name) *'}
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={whatsappInstanceId}
+                        onChange={e => setWhatsappInstanceId(e.target.value)}
+                        placeholder={whatsappProvider === 'Z_API' ? 'Ex: 3B821A87...' : 'Ex: radiologia-vet'}
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                      {whatsappProvider === 'Z_API' ? 'Token da Instância (Token) *' : whatsappProvider === 'EVOLUTION_API' ? 'API Key da Instância / Global *' : 'Token de Autorização (Opcional)'}
+                    </label>
+                    <input
+                      type="password"
+                      value={whatsappToken}
+                      onChange={e => setWhatsappToken(e.target.value)}
+                      placeholder="••••••••••••••••••••"
+                      className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-500 transition shadow-2xs font-mono"
+                    />
+                  </div>
+
+                  {whatsappProvider === 'Z_API' && (
+                    <div>
+                      <label className="block text-slate-700 font-semibold mb-1 text-[11px]">
+                        Client-Token de Segurança (Opcional)
+                      </label>
+                      <input
+                        type="password"
+                        value={whatsappClientToken}
+                        onChange={e => setWhatsappClientToken(e.target.value)}
+                        placeholder="Client-Token de segurança da Z-API"
+                        className="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 outline-none focus:border-emerald-500 transition shadow-2xs font-mono"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {(user.role === 'ADMIN' || user.role === 'RADIOLOGIST') && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="saveAsGlobalWhatsapp"
+                      checked={saveAsGlobalWhatsapp}
+                      onChange={e => setSaveAsGlobalWhatsapp(e.target.checked)}
+                      className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300"
+                    />
+                    <label htmlFor="saveAsGlobalWhatsapp" className="text-[11px] text-slate-600 font-medium cursor-pointer">
+                      Definir este robô como padrão para toda a plataforma de telemedicina
+                    </label>
+                  </div>
+                )}
+
+                {/* Bloco de Teste de Conexão */}
+                <div className="p-3 bg-white rounded-xl border border-emerald-200/80 space-y-2">
+                  <span className="block text-[11px] font-bold text-slate-800">
+                    🧪 Testar envio do robô no seu WhatsApp
+                  </span>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={whatsappTestPhone}
+                      onChange={e => setWhatsappTestPhone(e.target.value)}
+                      placeholder="(11) 98765-4321"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 outline-none focus:border-emerald-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleTestWhatsApp}
+                      disabled={isTestingWhatsapp}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition cursor-pointer disabled:opacity-50 shrink-0 shadow-2xs"
+                    >
+                      {isTestingWhatsapp ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Testando...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Testar Robô</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+
+                  {whatsappTestSuccess && (
+                    <div className="p-2 rounded-lg bg-emerald-100/70 text-emerald-800 text-[11px] font-semibold flex items-center gap-1.5 animate-in fade-in">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                      <span>{whatsappTestSuccess}</span>
+                    </div>
+                  )}
+
+                  {whatsappTestError && (
+                    <div className="p-2 rounded-lg bg-rose-50 text-rose-800 text-[11px] font-semibold flex items-center gap-1.5 animate-in fade-in">
+                      <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                      <span>{whatsappTestError}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* SEÇÃO 2: DADOS CADASTRAIS DA CLÍNICA */}
           <div className="space-y-3 pt-2 border-t border-slate-100 text-xs">

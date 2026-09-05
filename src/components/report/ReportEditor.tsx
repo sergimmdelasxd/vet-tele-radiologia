@@ -12,7 +12,10 @@ import {
   Image as ImageIcon, 
   Waves, 
   Activity,
-  BookOpen
+  BookOpen,
+  Send,
+  Loader2,
+  MessageSquare
 } from 'lucide-react';
 import { Exam, ReportTemplate } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
@@ -77,7 +80,13 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
   const [draftRecovered, setDraftRecovered] = useState(false);
 
-  // Carregar templates e assinatura do especialista logado
+  // WhatsApp API states
+  const [hasWhatsAppApi, setHasWhatsAppApi] = useState(false);
+  const [isSendingViaApi, setIsSendingViaApi] = useState(false);
+  const [apiSentSuccess, setApiSentSuccess] = useState(false);
+  const [apiSendError, setApiSendError] = useState<string | null>(null);
+
+  // Carregar templates, assinatura do especialista e status do WhatsApp
   useEffect(() => {
     fetch('/api/templates')
       .then(r => r.json())
@@ -93,6 +102,15 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
       .then(d => {
         if (d.user?.signatureImage) {
           setCurrentUserSignature(d.user.signatureImage);
+        }
+      })
+      .catch(() => {});
+
+    fetch('/api/whatsapp/config')
+      .then(r => r.json())
+      .then(d => {
+        if (d.resolvedConfig?.enabled) {
+          setHasWhatsAppApi(true);
         }
       })
       .catch(() => {});
@@ -251,6 +269,56 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     }
   };
 
+  const handleSendWhatsAppNotification = async () => {
+    const rawPhone = exam.clinicPhone || '';
+    const digitsOnly = rawPhone.replace(/\D/g, '');
+
+    const publicLaudoUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/laudo/${exam.id}`;
+    const textMessage = `🐾 *LAUDO VETERINÁRIO CONCLUÍDO — VetTeleRad*
+📄 *Protocolo:* ${exam.id}
+🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
+🏥 *Clínica Solicitante:* ${exam.clinicName}
+🩺 *Médico Veterinário:* ${exam.requestingVet}
+👨‍⚕️ *Especialista:* ${currentRadiologistName} (${currentRadiologistCrmv})
+
+🔗 *Acesse o laudo oficial timbrado e imagens:*
+${publicLaudoUrl}`;
+
+    if (!hasWhatsAppApi || !digitsOnly || digitsOnly.length < 10) {
+      const text = encodeURIComponent(textMessage);
+      const targetUrl = digitsOnly.length >= 10
+        ? `https://wa.me/${digitsOnly.startsWith('55') ? digitsOnly : `55${digitsOnly}`}?text=${text}`
+        : `https://wa.me/?text=${text}`;
+      window.open(targetUrl, '_blank');
+      return;
+    }
+
+    setIsSendingViaApi(true);
+    setApiSendError(null);
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: digitsOnly,
+          message: textMessage,
+          examId: exam.id
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao disparar no WhatsApp');
+      }
+
+      setApiSentSuccess(true);
+    } catch (err: any) {
+      setApiSendError(err.message || 'Erro no envio da mensagem.');
+    } finally {
+      setIsSendingViaApi(false);
+    }
+  };
+
   return (
     <div className="bg-white/95 border border-slate-200/90 p-5 lg:p-7 space-y-6 text-slate-800 min-h-full rounded-3xl shadow-xs">
       {/* Header com Status e Seletor de Templates */}
@@ -387,17 +455,50 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
               <p className="text-[11px] text-emerald-700 mt-0.5">O laudo oficial já está timbrado e disponível para a clínica parceira.</p>
             </div>
           </div>
-          <a
-            href={`https://wa.me/?text=${encodeURIComponent(
-              `Olá equipe da clínica ${exam.clinicName}! O laudo do paciente *${exam.patientName}* (${exam.species}) foi concluído e assinado por ${currentRadiologistName} (${currentRadiologistCrmv}). Acesse e baixe o laudo oficial timbrado aqui: ${typeof window !== 'undefined' ? window.location.origin : ''}/laudo/${exam.id}`
-            )}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs self-start sm:self-auto shrink-0 active:scale-95"
-            title="Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"
-          >
-            <span>📲 Notificar Clínica via WhatsApp</span>
-          </a>
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto shrink-0">
+            {apiSentSuccess ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-100 text-emerald-800 rounded-xl font-bold text-xs shadow-2xs">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Mensagem enviada pelo Robô!</span>
+              </span>
+            ) : hasWhatsAppApi ? (
+              <button
+                type="button"
+                onClick={handleSendWhatsAppNotification}
+                disabled={isSendingViaApi}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs active:scale-95 disabled:opacity-60"
+                title="Disparar mensagem oficial de laudo pronto direto no WhatsApp da clínica"
+              >
+                {isSendingViaApi ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Disparando Robô...</span>
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-3.5 h-3.5" />
+                    <span>Notificar Clínica via Robô (API)</span>
+                  </>
+                )}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSendWhatsAppNotification}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs active:scale-95"
+                title="Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>Notificar Clínica no WhatsApp</span>
+              </button>
+            )}
+
+            {apiSendError && (
+              <span className="text-[11px] text-rose-600 font-semibold block sm:inline">
+                {apiSendError}
+              </span>
+            )}
+          </div>
         </div>
       )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Printer, 
   ShieldCheck, 
@@ -18,7 +18,11 @@ import {
   Check, 
   Mail, 
   Loader2,
-  X
+  X,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+  Bot
 } from 'lucide-react';
 import { Exam } from '@/types';
 import jsPDF from 'jspdf';
@@ -42,6 +46,23 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
   const [destPhone, setDestPhone] = useState(exam.clinicPhone || '');
   const [destEmail, setDestEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
+
+  // Disparo via API do WhatsApp
+  const [isSendingViaApi, setIsSendingViaApi] = useState(false);
+  const [apiSendSuccess, setApiSendSuccess] = useState(false);
+  const [apiSendError, setApiSendError] = useState<string | null>(null);
+  const [hasWhatsAppApi, setHasWhatsAppApi] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (showWhatsAppModal && hasWhatsAppApi === null) {
+      fetch('/api/whatsapp/config')
+        .then(r => r.json())
+        .then(d => {
+          setHasWhatsAppApi(!!d.resolvedConfig?.enabled);
+        })
+        .catch(() => setHasWhatsAppApi(false));
+    }
+  }, [showWhatsAppModal, hasWhatsAppApi]);
 
   // Logotipo da clínica no laudo
   const [currentClinicLogo, setCurrentClinicLogo] = useState(exam.clinicLogo || '');
@@ -226,6 +247,44 @@ ${getPublicUrl()}`;
     }
     window.open(targetUrl, '_blank');
     setShowWhatsAppModal(false);
+  };
+
+  const handleSendViaApi = async () => {
+    const rawDigits = destPhone.replace(/\D/g, '');
+    if (!rawDigits || rawDigits.length < 10) {
+      setApiSendError('Informe um número de telefone com DDD válido (mínimo 10 dígitos).');
+      return;
+    }
+    setIsSendingViaApi(true);
+    setApiSendError(null);
+    setApiSendSuccess(false);
+
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: rawDigits,
+          message: getFormattedMessage(),
+          examId: exam.id
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Falha ao disparar mensagem via WhatsApp API.');
+      }
+
+      setApiSendSuccess(true);
+      setTimeout(() => {
+        setShowWhatsAppModal(false);
+        setApiSendSuccess(false);
+      }, 2500);
+    } catch (err: any) {
+      setApiSendError(err.message || 'Erro ao disparar mensagem via API do WhatsApp.');
+    } finally {
+      setIsSendingViaApi(false);
+    }
   };
 
   const handleSendEmail = (e: React.FormEvent) => {
@@ -692,21 +751,66 @@ ${getPublicUrl()}`;
               {getFormattedMessage()}
             </div>
 
-            <div className="flex items-center justify-end gap-2 pt-2">
+            {apiSendSuccess && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>Laudo disparado com sucesso pelo robô do WhatsApp!</span>
+              </div>
+            )}
+
+            {apiSendError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                <span>{apiSendError}</span>
+              </div>
+            )}
+
+            {!hasWhatsAppApi && !apiSendSuccess && (
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-500 flex items-center gap-2">
+                <Bot className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                <span>Conecte o robô da <strong>Z-API</strong> ou <strong>Evolution API</strong> nas Configurações para disparar automaticamente sem abrir abas.</span>
+              </div>
+            )}
+
+            <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowWhatsAppModal(false)}
-                className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition cursor-pointer"
+                className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition cursor-pointer"
               >
                 Cancelar
               </button>
+
+              {hasWhatsAppApi && (
+                <button
+                  type="button"
+                  onClick={handleSendViaApi}
+                  disabled={isSendingViaApi || apiSendSuccess}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition active:scale-95 cursor-pointer disabled:opacity-60"
+                  title="Enviar mensagem automática pelo robô conectado da API"
+                >
+                  {isSendingViaApi ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Disparando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Disparar via Robô (API)</span>
+                    </>
+                  )}
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={handleSendWhatsApp}
-                className="inline-flex items-center gap-2 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold transition cursor-pointer"
+                title="Abrir no WhatsApp Web ou no aplicativo"
               >
-                <MessageSquare className="w-4 h-4" />
-                <span>Abrir WhatsApp</span>
+                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                <span>{hasWhatsAppApi ? 'WhatsApp Web' : 'Abrir WhatsApp'}</span>
               </button>
             </div>
           </div>

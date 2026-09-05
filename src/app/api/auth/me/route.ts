@@ -30,11 +30,12 @@ export async function PATCH(request: Request) {
     }
 
     const body = await request.json();
-    const { clinicLogo, signatureImage, clinicName, name, phone, uf, crmv, cnpj, avatar } = body;
+    const { clinicLogo, signatureImage, whatsappConfig, clinicName, name, phone, uf, crmv, cnpj, avatar } = body;
 
     const updates: Record<string, any> = {};
     if (clinicLogo !== undefined) updates.clinicLogo = clinicLogo;
     if (signatureImage !== undefined) updates.signatureImage = signatureImage;
+    if (whatsappConfig !== undefined) updates.whatsappConfig = whatsappConfig;
     if (clinicName !== undefined) updates.clinicName = clinicName;
     if (name !== undefined) updates.name = name;
     if (phone !== undefined) updates.phone = phone;
