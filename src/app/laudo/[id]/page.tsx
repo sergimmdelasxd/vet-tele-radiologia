@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Activity, ArrowLeft, AlertCircle } from 'lucide-react';
+import { Activity, ArrowLeft, AlertCircle, ShieldCheck } from 'lucide-react';
 import { ReportDocument } from '@/components/report/ReportDocument';
 import { Exam } from '@/types';
 
@@ -14,6 +14,16 @@ export default function StandaloneReportPage() {
   const [exam, setExam] = useState<Exam | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoggedInUser, setIsLoggedInUser] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(res => res.json())
+      .then(data => {
+        if (data.user) setIsLoggedInUser(true);
+      })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (!id) return;
@@ -48,14 +58,23 @@ export default function StandaloneReportPage() {
           <AlertCircle className="w-12 h-12 text-rose-500 mx-auto" />
           <h2 className="text-base font-bold text-slate-900">Não foi possível carregar o laudo</h2>
           <p className="text-xs text-slate-600">{errorMsg || 'Exame não localizado'}</p>
-          <div className="pt-2">
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition"
+          <div className="pt-2 flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white rounded-xl text-xs font-bold shadow-md shadow-teal-500/20 transition cursor-pointer"
             >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Fazer Login no Portal</span>
-            </Link>
+              <span>Recarregar Laudo</span>
+            </button>
+            {isLoggedInUser && (
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold border border-slate-200 transition"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                <span>Voltar ao Painel</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>
@@ -67,14 +86,21 @@ export default function StandaloneReportPage() {
       {/* Brilhos Ambientais Pastéis (Ocultos na Impressão) */}
       <div className="absolute top-10 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-gradient-to-tr from-sky-100/50 via-teal-100/40 to-amber-50/40 blur-[120px] pointer-events-none print:hidden" />
 
-      <div className="max-w-4xl mx-auto mb-6 flex items-center justify-between print:hidden relative z-10">
-        <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200/90 px-3.5 py-2 rounded-xl shadow-xs transition"
-        >
-          <ArrowLeft className="w-4 h-4 text-teal-600" />
-          <span>Voltar à Worklist</span>
-        </Link>
+      <div className="max-w-4xl mx-auto mb-6 flex flex-wrap items-center justify-between gap-3 print:hidden relative z-10">
+        {isLoggedInUser ? (
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-slate-900 bg-white border border-slate-200/90 px-3.5 py-2 rounded-xl shadow-xs transition"
+          >
+            <ArrowLeft className="w-4 h-4 text-teal-600" />
+            <span>Voltar ao Painel</span>
+          </Link>
+        ) : (
+          <div className="inline-flex items-center gap-2 text-xs font-semibold text-slate-600 bg-white/90 border border-slate-200/90 px-3.5 py-2 rounded-xl shadow-2xs">
+            <ShieldCheck className="w-4 h-4 text-teal-600" />
+            <span>Portal Oficial de Consulta • Laudo Veterinário</span>
+          </div>
+        )}
         <div className="flex items-center gap-2 text-xs font-mono bg-teal-50 text-teal-800 border border-teal-200/80 px-3 py-1.5 rounded-xl font-bold shadow-xs">
           <Activity className="w-4 h-4 text-teal-600" />
           <span>VetTeleRad • Protocolo {exam.id}</span>

@@ -1038,12 +1038,15 @@ export async function getAllExams(filters?: {
 }
 
 export async function getExamById(id: string): Promise<Exam | undefined> {
+  const cleanId = (id || '').trim();
+  if (!cleanId) return undefined;
+
   try {
     const { data, error } = await supabase
       .from('exams')
       .select('*, exam_images(*), reports(*), clinic:users!exams_clinic_id_fkey(clinic_logo)');
 
-    const match = data ? data.find((row: any) => row.id === id) : null;
+    const match = data ? data.find((row: any) => (row.id || '').toUpperCase() === cleanId.toUpperCase()) : null;
     if (!error && match) {
       const exam = mapExamFromDB(match);
       if (!exam.clinicLogo && match.clinic?.clinic_logo) {
@@ -1056,7 +1059,7 @@ export async function getExamById(id: string): Promise<Exam | undefined> {
   }
 
   const db = readDatabase();
-  return db.exams.find(e => e.id === id);
+  return db.exams.find(e => (e.id || '').toUpperCase() === cleanId.toUpperCase());
 }
 
 export async function createExam(examData: Partial<Exam>): Promise<Exam> {

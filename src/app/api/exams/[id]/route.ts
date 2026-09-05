@@ -8,22 +8,32 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const exam = await getExamById(id);
+    const cleanId = id?.trim();
+    if (!cleanId) {
+      return NextResponse.json({ error: 'ID do exame inválido' }, { status: 400 });
+    }
+
+    const exam = await getExamById(cleanId);
 
     if (!exam) {
       return NextResponse.json({ error: 'Exame não encontrado' }, { status: 404 });
     }
 
-    const user = await getCurrentUserFromCookie();
-    // Se não estiver logado, permite acesso apenas para exames concluídos (visualização pública de laudos via link/QR Code)
-    if (!user) {
-      if (exam.status === 'REPORTED') {
-        return NextResponse.json({ exam });
-      }
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    // REGRA DE ACESSO A LAUDOS MÉDICOS CONCLUÍDOS:
+    // Se o laudo já foi emitido (REPORTED ou possui relatório anexado), ele é um documento oficial
+    // que deve ser acessível por link direto / WhatsApp / QR Code sem exigir login de tutores ou clínicas.
+    const isReportReady = exam.status === 'REPORTED' || Boolean(exam.report);
+    if (isReportReady) {
+      return NextResponse.json({ exam });
     }
 
-    // Se for clínica, só pode ver seu próprio exame
+    // Se o exame ainda está PENDENTE ou em elaboração interna, exige autenticação com permissão
+    const user = await getCurrentUserFromCookie();
+    if (!user) {
+      return NextResponse.json({ error: 'Este laudo ainda está em elaboração e requer login para acesso interno.' }, { status: 401 });
+    }
+
+    // Se for clínica, só pode ver seu próprio exame não finalizado
     if (user.role === 'CLINIC' && exam.clinicId !== user.userId) {
       return NextResponse.json({ error: 'Acesso negado a este exame' }, { status: 403 });
     }
