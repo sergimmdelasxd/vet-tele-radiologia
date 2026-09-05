@@ -998,7 +998,7 @@ export async function getAllExams(filters?: {
   modality?: string;
 }): Promise<Exam[]> {
   try {
-    let query = supabase.from('exams').select('*, exam_images(*), reports(*)');
+    let query = supabase.from('exams').select('*, exam_images(*), reports(*), clinic:users!exams_clinic_id_fkey(clinic_logo)');
     if (filters?.clinicId) query = query.eq('clinic_id', filters.clinicId);
     if (filters?.status && filters.status !== 'ALL') query = query.eq('status', filters.status);
     if (filters?.priority && filters.priority !== 'ALL') query = query.eq('priority', filters.priority);
@@ -1006,7 +1006,13 @@ export async function getAllExams(filters?: {
 
     const { data, error } = await query;
     if (!error && data && data.length > 0) {
-      const exams = data.map(mapExamFromDB);
+      const exams = data.map((row: any) => {
+        const exam = mapExamFromDB(row);
+        if (!exam.clinicLogo && row.clinic?.clinic_logo) {
+          exam.clinicLogo = row.clinic.clinic_logo;
+        }
+        return exam;
+      });
       return exams.sort((a, b) => {
         if (a.priority === 'URGENT' && b.priority !== 'URGENT') return -1;
         if (b.priority === 'URGENT' && a.priority !== 'URGENT') return 1;
@@ -1035,11 +1041,15 @@ export async function getExamById(id: string): Promise<Exam | undefined> {
   try {
     const { data, error } = await supabase
       .from('exams')
-      .select('*, exam_images(*), reports(*)');
+      .select('*, exam_images(*), reports(*), clinic:users!exams_clinic_id_fkey(clinic_logo)');
 
-    const match = data ? data.find((row) => row.id === id) : null;
+    const match = data ? data.find((row: any) => row.id === id) : null;
     if (!error && match) {
-      return mapExamFromDB(match);
+      const exam = mapExamFromDB(match);
+      if (!exam.clinicLogo && match.clinic?.clinic_logo) {
+        exam.clinicLogo = match.clinic.clinic_logo;
+      }
+      return exam;
     }
   } catch (err) {
     console.error('Supabase getExamById error:', err);
@@ -1058,8 +1068,25 @@ export async function createExam(examData: Partial<Exam>): Promise<Exam> {
   const isUrgent = examData.priority === 'URGENT';
   const deadlineDate = new Date(now.getTime() + (isUrgent ? 2 * 3600 * 1000 : 12 * 3600 * 1000));
 
-  const clinicUser = db.users.find(u => u.id === examData.clinicId || (u.clinicName && u.clinicName === examData.clinicName));
-  const finalClinicLogo = examData.clinicLogo || clinicUser?.clinicLogo || '';
+  let finalClinicLogo = examData.clinicLogo || '';
+  if (!finalClinicLogo && examData.clinicId && examData.clinicId !== 'unknown') {
+    try {
+      const { data: clinicUser } = await supabase
+        .from('users')
+        .select('clinic_logo')
+        .eq('id', examData.clinicId)
+        .single();
+      if (clinicUser?.clinic_logo) {
+        finalClinicLogo = clinicUser.clinic_logo;
+      }
+    } catch {
+      // fallback
+    }
+  }
+  if (!finalClinicLogo) {
+    const clinicUser = db.users.find(u => u.id === examData.clinicId || (u.clinicName && u.clinicName === examData.clinicName));
+    finalClinicLogo = clinicUser?.clinicLogo || '';
+  }
 
   const newExam: Exam = {
     id: examId,
@@ -1164,8 +1191,19 @@ export async function updateExam(id: string, updates: Partial<Exam>): Promise<Ex
     if (updates.suspectedDiagnosis !== undefined) dbUpdates.suspected_diagnosis = updates.suspectedDiagnosis;
     if (updates.region !== undefined) dbUpdates.region = updates.region;
     if (updates.projections !== undefined) dbUpdates.projections = updates.projections;
+    if (updates.clinicLogo !== undefined) dbUpdates.clinic_logo = updates.clinicLogo;
+    if (updates.clinicName !== undefined) dbUpdates.clinic_name = updates.clinicName;
+    if (updates.clinicPhone !== undefined) dbUpdates.clinic_phone = updates.clinicPhone;
+    if (updates.requestingVet !== undefined) dbUpdates.requesting_vet = updates.requestingVet;
 
     await supabase.from('exams').update(dbUpdates).eq('id', id);
+
+    if (updates.clinicLogo) {
+      const { data: examData } = await supabase.from('exams').select('clinic_id').eq('id', id).single();
+      if (examData?.clinic_id && examData.clinic_id !== 'unknown') {
+        await supabase.from('users').update({ clinic_logo: updates.clinicLogo }).eq('id', examData.clinic_id);
+      }
+    }
   } catch (err) {
     console.error('Supabase updateExam error:', err);
   }

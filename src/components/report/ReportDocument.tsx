@@ -70,6 +70,27 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
   const [logoSuccessToast, setLogoSuccessToast] = useState(false);
   const logoInputRef = React.useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (exam.clinicLogo) {
+      setCurrentClinicLogo(exam.clinicLogo);
+    } else if (!currentClinicLogo && exam.clinicId && exam.clinicId !== 'unknown') {
+      // Herda logotipo atual da clínica caso o exame não possua um específico
+      fetch('/api/clinics')
+        .then(r => r.json())
+        .then(d => {
+          if (d.clinics && Array.isArray(d.clinics)) {
+            const found = d.clinics.find(
+              (c: any) => c.id === exam.clinicId || (c.clinicName && c.clinicName.toLowerCase() === (exam.clinicName || '').toLowerCase())
+            );
+            if (found?.clinicLogo) {
+              setCurrentClinicLogo(found.clinicLogo);
+            }
+          }
+        })
+        .catch(() => {});
+    }
+  }, [exam.clinicLogo, exam.clinicId, exam.clinicName, currentClinicLogo]);
+
   const handleUploadClinicLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
@@ -88,8 +109,9 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
       if (data.files && data.files[0]) {
         const newLogoUrl = data.files[0].url;
         setCurrentClinicLogo(newLogoUrl);
+        exam.clinicLogo = newLogoUrl;
 
-        // Salva no exame
+        // Salva no exame (o backend propaga também para o perfil da clínica)
         await fetch(`/api/exams/${exam.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -134,9 +156,22 @@ export const ReportDocument: React.FC<ReportDocumentProps> = ({ exam, onClose, i
     const docEl = document.getElementById(`printable-report-${exam.id}`);
     if (!docEl) return null;
 
+    // Aguarda todas as imagens do laudo (logo, assinatura, exames) carregarem antes de renderizar no canvas
+    const imgElements = Array.from(docEl.querySelectorAll('img'));
+    await Promise.all(
+      imgElements.map(img => {
+        if (img.complete) return Promise.resolve();
+        return new Promise(resolve => {
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(true);
+        });
+      })
+    );
+
     const canvas = await html2canvas(docEl, {
       scale: 2,
       useCORS: true,
+      allowTaint: false,
       logging: false,
       backgroundColor: '#ffffff',
       scrollY: 0,
@@ -540,36 +575,61 @@ ${getPublicUrl()}`;
           {/* LADO ESQUERDO: LOGO DA CLÍNICA SOLICITANTE COM MAIOR DESTAQUE */}
           <div className="flex-1 flex items-center justify-start min-h-[72px]">
             {currentClinicLogo ? (
-              <div className="relative group">
-                <div className="h-16 sm:h-20 max-w-[320px] flex items-center justify-start">
+              <div className="relative group flex items-center gap-3.5">
+                <div className="h-16 sm:h-20 max-w-[280px] flex items-center justify-start">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={currentClinicLogo}
-                    alt="Logotipo da Clínica Solicitante"
+                    alt={exam.clinicName ? `Logotipo ${exam.clinicName}` : "Logotipo da Clínica Solicitante"}
+                    crossOrigin="anonymous"
                     className="max-h-full max-w-full object-contain object-left drop-shadow-xs"
                   />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => logoInputRef.current?.click()}
-                  className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-1"
-                >
-                  Alterar logotipo
-                </button>
+                <div className="border-l border-slate-200 pl-3.5">
+                  <span className="font-bold text-xs text-slate-800 leading-tight block">
+                    {exam.clinicName || 'Clínica Veterinária'}
+                  </span>
+                  {exam.requestingVet && (
+                    <span className="text-[10px] text-slate-500 block">
+                      Solicitante: {exam.requestingVet}
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-0.5"
+                  >
+                    Alterar logotipo
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="flex items-center gap-3 print:hidden">
-                <button
-                  type="button"
-                  onClick={() => logoInputRef.current?.click()}
-                  className="h-16 px-4 border-2 border-dashed border-teal-300 hover:border-teal-500 rounded-2xl bg-teal-50/40 hover:bg-teal-50 text-teal-800 text-xs font-bold flex items-center gap-2.5 transition cursor-pointer"
-                >
-                  <Building2 className="w-5 h-5 text-teal-600" />
-                  <div className="text-left">
-                    <span className="block">+ Anexar Logotipo da Clínica</span>
-                    <span className="text-[10px] text-teal-600 font-normal">Exibição com destaque no cabeçalho</span>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-teal-50 border border-teal-200/80 flex items-center justify-center text-teal-700 shrink-0">
+                  <Building2 className="w-6 h-6" />
+                </div>
+                <div className="text-left">
+                  <div className="font-bold text-sm text-slate-900 leading-tight">
+                    {exam.clinicName || 'Clínica Veterinária Solicitante'}
                   </div>
-                </button>
+                  {exam.requestingVet && (
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      Médico(a) Solicitante: <strong className="text-slate-800">{exam.requestingVet}</strong>
+                    </p>
+                  )}
+                  {exam.clinicPhone && (
+                    <p className="text-[11px] text-slate-500 font-mono">
+                      Tel: {exam.clinicPhone}
+                    </p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    className="text-[10px] text-teal-700 hover:text-teal-900 hover:underline print:hidden cursor-pointer font-bold block mt-1"
+                  >
+                    + Anexar logotipo da clínica
+                  </button>
+                </div>
               </div>
             )}
           </div>

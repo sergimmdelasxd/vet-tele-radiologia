@@ -83,7 +83,7 @@ export async function POST(request: Request) {
     let finalClinicName = user.clinicName || user.name;
     let finalClinicPhone = clinicPhone || '';
     const userFromDb = await findUserById(user.userId);
-    let finalClinicLogo = clinicLogo || user.clinicLogo || userFromDb?.clinicLogo || '';
+    let finalClinicLogo = clinicLogo || (user.role === 'CLINIC' ? (user.clinicLogo || userFromDb?.clinicLogo || '') : '') || '';
     let finalRequestingVet = requestingVet || user.name;
 
     // Se for radiologista ou admin criando exame em nome de uma clínica

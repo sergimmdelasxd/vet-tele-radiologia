@@ -89,7 +89,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   const [priority, setPriority] = useState<ExamPriority>('NORMAL');
 
   // Gestão de Clínica Solicitante (para Radiologistas e Admins)
-  const [clinicsList, setClinicsList] = useState<Array<{ id: string; clinicName?: string; name: string; phone?: string; uf?: string }>>([]);
+  const [clinicsList, setClinicsList] = useState<Array<{ id: string; clinicName?: string; name: string; phone?: string; uf?: string; clinicLogo?: string }>>([]);
   const [clinicMode, setClinicMode] = useState<'SELECT' | 'NEW'>('SELECT');
   const [selectedClinicId, setSelectedClinicId] = useState<string>('');
   const [newClinicName, setNewClinicName] = useState('');
@@ -112,6 +112,9 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
               if (data.clinics[0].name) {
                 setRequestingVet(data.clinics[0].name);
               }
+              if (data.clinics[0].clinicLogo) {
+                setClinicLogo(data.clinics[0].clinicLogo);
+              }
             }
           }
         })
@@ -123,8 +126,15 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   const handleClinicChange = (clinicId: string) => {
     setSelectedClinicId(clinicId);
     const found = clinicsList.find(c => c.id === clinicId);
-    if (found && found.name) {
-      setRequestingVet(found.name);
+    if (found) {
+      if (found.name) {
+        setRequestingVet(found.name);
+      }
+      if (found.clinicLogo) {
+        setClinicLogo(found.clinicLogo);
+      } else {
+        setClinicLogo('');
+      }
     }
   };
 
@@ -366,7 +376,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           fastingHours: modality === 'ULTRASSOM' ? fastingHours : undefined,
           trichotomyDone: modality === 'ULTRASSOM' ? trichotomyDone : undefined,
           ultrasoundType: modality === 'ULTRASSOM' ? ultrasoundType : undefined,
-          clinicLogo: clinicLogo || undefined,
+          clinicLogo: clinicLogo || (selectedClinicObj as any)?.clinicLogo || undefined,
           images: uploadedImages,
           ...(isRadiologistOrAdmin ? {
             clinicId: clinicMode === 'SELECT' ? selectedClinicId : 'new',
