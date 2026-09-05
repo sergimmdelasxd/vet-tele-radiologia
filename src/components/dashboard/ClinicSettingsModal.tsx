@@ -45,6 +45,7 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
   const [crmv, setCrmv] = useState(user.crmv || '');
   const [cnpj, setCnpj] = useState(user.cnpj || '');
   const [uf, setUf] = useState(user.uf || 'SP');
+  const [specialty, setSpecialty] = useState(user.specialty || '');
 
   // Integração WhatsApp API
   const [whatsappEnabled, setWhatsappEnabled] = useState(user.whatsappConfig?.enabled ?? false);
@@ -223,6 +224,7 @@ export const ClinicSettingsModal: React.FC<ClinicSettingsModalProps> = ({
           crmv,
           cnpj,
           uf,
+          specialty: specialty || undefined,
           whatsappConfig: whatsappPayload
         })
       });

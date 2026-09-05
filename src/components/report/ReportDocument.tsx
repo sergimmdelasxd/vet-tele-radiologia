@@ -856,7 +856,7 @@ ${getPublicUrl()}`;
               {report.radiologistCrmv}
             </div>
             <div className="inline-block px-2 py-0.5 bg-teal-50 text-teal-800 border border-teal-200/80 rounded text-[10px] uppercase font-bold tracking-wider mt-1">
-              {isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista'}
+              {report.radiologistSpecialty || (isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista')}
             </div>
           </div>
         </div>

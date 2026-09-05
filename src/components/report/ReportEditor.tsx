@@ -15,12 +15,14 @@ import {
   BookOpen,
   Send,
   Loader2,
-  MessageSquare
+  MessageSquare,
+  PenTool
 } from 'lucide-react';
-import { Exam, ReportTemplate } from '@/types';
+import { Exam, ReportTemplate, User } from '@/types';
 import { REPORT_TEMPLATES } from '@/data/templates';
 import { RichTextEditor } from '@/components/common/RichTextEditor';
 import { SaveToCasotecaModal } from '@/components/cases/SaveToCasotecaModal';
+import { VetSignatureModal } from '@/components/dashboard/VetSignatureModal';
 
 interface ReportEditorProps {
   exam: Exam;
@@ -76,7 +78,9 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   const [showCasotecaModal, setShowCasotecaModal] = useState(false);
 
   const [allTemplates, setAllTemplates] = useState<ReportTemplate[]>(REPORT_TEMPLATES);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [currentUserSignature, setCurrentUserSignature] = useState<string | undefined>(undefined);
+  const [showSignatureModal, setShowSignatureModal] = useState(false);
   const [lastAutoSaveTime, setLastAutoSaveTime] = useState<string | null>(null);
   const [draftRecovered, setDraftRecovered] = useState(false);
 
@@ -100,8 +104,11 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
     fetch('/api/auth/me')
       .then(r => r.json())
       .then(d => {
-        if (d.user?.signatureImage) {
-          setCurrentUserSignature(d.user.signatureImage);
+        if (d.user) {
+          setCurrentUser(d.user);
+          if (d.user.signatureImage) {
+            setCurrentUserSignature(d.user.signatureImage);
+          }
         }
       })
       .catch(() => {});
@@ -226,7 +233,8 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
           vhsScore: isUltrasound ? undefined : (vhsScore.trim() || undefined),
           norbergAngle: isUltrasound ? undefined : (norbergAngle.trim() || undefined),
           keyImageIds: selectedKeyImages,
-          radiologistSignatureUrl: currentUserSignature
+          radiologistSignatureUrl: currentUserSignature || currentUser?.signatureImage,
+          radiologistSpecialty: currentUser?.specialty
         })
       });
 
@@ -610,17 +618,34 @@ ${publicLaudoUrl}`;
       {/* Carimbo do Radiologista e Botão de Ação */}
       <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-700 shrink-0">
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <div className="text-xs font-bold text-slate-900">
-              {currentRadiologistName}
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-900">
+                {currentUser?.name || currentRadiologistName}
+              </span>
+              {currentUser?.signatureImage && (
+                <span className="text-[10px] px-1.5 py-0.2 bg-emerald-50 text-emerald-700 font-bold rounded border border-emerald-200">
+                  Assinatura ativa
+                </span>
+              )}
             </div>
             <div className="text-[11px] text-teal-700 font-mono font-semibold">
-              {currentRadiologistCrmv} • {isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista'}
+              {currentUser?.crmv || currentRadiologistCrmv} • {currentUser?.specialty || (isUltrasound ? 'Médica Veterinária Ultrassonografista' : 'Médica Veterinária Radiologista')}
             </div>
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowSignatureModal(true)}
+            className="ml-1 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold text-teal-800 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition cursor-pointer"
+            title="Cadastrar ou editar minha assinatura e CRMV"
+          >
+            <PenTool className="w-3 h-3 text-teal-600" />
+            <span>{currentUser?.signatureImage ? 'Editar Assinatura' : '+ Configurar Assinatura'}</span>
+          </button>
         </div>
 
         <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -661,6 +686,21 @@ ${publicLaudoUrl}`;
           findings={reportContent}
           conclusion={reportContent}
           onClose={() => setShowCasotecaModal(false)}
+        />
+      )}
+
+      {/* MODAL PARA CONFIGURAR ASSINATURA & CRMV DO VETERINÁRIO */}
+      {currentUser && (
+        <VetSignatureModal
+          isOpen={showSignatureModal}
+          onClose={() => setShowSignatureModal(false)}
+          user={currentUser}
+          onUserUpdated={(updated) => {
+            setCurrentUser(updated);
+            if (updated.signatureImage) {
+              setCurrentUserSignature(updated.signatureImage);
+            }
+          }}
         />
       )}
     </div>

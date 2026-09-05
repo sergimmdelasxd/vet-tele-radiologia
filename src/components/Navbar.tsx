@@ -20,10 +20,12 @@ import {
   ClipboardList,
   Zap,
   BookOpen,
-  ShieldCheck
+  ShieldCheck,
+  PenTool
 } from 'lucide-react';
 import { User } from '@/types';
 import { ClinicSettingsModal } from '@/components/dashboard/ClinicSettingsModal';
+import { VetSignatureModal } from '@/components/dashboard/VetSignatureModal';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface NavbarProps {
@@ -36,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
   const router = useRouter();
   const pathname = usePathname();
   const [showClinicModal, setShowClinicModal] = React.useState(false);
+  const [showVetSignatureModal, setShowVetSignatureModal] = React.useState(false);
   const [currentUser, setCurrentUser] = React.useState<User | null>(user);
 
   React.useEffect(() => {
@@ -362,7 +365,30 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
                       )}
 
                       {/* PERSONALIZAÇÃO: LOGOTIPO & DADOS DA CLÍNICA */}
-                      <div className="pt-1 border-t border-slate-800/80">
+                      <div className="pt-1 border-t border-slate-800/80 space-y-1.5">
+                        <button
+                          type="button"
+                          onClick={() => setShowVetSignatureModal(true)}
+                          className="w-full flex items-center justify-between p-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/25 transition text-left cursor-pointer group/sign"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 text-cyan-300 flex items-center justify-center shrink-0">
+                              <PenTool className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-xs text-white group-hover/sign:text-cyan-200">
+                                Minha Assinatura &amp; CRMV
+                              </div>
+                              <div className="text-[10px] text-cyan-300/80">
+                                Carimbo e assinatura do laudo
+                              </div>
+                            </div>
+                          </div>
+                          <span className={`text-[10px] px-2 py-0.5 rounded-md font-bold ${currentUser?.signatureImage ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-cyan-500/20 text-cyan-300'}`}>
+                            {currentUser?.signatureImage ? 'Configurada' : '+ Cadastrar'}
+                          </span>
+                        </button>
+
                         <button
                           type="button"
                           onClick={() => setShowClinicModal(true)}
@@ -494,6 +520,19 @@ export const Navbar: React.FC<NavbarProps> = ({ user, onNewExamClick, onRefresh 
         <ClinicSettingsModal
           isOpen={showClinicModal}
           onClose={() => setShowClinicModal(false)}
+          user={currentUser}
+          onUserUpdated={(updated) => {
+            setCurrentUser(updated);
+            if (onRefresh) onRefresh();
+          }}
+        />
+      )}
+
+      {/* Modal de Assinatura & CRMV do Médico Veterinário */}
+      {currentUser && (
+        <VetSignatureModal
+          isOpen={showVetSignatureModal}
+          onClose={() => setShowVetSignatureModal(false)}
           user={currentUser}
           onUserUpdated={(updated) => {
             setCurrentUser(updated);

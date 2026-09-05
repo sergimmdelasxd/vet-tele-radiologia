@@ -35,7 +35,8 @@ export async function POST(
       vhsScore,
       norbergAngle,
       keyImageIds,
-      radiologistSignatureUrl
+      radiologistSignatureUrl,
+      radiologistSpecialty
     } = body;
 
     const reportContent = findings || conclusion;
@@ -46,11 +47,13 @@ export async function POST(
       );
     }
 
-    // Se não veio no body, tenta pegar a assinatura cadastrada no perfil do usuário
+    // Se não veio no body, tenta pegar a assinatura e especialidade cadastradas no perfil do usuário
     let signatureUrl = radiologistSignatureUrl;
-    if (!signatureUrl) {
+    let specialty = radiologistSpecialty;
+    if (!signatureUrl || !specialty) {
       const fullUser = await findUserById(user.userId);
-      signatureUrl = fullUser?.signatureImage;
+      if (!signatureUrl) signatureUrl = fullUser?.signatureImage;
+      if (!specialty) specialty = fullUser?.specialty;
     }
 
     const updatedExam = await saveReport(id, {
@@ -58,6 +61,7 @@ export async function POST(
       radiologistId: user.userId,
       radiologistName: user.name,
       radiologistCrmv: user.crmv || 'CRMV Veterinário',
+      radiologistSpecialty: specialty || undefined,
       radiologistSignatureUrl: signatureUrl || undefined,
       technique: technique || 'Estudo radiográfico padrão em projeções ortogonais.',
       findings: findings || reportContent,

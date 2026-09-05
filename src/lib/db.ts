@@ -752,6 +752,7 @@ function mapUserFromDB(row: any): User {
     cnpj: row.cnpj || undefined,
     phone: row.phone || undefined,
     uf: row.uf || undefined,
+    specialty: row.specialty || undefined,
     avatar: row.avatar || undefined,
     clinicLogo: row.clinic_logo || undefined,
     signatureImage: row.signature_image || undefined,
@@ -780,6 +781,7 @@ function mapReportFromDB(row: any): any {
     radiologistId: row.radiologist_id,
     radiologistName: row.radiologist_name,
     radiologistCrmv: row.radiologist_crmv,
+    radiologistSpecialty: row.radiologist_specialty || undefined,
     radiologistSignatureUrl: row.radiologist_signature_url || undefined,
     pdfUrl: row.pdf_url || undefined,
     technique: row.technique || '',
@@ -918,8 +920,10 @@ export async function createUser(userData: Omit<User, 'id' | 'createdAt'>): Prom
       cnpj: userData.cnpj || null,
       phone: userData.phone || null,
       uf: userData.uf || 'SP',
+      specialty: userData.specialty || null,
       avatar: userData.avatar || null,
       clinic_logo: userData.clinicLogo || null,
+      signature_image: userData.signatureImage || null,
       balance: userData.balance || 0,
       plan: userData.plan || 'AVULSO',
       created_at: now
@@ -966,6 +970,7 @@ export async function updateUser(id: string, updates: Partial<User>): Promise<Us
     if (updates.phone !== undefined) dbUpdates.phone = updates.phone;
     if (updates.uf !== undefined) dbUpdates.uf = updates.uf;
     if (updates.cnpj !== undefined) dbUpdates.cnpj = updates.cnpj;
+    if (updates.specialty !== undefined) dbUpdates.specialty = updates.specialty;
     if (updates.clinicLogo !== undefined) dbUpdates.clinic_logo = updates.clinicLogo;
     if (updates.signatureImage !== undefined) dbUpdates.signature_image = updates.signatureImage;
     if (updates.whatsappConfig !== undefined) dbUpdates.whatsapp_config = updates.whatsappConfig;
@@ -1247,6 +1252,7 @@ export async function saveReport(
       radiologist_id: reportData.radiologistId || null,
       radiologist_name: reportData.radiologistName,
       radiologist_crmv: reportData.radiologistCrmv,
+      radiologist_specialty: reportData.radiologistSpecialty || null,
       radiologist_signature_url: reportData.radiologistSignatureUrl || null,
       pdf_url: reportData.pdfUrl || null,
       technique: reportData.technique || null,

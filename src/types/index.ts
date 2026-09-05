@@ -24,6 +24,7 @@ export interface User {
   phone?: string;
   uf?: string;
   cnpj?: string;
+  specialty?: string; // Título profissional/especialidade. Ex: "Médica Veterinária Radiologista"
   avatar?: string;
   clinicLogo?: string; // URL da logo da clínica para exibição no laudo
   signatureImage?: string; // URL da assinatura e carimbo digitalizado do especialista
@@ -59,6 +60,7 @@ export interface Report {
   radiologistId: string;
   radiologistName: string;
   radiologistCrmv: string;
+  radiologistSpecialty?: string; // Título profissional/especialidade do laudo
   radiologistSignatureUrl?: string; // Imagem da assinatura/carimbo do especialista
   pdfUrl?: string; // URL do laudo oficial timbrado em formato PDF
   technique: string;
