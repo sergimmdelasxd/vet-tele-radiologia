@@ -824,6 +824,7 @@ function mapExamFromDB(row: any): Exam {
     gender: row.gender || 'Macho',
     isCastrated: Boolean(row.is_castrated),
     ownerName: row.owner_name || 'Tutor não informado',
+    ownerPhone: row.owner_phone || undefined,
     region: row.region,
     projections: row.projections || [],
     clinicalHistory: row.clinical_history || '',
@@ -1075,6 +1076,7 @@ export async function createExam(examData: Partial<Exam>): Promise<Exam> {
     gender: examData.gender || 'Macho',
     isCastrated: examData.isCastrated ?? false,
     ownerName: examData.ownerName || 'Tutor não informado',
+    ownerPhone: examData.ownerPhone || undefined,
     region: examData.region || (examData.modality === 'ULTRASSOM' ? 'Ultrassonografia Abdominal Total' : 'Radiografia Geral'),
     projections: examData.projections || ['Ortogonal'],
     clinicalHistory: examData.clinicalHistory || '',
@@ -1107,6 +1109,7 @@ export async function createExam(examData: Partial<Exam>): Promise<Exam> {
       gender: newExam.gender,
       is_castrated: newExam.isCastrated,
       owner_name: newExam.ownerName,
+      owner_phone: newExam.ownerPhone || null,
       region: newExam.region,
       projections: newExam.projections,
       clinical_history: newExam.clinicalHistory,
@@ -1154,6 +1157,8 @@ export async function updateExam(id: string, updates: Partial<Exam>): Promise<Ex
     if (updates.weight !== undefined) dbUpdates.weight = updates.weight;
     if (updates.gender !== undefined) dbUpdates.gender = updates.gender;
     if (updates.isCastrated !== undefined) dbUpdates.is_castrated = updates.isCastrated;
+    if (updates.ownerName !== undefined) dbUpdates.owner_name = updates.ownerName;
+    if (updates.ownerPhone !== undefined) dbUpdates.owner_phone = updates.ownerPhone;
     if (updates.clinicalHistory !== undefined) dbUpdates.clinical_history = updates.clinicalHistory;
     if (updates.suspectedDiagnosis !== undefined) dbUpdates.suspected_diagnosis = updates.suspectedDiagnosis;
     if (updates.region !== undefined) dbUpdates.region = updates.region;

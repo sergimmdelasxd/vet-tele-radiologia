@@ -270,13 +270,15 @@ export const ReportEditor: React.FC<ReportEditorProps> = ({
   };
 
   const handleSendWhatsAppNotification = async () => {
-    const rawPhone = exam.clinicPhone || '';
+    // Regra: Envia para o telefone do tutor se preenchido; se não, vai para a clínica solicitante
+    const rawPhone = exam.ownerPhone || exam.clinicPhone || '';
     const digitsOnly = rawPhone.replace(/\D/g, '');
 
     const publicLaudoUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/laudo/${exam.id}`;
     const textMessage = `🐾 *LAUDO VETERINÁRIO CONCLUÍDO — VetTeleRad*
 📄 *Protocolo:* ${exam.id}
 🐶 *Paciente:* ${exam.patientName} (${exam.species} - ${exam.breed})
+👤 *Tutor:* ${exam.ownerName}
 🏥 *Clínica Solicitante:* ${exam.clinicName}
 🩺 *Médico Veterinário:* ${exam.requestingVet}
 👨‍⚕️ *Especialista:* ${currentRadiologistName} (${currentRadiologistCrmv})
@@ -467,7 +469,7 @@ ${publicLaudoUrl}`;
                 onClick={handleSendWhatsAppNotification}
                 disabled={isSendingViaApi}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs active:scale-95 disabled:opacity-60"
-                title="Disparar mensagem oficial de laudo pronto direto no WhatsApp da clínica"
+                title={exam.ownerPhone ? "Disparar mensagem oficial de laudo pronto direto no WhatsApp do tutor" : "Disparar mensagem oficial de laudo pronto direto no WhatsApp da clínica"}
               >
                 {isSendingViaApi ? (
                   <>
@@ -477,7 +479,7 @@ ${publicLaudoUrl}`;
                 ) : (
                   <>
                     <Send className="w-3.5 h-3.5" />
-                    <span>Notificar Clínica via Robô (API)</span>
+                    <span>{exam.ownerPhone ? 'Notificar Tutor via Robô (API)' : 'Notificar Clínica via Robô (API)'}</span>
                   </>
                 )}
               </button>
@@ -486,10 +488,10 @@ ${publicLaudoUrl}`;
                 type="button"
                 onClick={handleSendWhatsAppNotification}
                 className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold transition shadow-xs cursor-pointer text-xs active:scale-95"
-                title="Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"
+                title={exam.ownerPhone ? "Enviar mensagem com o link do laudo pronto no WhatsApp do tutor" : "Enviar mensagem com o link do laudo pronto no WhatsApp da clínica"}
               >
                 <MessageSquare className="w-3.5 h-3.5" />
-                <span>Notificar Clínica no WhatsApp</span>
+                <span>{exam.ownerPhone ? 'Notificar Tutor no WhatsApp' : 'Notificar Clínica no WhatsApp'}</span>
               </button>
             )}
 

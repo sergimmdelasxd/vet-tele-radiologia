@@ -92,6 +92,7 @@ export interface Exam {
   gender: 'Macho' | 'Fêmea';
   isCastrated: boolean;
   ownerName: string;
+  ownerPhone?: string; // Telefone / WhatsApp do tutor do paciente (opcional)
   
   // Dados do exame
   region: string; // Ex: "Tórax (3 projeções)", "Abdômen Total", "USG Gestacional"

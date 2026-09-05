@@ -62,6 +62,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
   const [gender, setGender] = useState<'Macho' | 'Fêmea'>('Macho');
   const [isCastrated, setIsCastrated] = useState(false);
   const [ownerName, setOwnerName] = useState('');
+  const [ownerPhone, setOwnerPhone] = useState('');
 
   // Região e campos específicos
   const [region, setRegion] = useState('Tórax (3 projeções)');
@@ -353,6 +354,7 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
           gender,
           isCastrated,
           ownerName: ownerName.trim() || 'Tutor Responsável',
+          ownerPhone: ownerPhone.trim() || undefined,
           region: modality === 'ULTRASSOM' ? ultrasoundType : region,
           projections: modality === 'ULTRASSOM' ? selectedOrgans : selectedProjections,
           clinicalHistory,
@@ -763,13 +765,26 @@ export const NewExamModal: React.FC<NewExamModalProps> = ({
                 </div>
               </div>
 
-              <div className="sm:col-span-2">
+              <div>
                 <label className="block text-slate-400 mb-1">Nome do Tutor</label>
                 <input
                   type="text"
                   placeholder="Ex: Maria Clara Fernandes"
                   value={ownerName}
                   onChange={e => setOwnerName(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">
+                  WhatsApp do Tutor <span className="text-slate-500 text-[11px] font-normal">(Opcional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="(11) 98765-4321"
+                  value={ownerPhone}
+                  onChange={e => setOwnerPhone(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none focus:border-cyan-500"
                 />
               </div>
